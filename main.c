@@ -180,35 +180,6 @@ int main(int argc, char* argv[]){
 
     Generate_code();
 
-    /*printf("program started\n");
-    const char* exp[]={"float a;",
-                "float b;",
-                "float c;" ,
-                "float d;" ,
-                "int e;" ,
-                "float f;" ,
-                "a = (b + d*e - (c/7) + f%6);"};
-    
-    printf("running.\n");
-
-    const int n = sizeof(exp)/sizeof(exp[0]);
-    //lexer(exp);
-    root = parser(exp , &n);
-
-    printf("After parsing\n");
-    printf("Syntax tree created.\n");
-
-    semantic(exp , root , &n);
-    printf("\nSymbol table:\n");
-
-    Generate_TAC(root);
-
-    optimizer();
-
-    Generate_code();
-
-    */
-    //free_tree(root);
     printf("program ended\n");
 
     return 0;

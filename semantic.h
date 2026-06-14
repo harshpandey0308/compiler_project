@@ -6,6 +6,7 @@
 typedef struct symbol{
     char sym[50];
     char type[10];
+    char scope[50];
     union 
     {
         int ival;
@@ -18,12 +19,13 @@ typedef struct symbol{
 
 extern SYMBOL sym_table[50];
 extern int sym_count;
+extern char Current_Scope[50];
 
 int is_float(const char* s);
 
 void add_symbol(const char* name , const char* type);
 
-void Check_Undeclared(NODE* root);
+void Check_Undeclared(NODE* root , char* Current_Scope);
 
 char* get_type(NODE* node);
 

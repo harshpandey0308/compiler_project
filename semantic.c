@@ -8,7 +8,7 @@
 
 SYMBOL sym_table[50];
 int sym_count = 0;
-
+char Current_Scope[50] ;
 
 
 int is_float(const char* s){
@@ -33,14 +33,14 @@ void add_symbol(const char* name , const char* type){
     sym_count++;
 }
 
-void Check_Undeclared(NODE* root){
+void Check_Undeclared(NODE* root , char* Current_Scope){
     if(root == NULL){
         return;
     }
     if(isalpha(root->value[0]) || root->value[0] == '_'){
         int found = 0;
         for(int i=0 ; i<sym_count ; i++){
-            if(strcmp(sym_table[i].sym , root->value) == 0){
+            if(strcmp(sym_table[i].sym , root->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
                 found = 1;
                 break;
             }
@@ -50,11 +50,11 @@ void Check_Undeclared(NODE* root){
         }
     }
 
-    Check_Undeclared(root->left);
-    Check_Undeclared(root->right);
+    Check_Undeclared(root->left , Current_Scope);
+    Check_Undeclared(root->right , Current_Scope);
 }
 
-char* get_type(NODE* node){
+char* get_type(NODE* node , char* Current_Scope){
     if(node == NULL) return "UNKNOWN";
 
     if(node->left == NULL && node->right == NULL){
@@ -64,15 +64,15 @@ char* get_type(NODE* node){
         }
 
         for(int i=0 ; i<sym_count ; i++){
-            if(strcmp(sym_table[i].sym , node->value) == 0){
+            if(strcmp(sym_table[i].sym , node->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
                 return sym_table[i].type;
             }
         }
         return "UNKNOWN";
     }
 
-    char* left_type = get_type(node->left);
-    char* right_type = get_type(node->right);
+    char* left_type = get_type(node->left , Current_Scope);
+    char* right_type = get_type(node->right , Current_Scope);
 
     if(strcmp(left_type , "float")==0 || strcmp(right_type,"float")==0){
         return "float";
@@ -85,8 +85,8 @@ void Type_check(NODE* root){
 
     if(root->value[0] == '='){
 
-        char* left_type = get_type(root->left);
-        char* right_type = get_type(root->right);
+        char* left_type = get_type(root->left , Current_Scope);
+        char* right_type = get_type(root->right , Current_Scope);
 
         printf("\nleft type : %s.\n",left_type);
         printf(" right type : %s.\n",right_type);
