@@ -1,0 +1,42 @@
+#ifndef SEMANTIC_H
+#define SEMANTIC_H
+
+#include"parser.h"
+
+typedef struct symbol{
+    char sym[50];
+    char type[10];
+    union 
+    {
+        int ival;
+        float fval;
+        char cval;
+        double dval;
+    }value;
+    int is_initialized;
+}SYMBOL;
+
+extern SYMBOL sym_table[50];
+extern int sym_count;
+
+int is_float(const char* s);
+
+void add_symbol(const char* name , const char* type);
+
+void Check_Undeclared(NODE* root);
+
+char* get_type(NODE* node);
+
+void Type_check(NODE* root);
+
+int is_declared(const char* line);
+
+void parse_declaration(const char* line);
+
+void print_sym();
+
+void free_tree(NODE* root);
+
+//void semantic(const char* exp[] , NODE* root , const int* n);
+
+#endif
