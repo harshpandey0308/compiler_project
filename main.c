@@ -49,6 +49,12 @@ int main(int argc, char* argv[]){
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
         
+        if(strcmp(Current_Scope , "global") != 0 && strcmp(tokens[i].value , "}") == 0){
+            strcpy(Current_Scope , "global");
+            printf("%s\n",Current_Scope);
+            start = i + 1;
+            continue;
+        }
 
         if(tokens[i].tokentype == KEYWORD && tokens[i+1].tokentype == IDENTIFIER && strcmp(tokens[i+2].value , "(") == 0){
             char* func_name = tokens[i+1].value;
@@ -65,7 +71,7 @@ int main(int argc, char* argv[]){
             while(i<token_count && strcmp(tokens[param_end].value , ")") != 0){
                 char *param_type = tokens[param_end].value;
                 char *param_name = tokens[param_end+1].value;
-                printf("Adding parameter %s of type %s to symbol table\n", param_name, param_type);
+                printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
                 add_symbol(param_name , param_type , Current_Scope);
                 param_end += 2;
                 if(strcmp(tokens[param_end].value , ",") == 0){
@@ -74,25 +80,13 @@ int main(int argc, char* argv[]){
             }
             i = param_end + 1;
 
-            int body_start = i;
-            while(i<token_count && strcmp(tokens[i].value , "}") != 0){
-                i++;
-            }
 
-            //for(int i=0 ; i<lines_count ; i++){
-                //printf("checking :'%s' -> is_declared : %d\n", lines[i] , is_declared(lines[i]) );
-                //if(is_declared(lines[i])){
-                    //parse_declaration(lines[i]);
-                //}
-            //}
-            print_sym();
-            strcpy(Current_Scope , "global");
+            int body_start = i;
+            
             start = i+1;
             continue;
 
-        
         }
-
 
         if(tokens[i].tokentype == KEYWORD && (strcmp(tokens[i].value , "if") == 0)){
             //printf("if statement found at token %d\n",i);
@@ -125,10 +119,10 @@ int main(int argc, char* argv[]){
         //printf("while detection\n");
 
         if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "while") == 0){
-            //printf("while statement found at token %d\n",i);
+                //printf("while statement found at token %d\n",i);
             Generate_while_tac(tokens , i);
 
-            //printf("while body ends at token %d\n",i);
+                //printf("while body ends at token %d\n",i);
 
             while(i<token_count && strcmp(tokens[i].value , "{") != 0){
                 i++;
@@ -146,7 +140,7 @@ int main(int argc, char* argv[]){
                 }
                 i++;
             }
-            //printf("After while body %d : %s\n",i , tokens[i].value);
+                //printf("After while body %d : %s\n",i , tokens[i].value);
             start = i;
             continue;
         }
@@ -179,11 +173,26 @@ int main(int argc, char* argv[]){
         }
 
         if(strcmp(tokens[i].value , ";")==0){
-            //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
+            if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "return") == 0){
+                start = i+1;
+                continue;
+            }
+            printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
                 char* name = tokens[start+1].value;
+                printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
                 add_symbol(name , type , Current_Scope);
+                printf("symbols added.\n");
+
+                if(strcmp(tokens[start + 2].value , "=") == 0){
+                    NODE* decl_AST = Build_AST(tokens , start+1 , i-1);
+                    Check_Undeclared(decl_AST , Current_Scope);
+                    Type_check(decl_AST , Current_Scope);
+                    Generate_TAC(decl_AST);
+
+                    free_tree(decl_AST);
+                }
                 start = i+1;
                 continue;
             }
@@ -198,17 +207,20 @@ int main(int argc, char* argv[]){
             print(root);
 
             Check_Undeclared(root , Current_Scope);
-            Type_check(root);
-
+            Type_check(root , Current_Scope);
+            printf("tac generation.\n");
             Generate_TAC(root);
 
-            //print_TAC();
+                //print_TAC();
 
             free_tree(root);
             start = i+1;
 
         }
     }
+
+    print_sym();
+    
 
     printf("\nBefore optimization :\n");
     print_TAC();
