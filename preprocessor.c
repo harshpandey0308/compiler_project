@@ -100,9 +100,9 @@ int preprocesses(const char* filename , char lines[][MAX_LINE_LEN]){
             continue;
         }
 
-        if(strstr(trimmed , "main") != NULL){
-            continue;
-        }
+        //if(strstr(trimmed , "main") != NULL){
+            //continue;
+        //}
 
         if(strcmp(trimmed , "{") == 0 || strcmp(trimmed , "}") == 0){
             strcpy(lines[line_count++] , trimmed);

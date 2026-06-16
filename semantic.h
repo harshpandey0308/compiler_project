@@ -29,7 +29,7 @@ void Check_Undeclared(NODE* root , char* Current_Scope);
 
 char* get_type(NODE* node , char* Current_Scope);
 
-void Type_check(NODE* root);
+void Type_check(NODE* root , char* Current_Scope);
 
 int is_declared(const char* line);
 

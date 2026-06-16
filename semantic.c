@@ -81,7 +81,7 @@ char* get_type(NODE* node , char* Current_Scope){
     return "int";
 }
 
-void Type_check(NODE* root){
+void Type_check(NODE* root , char* Current_Scope){
     if(root == NULL) return ;
 
     if(root->value[0] == '='){

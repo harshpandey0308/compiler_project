@@ -86,9 +86,14 @@ void dead_code(){
 
 void print_TAC(){
     printf("\n-----------TAC CODE-----------\n");
+    //printf("TAC is :\n");
     for(int i=0 ; i<tac_count ; i++){
-        if(tac_table[i].is_dead) continue;
+        //printf("checking dead code\n");
+        if(tac_table[i].is_dead){
+            printf("dead code found");
+            continue;}
 
+        //printf("tac is printing using switch\n");
         switch(tac_table[i].type){
             case TAC_ASSIGN:
                 if(strcmp(tac_table[i].op2 , "")==0){

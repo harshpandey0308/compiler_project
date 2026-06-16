@@ -2,13 +2,15 @@
 #define PI 3.14
 
 float calculate_area(float radius){
-    return PI * radius * radius;
+    float area =  PI * radius * radius;
+    return area;
 }
 
 int main(){
     int radius = 5;
-    float area = calculate_area(radius);
-    printf("Area of the circle with radius %d is %.2f\n", radius, area);
+    int area = radius*radius;
+
+    int a = area/4;
 
     return 0;
 }
