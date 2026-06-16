@@ -33,14 +33,9 @@ int main(int argc, char* argv[]){
 
     printf("File read : %d lines.\n", lines_count);
 
-    for(int i=0 ; i<lines_count ; i++){
-        //printf("checking :'%s' -> is_declared : %d\n", lines[i] , is_declared(lines[i]) );
-        if(is_declared(lines[i])){
-            parse_declaration(lines[i]);
-        }
-    }
+    //
 
-    print_sym();
+    //print_sym();
 
     const char* exp[MAX_LINES];
     for(int i=0 ; i<lines_count ; i++){
@@ -54,6 +49,50 @@ int main(int argc, char* argv[]){
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
         
+
+        if(tokens[i].tokentype == KEYWORD && tokens[i+1].tokentype == IDENTIFIER && strcmp(tokens[i+2].value , "(") == 0){
+            char* func_name = tokens[i+1].value;
+            strcpy(Current_Scope , func_name);
+
+            
+
+            while(i<token_count && strcmp(tokens[i].value , "(") != 0){
+                i++;
+            }
+            int param_start = i + 1;
+            int param_end = param_start;
+
+            while(i<token_count && strcmp(tokens[param_end].value , ")") != 0){
+                char *param_type = tokens[param_end].value;
+                char *param_name = tokens[param_end+1].value;
+                printf("Adding parameter %s of type %s to symbol table\n", param_name, param_type);
+                add_symbol(param_name , param_type , Current_Scope);
+                param_end += 2;
+                if(strcmp(tokens[param_end].value , ",") == 0){
+                    param_end++;
+                }
+            }
+            i = param_end + 1;
+
+            int body_start = i;
+            while(i<token_count && strcmp(tokens[i].value , "}") != 0){
+                i++;
+            }
+
+            //for(int i=0 ; i<lines_count ; i++){
+                //printf("checking :'%s' -> is_declared : %d\n", lines[i] , is_declared(lines[i]) );
+                //if(is_declared(lines[i])){
+                    //parse_declaration(lines[i]);
+                //}
+            //}
+            print_sym();
+            strcpy(Current_Scope , "global");
+            start = i+1;
+            continue;
+
+        
+        }
+
 
         if(tokens[i].tokentype == KEYWORD && (strcmp(tokens[i].value , "if") == 0)){
             //printf("if statement found at token %d\n",i);
@@ -142,6 +181,9 @@ int main(int argc, char* argv[]){
         if(strcmp(tokens[i].value , ";")==0){
             //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
             if(tokens[start].tokentype == KEYWORD){
+                char* type = tokens[start].value;
+                char* name = tokens[start+1].value;
+                add_symbol(name , type , Current_Scope);
                 start = i+1;
                 continue;
             }
@@ -155,7 +197,7 @@ int main(int argc, char* argv[]){
             printf("Syntax tree for statement %d.\n", i);
             print(root);
 
-            Check_Undeclared(root);
+            Check_Undeclared(root , Current_Scope);
             Type_check(root);
 
             Generate_TAC(root);

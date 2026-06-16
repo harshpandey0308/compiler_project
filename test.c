@@ -1,29 +1,14 @@
 #include<stdio.h>
 #define PI 3.14
 
+float calculate_area(float radius){
+    return PI * radius * radius;
+}
+
 int main(){
-    int a;
-    int b;
-    int c;
-    int d;
-    int e;
-    int f;
-    a = (b + d*e - (c/7) + f);
-    while(a < 100){
-        a = a + 10;
-    }
-    a = a+2;
-
-    if(a == 50){
-        a = a*2;
-    }
-    else{
-        a = a/2;
-    }
-
-    for(a = 0 ; a < 10 ; a = a + 1){
-        b = b + 1;
-    }
+    int radius = 5;
+    float area = calculate_area(radius);
+    printf("Area of the circle with radius %d is %.2f\n", radius, area);
 
     return 0;
 }

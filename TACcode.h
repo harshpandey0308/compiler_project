@@ -19,6 +19,7 @@ typedef struct tac{
     char op2[50];
     char opr[5];
     char label[10];
+    char scope[50];
     int is_dead;
     int type;
 }TAC;

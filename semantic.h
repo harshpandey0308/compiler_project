@@ -23,11 +23,11 @@ extern char Current_Scope[50];
 
 int is_float(const char* s);
 
-void add_symbol(const char* name , const char* type);
+void add_symbol(const char* name , const char* type , char* Current_Scope);
 
 void Check_Undeclared(NODE* root , char* Current_Scope);
 
-char* get_type(NODE* node);
+char* get_type(NODE* node , char* Current_Scope);
 
 void Type_check(NODE* root);
 

@@ -8,7 +8,7 @@
 
 SYMBOL sym_table[50];
 int sym_count = 0;
-char Current_Scope[50] ;
+char Current_Scope[50] = "global";
 
 
 int is_float(const char* s){
@@ -18,9 +18,9 @@ int is_float(const char* s){
     return 0;
 }
 
-void add_symbol(const char* name , const char* type){
+void add_symbol(const char* name , const char* type , char* Current_Scope){
     for(int i=0 ; i<sym_count ; i++){
-        if(strcmp(sym_table[i].sym , name) == 0){
+        if(strcmp(sym_table[i].sym , name) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
             printf("ERROR : The %s is already declared.\n",name);
             return;
         }
@@ -28,6 +28,7 @@ void add_symbol(const char* name , const char* type){
 
     strcpy(sym_table[sym_count].sym , name);
     strcpy(sym_table[sym_count].type , type);
+    strcpy(sym_table[sym_count].scope , Current_Scope);
     sym_table[sym_count].is_initialized = 0;
 
     sym_count++;
@@ -111,7 +112,7 @@ void parse_declaration(const char* line){
     if(name[strlen(name)-1] == ';'){
         name[strlen(name)-1] = '\0';
     }
-    add_symbol(name , type);
+    add_symbol(name , type , Current_Scope);
 }
 
 void print_sym(){
