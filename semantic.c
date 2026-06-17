@@ -95,6 +95,9 @@ void Type_check(NODE* root , char* Current_Scope){
         if(strcmp(left_type , right_type) == 0){
             printf("\nType check passed.");
         }
+        else if((strcmp(left_type , "float") == 0 && strcmp(right_type , "int") == 0) || (strcmp(right_type , "float") == 0 && strcmp(left_type , "int") == 0) ){
+            printf("\nType check passed (implicit conversion of int->float).\n");
+        }
         else{
             printf("\nType check ERROR : can not assign '%s' to '%s' variable.",right_type,left_type);
         }
