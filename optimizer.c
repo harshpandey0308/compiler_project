@@ -115,6 +115,18 @@ void print_TAC(){
             case TAC_LABEL:
                 printf("%s:\n",tac_table[i].label);
                 break;
+
+            case PARAM:
+                printf("PARAM %s\n",tac_table[i].op1);
+                break;
+            
+            case FUNC_CALL:
+                printf("CALL %s , %s\n",tac_table[i].op1 , tac_table[i].op2);
+                break;
+            
+            case RETURN:
+                printf("RETURN %s\n", tac_table[i].op1);
+                break;
         }
         
     }

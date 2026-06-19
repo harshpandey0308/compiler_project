@@ -7,8 +7,8 @@ float calculate_area(float radius){
 }
 
 int main(){
-    int radius = 5;
-    float area = radius*radius;
+    float radius = 5.0;
+    float area = calculate_area(5);
 
     int a = area/4;
 

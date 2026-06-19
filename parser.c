@@ -10,6 +10,11 @@ NODE* create_node(char *exp){
     strcpy(new->value,exp);
     new->left = NULL;
     new->right = NULL;
+    new->ARG_count = 0;
+    new->is_Call = 0;
+    for(int i=0 ; i<50 ; i++){
+        new->ARG[i] = NULL;
+    }
     return new;
 }
 
@@ -75,6 +80,31 @@ int find_operator(TOKEN tokens[] , int start , int end){
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
     if(start == end){
         return create_node(tokens[start].value);
+    }
+
+    if(tokens[start].tokentype == FUNC_NAME){
+        NODE* call_node = create_node(tokens[start].value);
+        call_node->is_Call = 1;
+        call_node->ARG_count = 0;
+        
+        int arg_pos = start + 2;
+
+        while(strcmp(tokens[arg_pos].value , ")") != 0){
+            int arg_end = arg_pos;
+            if(strcmp(tokens[arg_end].value , ",") != 0 && strcmp(tokens[arg_end].value , ")") != 0){
+                arg_end++;
+            }
+
+            call_node->ARG[call_node->ARG_count++] = Build_AST(tokens , arg_pos , arg_end-1);
+
+            if(strcmp(tokens[arg_end].value , ",") == 0){
+                arg_pos = arg_end + 1;
+            }
+            else{
+                break;
+            }
+        }
+        return call_node;
     }
 
     int is_wrapped = 1;

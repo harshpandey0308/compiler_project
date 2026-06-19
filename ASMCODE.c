@@ -121,6 +121,20 @@ void Generate_code(){
             case TAC_LABEL:
                 printf("%s:\n", tac_table[i].label);
                 break;
+
+            case PARAM:
+                printf("PUSH %s\n",tac_table[i].op1);
+                break;
+
+            case FUNC_CALL:
+                printf("CALL %s\n",tac_table[i].op1);
+                printf("MOV RETVAL , R0\n");
+                break;
+
+            case RETURN:
+                printf("MOV R0 , %s\n",tac_table[i].op1);
+                printf("RET\n");
+                break;
         }
     }
 }

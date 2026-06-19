@@ -7,7 +7,8 @@ typedef enum type{
     NUMBER,
     DELIMITER,
     KEYWORD,
-    COMPARATORS
+    COMPARATORS,
+    FUNC_NAME
 }token_type;
 
 

@@ -38,17 +38,32 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
     if(root == NULL){
         return;
     }
+
+    if(root->is_Call == 1){
+        for(int i=0 ; i<root->ARG_count ; i++){
+            Check_Undeclared(root->ARG[i] , Current_Scope);
+        }
+        return;
+    }
+
     if(isalpha(root->value[0]) || root->value[0] == '_'){
-        int found = 0;
-        for(int i=0 ; i<sym_count ; i++){
-            if(strcmp(sym_table[i].sym , root->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
-                found = 1;
-                break;
+
+        if(strcmp(root->value , "RETVAL") == 0){
+
+        }
+        else{
+            int found = 0;
+            for(int i=0 ; i<sym_count ; i++){
+                if(strcmp(sym_table[i].sym , root->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
+                    found = 1;
+                    break;
+                }
+            }
+            if(!found){
+                printf("ERROR , %s is used , but not declared.\n",root->value);
             }
         }
-        if(!found){
-            printf("ERROR , %s is used , but not declared.\n",root->value);
-        }
+        
     }
 
     Check_Undeclared(root->left , Current_Scope);
@@ -58,6 +73,18 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
 char* get_type(NODE* node , char* Current_Scope){
     if(node == NULL) return "UNKNOWN";
 
+    if(node->is_Call == 1){
+
+        for(int i=0 ; i<sym_count ; i++){
+            if(strcmp(node->value , sym_table[i].sym) == 0 && strcmp(sym_table[i].scope , "global") == 0){
+                printf("the type is : %s.\n",sym_table[i].type);
+                return sym_table[i].type;
+            }
+            
+        }
+        return "UNKNOWN";
+    }
+
     if(node->left == NULL && node->right == NULL){
         if(isdigit(node->value[0])){
             if(is_float(node->value)) return "float";
@@ -66,6 +93,7 @@ char* get_type(NODE* node , char* Current_Scope){
 
         for(int i=0 ; i<sym_count ; i++){
             if(strcmp(sym_table[i].sym , node->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
+                printf("the type is : %s.\n",sym_table[i].type);
                 return sym_table[i].type;
             }
         }
@@ -86,6 +114,14 @@ void Type_check(NODE* root , char* Current_Scope){
 
     if(root->value[0] == '='){
 
+        if(root->is_Call == 1){
+            printf("Type check passed(function call).\n");
+            return;
+        }
+        
+        printf("Type check called with current scope %s\n",Current_Scope);
+        printf("root->left->value = %s\n", root->left->value);
+        printf("root->right->value = %s\n", root->right->value);  
         char* left_type = get_type(root->left , Current_Scope);
         char* right_type = get_type(root->right , Current_Scope);
 
@@ -95,8 +131,11 @@ void Type_check(NODE* root , char* Current_Scope){
         if(strcmp(left_type , right_type) == 0){
             printf("\nType check passed.");
         }
-        else if((strcmp(left_type , "float") == 0 && strcmp(right_type , "int") == 0) || (strcmp(right_type , "float") == 0 && strcmp(left_type , "int") == 0) ){
+        else if((strcmp(left_type , "float") == 0 && strcmp(right_type , "int") == 0)){
             printf("\nType check passed (implicit conversion of int->float).\n");
+        }
+        else if( (strcmp(right_type , "float") == 0) && (strcmp(left_type , "int") == 0) ){
+            printf("Type check passed , (float to int implicit conversion , possible data loss!)");
         }
         else{
             printf("\nType check ERROR : can not assign '%s' to '%s' variable.",right_type,left_type);
@@ -120,9 +159,9 @@ void parse_declaration(const char* line){
 
 void print_sym(){
     printf("\n----SYMBOL TABLE----\n");
-    printf("%-15s %-10s %-15s\n","NAME","TYPE","INITIALIZED");
+    printf("%-15s %-10s %-15s %-10s\n","NAME","TYPE","INITIALIZED","SCOPE");
     for(int i=0 ; i<sym_count ; i++){
-        printf("%-15s %-10s %-15s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO");
+        printf("%-15s %-10s %-15s %-10s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope);
     }
 }
 

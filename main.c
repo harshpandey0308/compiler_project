@@ -40,6 +40,7 @@ int main(int argc, char* argv[]){
     const char* exp[MAX_LINES];
     for(int i=0 ; i<lines_count ; i++){
         exp[i] = lines[i];
+        //printf("content of lines are %c.\n",exp[i]);
     }
 
     const int n = lines_count;
@@ -56,8 +57,12 @@ int main(int argc, char* argv[]){
             continue;
         }
 
-        if(tokens[i].tokentype == KEYWORD && tokens[i+1].tokentype == IDENTIFIER && strcmp(tokens[i+2].value , "(") == 0){
+        if(tokens[i].tokentype == KEYWORD && (tokens[i+1].tokentype == FUNC_NAME || tokens[i+1].tokentype == IDENTIFIER) && strcmp(tokens[i+2].value , "(") == 0){
             char* func_name = tokens[i+1].value;
+            char* ret_type = tokens[i].value;
+
+            add_symbol(func_name , ret_type  , "global");
+
             strcpy(Current_Scope , func_name);
 
             
@@ -174,10 +179,12 @@ int main(int argc, char* argv[]){
 
         if(strcmp(tokens[i].value , ";")==0){
             if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "return") == 0){
+                char* ret_val = tokens[i+1].value;
+                emit_RETURN(ret_val);
                 start = i+1;
                 continue;
             }
-            printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
+            //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
                 char* name = tokens[start+1].value;

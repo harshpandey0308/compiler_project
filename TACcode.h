@@ -12,6 +12,9 @@
 #define TAC_IF_GOTO 1
 #define TAC_GOTO 2
 #define TAC_LABEL 3
+#define PARAM 4
+#define FUNC_CALL 5
+#define RETURN 6
 
 typedef struct tac{
     char result[50];
@@ -38,6 +41,12 @@ void emit_IF_GOTO(char* op1 , char* opr , char* op2 , char* label);
 void emit_GOTO(char* label);
 
 void emit_LABEL(char* label);
+
+void emit_PARAM(char* value);
+
+void emit_CALL(char* name , int arg_count);
+
+void emit_RETURN(char* value);
 
 void Generate_if_tac(TOKEN tokens[] , int if_pos);
 

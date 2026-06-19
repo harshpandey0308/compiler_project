@@ -7,6 +7,9 @@ typedef struct Node{
     char value[50];
     struct Node *left;
     struct Node *right;
+    int is_Call;
+    struct Node* ARG[50];
+    int ARG_count;
 }NODE;
 
 NODE* create_node(char *exp);

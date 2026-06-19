@@ -44,6 +44,28 @@ void emit_LABEL(char* label){
     tac_table[tac_count++] = t;
 }
 
+void emit_PARAM(char* value){
+    TAC t = {0};
+    t.type = PARAM;
+    strcpy(t.op1 , value);
+    tac_table[tac_count++] = t;
+}
+
+void emit_CALL(char* name , int arg_count){
+    TAC t = {0};
+    t.type = FUNC_CALL;
+    strcpy(t.op1 , name);
+    sprintf(t.op2 , "%d" , arg_count);
+    tac_table[tac_count++] = t;
+}
+
+void emit_RETURN(char* value){
+    TAC t = {0};
+    t.type = RETURN;
+    strcpy(t.op1 , value);
+    tac_table[tac_count++] = t;
+}
+
 char* new_temp(){
     char *temp  = (char*)malloc(10);
     sprintf(temp,"t%d",++temp_count);
@@ -295,6 +317,23 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
 
 char* Generate_TAC(NODE* node){
     if(node->left == NULL && node->right == NULL){
+
+        if(node->is_Call == 1){
+        
+            for(int i=0 ; i<node->ARG_count ; i++){
+                if(node->ARG[i] == NULL) continue;
+                char* arg_val = Generate_TAC(node->ARG[i]);
+                emit_PARAM(arg_val);
+                free(arg_val);
+            }
+            char count_string[10];
+            sprintf(count_string , "%d", node->ARG_count);
+            printf("the value is :%s\n",node->value);
+            emit_CALL(node->value , node->ARG_count);
+
+            return strdup("RETVAL");
+
+    }
         char* value = (char*)malloc(50);
         strcpy(value , node->value);
 
@@ -320,6 +359,8 @@ char* Generate_TAC(NODE* node){
         free(right_result);
         return strdup("");
     }
+
+    
 
     char* temp = new_temp();
 
