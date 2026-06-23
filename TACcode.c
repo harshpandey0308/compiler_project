@@ -66,6 +66,34 @@ void emit_RETURN(char* value){
     tac_table[tac_count++] = t;
 }
 
+void emit_PUSH(char *value){
+    TAC t = {0};
+    t.type = TAC_PUSH;
+    strcpy(t.op1 , value);
+    tac_table[tac_count++] = t;
+}
+
+void emit_PULL(char *dest){
+    TAC t = {0};
+    t.type = TAC_POP;
+    strcpy(t.result , dest);
+    tac_table[tac_count++] = t;
+}
+
+void emit_JMP_DYN(char *reg){
+    TAC t = {0};
+    t.type = TAC_JMP_DYNAMIC;
+    strcpy(t.op1 , reg);
+    tac_table[tac_count++] = t;
+}
+
+void emit_FUNC_BEG(char *name){
+    TAC t = {0};
+    t.type = TAC_FUNC_BEGIN;
+    strcpy(t.label , name);
+    tac_table[tac_count++] = t;
+}
+
 char* new_temp(){
     char *temp  = (char*)malloc(10);
     sprintf(temp,"t%d",++temp_count);

@@ -61,7 +61,7 @@ int main(int argc, char* argv[]){
             char* func_name = tokens[i+1].value;
             char* ret_type = tokens[i].value;
 
-            add_symbol(func_name , ret_type  , "global");
+            add_symbol(func_name , ret_type  , "global" , 0);
 
             strcpy(Current_Scope , func_name);
 
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
                 char *param_type = tokens[param_end].value;
                 char *param_name = tokens[param_end+1].value;
                 printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
-                add_symbol(param_name , param_type , Current_Scope);
+                add_symbol(param_name , param_type , Current_Scope , 1);
                 param_end += 2;
                 if(strcmp(tokens[param_end].value , ",") == 0){
                     param_end++;
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]){
                 char* type = tokens[start].value;
                 char* name = tokens[start+1].value;
                 printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
-                add_symbol(name , type , Current_Scope);
+                add_symbol(name , type , Current_Scope , 0);
                 printf("symbols added.\n");
 
                 if(strcmp(tokens[start + 2].value , "=") == 0){

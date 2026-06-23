@@ -10,7 +10,7 @@ SYMBOL sym_table[50];
 int sym_count = 0;
 char Current_Scope[50] = "global";
 
-
+int is_param;
 int is_float(const char* s){
     for(int i=0 ; s[i] != '\0' ; i++){
         if(s[i] == '.') return 1;
@@ -18,7 +18,24 @@ int is_float(const char* s){
     return 0;
 }
 
-void add_symbol(const char* name , const char* type , char* Current_Scope){
+int get_slot(char *name , char *scope){
+    int slot = 0;
+
+    
+    for(int i=0 ; i<sym_count ; i++){
+        if(strcmp(sym_table[i].scope , "global") == 0) continue;
+
+        if(strcmp(sym_table[i].scope , scope) == 0){
+            if(strcmp(sym_table[i].sym , name) == 0){
+                return slot;
+            }
+            slot++;
+        }
+    }
+    return -1;
+}
+
+void add_symbol(const char* name , const char* type , char* Current_Scope , int is_param){
     for(int i=0 ; i<sym_count ; i++){
         if(strcmp(sym_table[i].sym , name) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
             printf("ERROR : The %s is already declared.\n",name);
@@ -154,14 +171,14 @@ void parse_declaration(const char* line){
     if(name[strlen(name)-1] == ';'){
         name[strlen(name)-1] = '\0';
     }
-    add_symbol(name , type , Current_Scope);
+    add_symbol(name , type , Current_Scope , is_param);
 }
 
 void print_sym(){
     printf("\n----SYMBOL TABLE----\n");
-    printf("%-15s %-10s %-15s %-10s\n","NAME","TYPE","INITIALIZED","SCOPE");
+    printf("%-15s %-10s %-15s %-10s %15s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM");
     for(int i=0 ; i<sym_count ; i++){
-        printf("%-15s %-10s %-15s %-10s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope);
+        printf("%-15s %-10s %-15s %-10s %15s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope , sym_table[i].is_param);
     }
 }
 

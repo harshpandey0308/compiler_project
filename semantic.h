@@ -15,6 +15,7 @@ typedef struct symbol{
         double dval;
     }value;
     int is_initialized;
+    int is_param;
 }SYMBOL;
 
 extern SYMBOL sym_table[50];
@@ -23,7 +24,9 @@ extern char Current_Scope[50];
 
 int is_float(const char* s);
 
-void add_symbol(const char* name , const char* type , char* Current_Scope);
+int get_slot(char *name , char *scope);
+
+void add_symbol(const char* name , const char* type , char* Current_Scope , int is_param);
 
 void Check_Undeclared(NODE* root , char* Current_Scope);
 

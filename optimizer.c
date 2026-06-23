@@ -127,7 +127,24 @@ void print_TAC(){
             case RETURN:
                 printf("RETURN %s\n", tac_table[i].op1);
                 break;
-        }
+
+            case TAC_PUSH:
+                printf("PUSH %s\n",tac_table[i].op1);
+                break;
+            
+            case TAC_POP:
+                printf("POP %s\n",tac_table[i].result);
+                break;
+            
+            case TAC_JMP_DYNAMIC:
+                printf("JMP [%S]\n",tac_table[i].op1);
+                break;
+            
+            case TAC_FUNC_BEGIN:
+                printf("%s:\n",tac_table[i].label);
+                break;
+        }   
+
         
     }
 }

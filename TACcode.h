@@ -15,6 +15,10 @@
 #define PARAM 4
 #define FUNC_CALL 5
 #define RETURN 6
+#define TAC_PUSH 7
+#define TAC_POP 8
+#define TAC_JMP_DYNAMIC 9
+#define TAC_FUNC_BEGIN 10
 
 typedef struct tac{
     char result[50];

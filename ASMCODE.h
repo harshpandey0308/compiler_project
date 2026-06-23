@@ -14,6 +14,10 @@ extern int reg_map_count;
 
 int alloc_reg();
 
+void stack_push(char *value);
+
+char *stack_pop();
+
 void free_reg(int index);
 
 int find_reg(char* temp);

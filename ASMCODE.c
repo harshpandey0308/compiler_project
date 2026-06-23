@@ -2,12 +2,27 @@
 #include"optimizer.h"
 #include"ASMCODE.h"
 
+char* SP = "SP";
+
 REG_MAP regmap[100];
 int reg_map_count = 0;
 
 const char* reg_name[] = {"R0" , "R1" , "R2" , "R3"};
 
 int reg_free[] = {1,1,1,1};
+
+char STACK[1000][50];
+int SPTR = 0;
+
+void stack_push(char *value){
+    strcpy(STACK[SPTR] , value);
+    SPTR++;
+}
+
+char *stack_pop(){
+    SPTR--;
+    return STACK[SPTR];
+}
 
 
 int alloc_reg(){
