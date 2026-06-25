@@ -26,4 +26,6 @@ void set_name(char *name , float value);
 
 void run_vm();
 
+void print_vm_memory();
+
 #endif

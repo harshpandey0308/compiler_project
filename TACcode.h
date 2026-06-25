@@ -52,6 +52,8 @@ void emit_CALL(char* name , int arg_count);
 
 void emit_RETURN(char* value);
 
+void emit_FUNC_BEG(char *name);
+
 void Generate_if_tac(TOKEN tokens[] , int if_pos);
 
 void Generate_while_tac(TOKEN tokens[] , int while_pos);

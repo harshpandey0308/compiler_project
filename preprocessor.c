@@ -96,9 +96,9 @@ int preprocesses(const char* filename , char lines[][MAX_LINE_LEN]){
             continue;
         }
 
-        if(strncmp(trimmed , "return" , 6) == 0){
-            continue;
-        }
+        //if(strncmp(trimmed , "return" , 6) == 0){
+            //continue;
+        //}
 
         //if(strstr(trimmed , "main") != NULL){
             //continue;

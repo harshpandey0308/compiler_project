@@ -10,7 +10,7 @@ SYMBOL sym_table[50];
 int sym_count = 0;
 char Current_Scope[50] = "global";
 
-int is_param;
+
 int is_float(const char* s){
     for(int i=0 ; s[i] != '\0' ; i++){
         if(s[i] == '.') return 1;
@@ -47,7 +47,9 @@ void add_symbol(const char* name , const char* type , char* Current_Scope , int 
     strcpy(sym_table[sym_count].type , type);
     strcpy(sym_table[sym_count].scope , Current_Scope);
     sym_table[sym_count].is_initialized = 0;
+    sym_table[sym_count].is_param = is_param;
 
+    //printf("STORING : name = %s and is_param = %d\n", name , sym_table[sym_count].is_param);
     sym_count++;
 }
 
@@ -136,9 +138,9 @@ void Type_check(NODE* root , char* Current_Scope){
             return;
         }
         
-        printf("Type check called with current scope %s\n",Current_Scope);
-        printf("root->left->value = %s\n", root->left->value);
-        printf("root->right->value = %s\n", root->right->value);  
+        //printf("Type check called with current scope %s\n",Current_Scope);
+        //printf("root->left->value = %s\n", root->left->value);
+        //printf("root->right->value = %s\n", root->right->value);  
         char* left_type = get_type(root->left , Current_Scope);
         char* right_type = get_type(root->right , Current_Scope);
 
@@ -171,14 +173,14 @@ void parse_declaration(const char* line){
     if(name[strlen(name)-1] == ';'){
         name[strlen(name)-1] = '\0';
     }
-    add_symbol(name , type , Current_Scope , is_param);
+    add_symbol(name , type , Current_Scope , 0);
 }
 
 void print_sym(){
     printf("\n----SYMBOL TABLE----\n");
     printf("%-15s %-10s %-15s %-10s %15s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM");
     for(int i=0 ; i<sym_count ; i++){
-        printf("%-15s %-10s %-15s %-10s %15s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope , sym_table[i].is_param);
+        printf("%-15s %-10s %-15s %-10s %15s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope , sym_table[i].is_param? "YES":"NO");
     }
 }
 

@@ -7,6 +7,7 @@
 #include"optimizer.h"
 #include"ASMCODE.h"
 #include"preproceesor.h"
+#include"VM.h"
 
 NODE* root;
 
@@ -65,7 +66,7 @@ int main(int argc, char* argv[]){
 
             strcpy(Current_Scope , func_name);
 
-            
+            emit_FUNC_BEG(func_name);
 
             while(i<token_count && strcmp(tokens[i].value , "(") != 0){
                 i++;
@@ -76,7 +77,7 @@ int main(int argc, char* argv[]){
             while(i<token_count && strcmp(tokens[param_end].value , ")") != 0){
                 char *param_type = tokens[param_end].value;
                 char *param_name = tokens[param_end+1].value;
-                printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
+                //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
                 add_symbol(param_name , param_type , Current_Scope , 1);
                 param_end += 2;
                 if(strcmp(tokens[param_end].value , ",") == 0){
@@ -108,13 +109,13 @@ int main(int argc, char* argv[]){
                     depth--;
                     if(depth == 0){
                         i++;
-                        printf("After if-else body %d : %s\n",i , tokens[i].value);
+                        //printf("After if-else body %d : %s\n",i , tokens[i].value);
                         break;
                     }
                 } 
                 i++;
             }
-            printf("i is at token %d : %s\n",i , tokens[i].value);
+            //printf("i is at token %d : %s\n",i , tokens[i].value);
             i--;
             start = i;
             continue;
@@ -153,7 +154,7 @@ int main(int argc, char* argv[]){
         //printf("for detection : token=%s , type =  %d , KEYWORD=%d\n", tokens[i].value, tokens[i].tokentype, KEYWORD);
 
         if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "for") == 0){
-            printf("for statement found at token %d\n",i);
+            //printf("for statement found at token %d\n",i);
             Generate_for_TAC(tokens , i);
 
             while(i<token_count && strcmp(tokens[i].value , "{") != 0){
@@ -178,8 +179,9 @@ int main(int argc, char* argv[]){
         }
 
         if(strcmp(tokens[i].value , ";")==0){
-            if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "return") == 0){
-                char* ret_val = tokens[i+1].value;
+            if(tokens[start].tokentype == KEYWORD && strcmp(tokens[start].value , "return") == 0){
+                char* ret_val = tokens[start+1].value;
+                printf("RETURN VALUE: %s\n",tokens[start+1].value);
                 emit_RETURN(ret_val);
                 start = i+1;
                 continue;
@@ -188,9 +190,9 @@ int main(int argc, char* argv[]){
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
                 char* name = tokens[start+1].value;
-                printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
+                //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
                 add_symbol(name , type , Current_Scope , 0);
-                printf("symbols added.\n");
+                //printf("symbols added.\n");
 
                 if(strcmp(tokens[start + 2].value , "=") == 0){
                     NODE* decl_AST = Build_AST(tokens , start+1 , i-1);
@@ -240,6 +242,13 @@ int main(int argc, char* argv[]){
     print_TAC();
 
     Generate_code();
+
+    printf("\n----VM EXECUTION----\n");
+
+    BUILD_LABEL_TABLE();
+    run_vm();
+
+    print_vm_memory();
 
     printf("program ended\n");
 

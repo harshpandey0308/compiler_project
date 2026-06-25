@@ -2,12 +2,12 @@
 #include"optimizer.h"
 #include"ASMCODE.h"
 
-char* SP = "SP";
+char* SP1 = "SP";
 
 REG_MAP regmap[100];
 int reg_map_count = 0;
 
-const char* reg_name[] = {"R0" , "R1" , "R2" , "R3"};
+const char* regs_name[] = {"R0" , "R1" , "R2" , "R3"};
 
 int reg_free[] = {1,1,1,1};
 
@@ -65,7 +65,7 @@ void Generate_code(){
                 if(strcmp(op2 , "")==0){
                 int reg = find_reg(op1);
                 if(reg != -1){
-                    printf("MOV %s, %s\n", result , reg_name[reg]);
+                    printf("MOV %s, %s\n", result , regs_name[reg]);
                     free_reg(reg);
                 }
                 else{
@@ -83,10 +83,10 @@ void Generate_code(){
             int op1_reg = find_reg(op1);
 
             if(op1_reg != -1){
-                printf("MOV %s, %s\n",reg_name[reg] , reg_name[op1_reg]);
+                printf("MOV %s, %s\n",regs_name[reg] , regs_name[op1_reg]);
                 free_reg(op1_reg);
             }else{
-                printf("MOV %s, %s\n",reg_name[reg] , op1);
+                printf("MOV %s, %s\n",regs_name[reg] , op1);
             }
 
             char instr[10];
@@ -100,10 +100,10 @@ void Generate_code(){
             int op2_reg = find_reg(op2);
 
             if(op2_reg != -1){
-                printf("%s %s, %s\n",instr , reg_name[reg] , reg_name[op2_reg]);
+                printf("%s %s, %s\n",instr , regs_name[reg] , regs_name[op2_reg]);
                 free_reg(op2_reg);
             }else{
-                printf("%s %s, %s\n",instr , reg_name[reg] , op2);
+                printf("%s %s, %s\n",instr , regs_name[reg] , op2);
             }
 
             break;

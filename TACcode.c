@@ -344,31 +344,33 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
 }
 
 char* Generate_TAC(NODE* node){
-    if(node->left == NULL && node->right == NULL){
-
         if(node->is_Call == 1){
-        
+            char *ret_labels = Label();
             for(int i=0 ; i<node->ARG_count ; i++){
                 if(node->ARG[i] == NULL) continue;
                 char* arg_val = Generate_TAC(node->ARG[i]);
                 emit_PARAM(arg_val);
                 free(arg_val);
             }
+            emit_PUSH(ret_labels);
             char count_string[10];
             sprintf(count_string , "%d", node->ARG_count);
             printf("the value is :%s\n",node->value);
             emit_CALL(node->value , node->ARG_count);
 
+            emit_LABEL(ret_labels);
+
             return strdup("RETVAL");
+        }
 
-    }
-        char* value = (char*)malloc(50);
-        strcpy(value , node->value);
+        if(node->left == NULL && node->right == NULL){
+            char* value = (char*)malloc(50);
+            strcpy(value , node->value);
 
-        //printf("Leaf node : %s\n",value);
+            //printf("Leaf node : %s\n",value);
 
-        return value;
-    }
+            return value;
+        }
 
     char* left_result = Generate_TAC(node->left);
     char* right_result = Generate_TAC(node->right);
@@ -407,4 +409,6 @@ char* Generate_TAC(NODE* node){
 
     return temp;
 }
+
+
 
