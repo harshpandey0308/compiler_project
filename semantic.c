@@ -35,7 +35,7 @@ int get_slot(char *name , char *scope){
     return -1;
 }
 
-void add_symbol(const char* name , const char* type , char* Current_Scope , int is_param){
+void add_symbol(const char* name , const char* type , char* Current_Scope , int is_param , int size){
     for(int i=0 ; i<sym_count ; i++){
         if(strcmp(sym_table[i].sym , name) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
             printf("ERROR : The %s is already declared.\n",name);
@@ -48,6 +48,7 @@ void add_symbol(const char* name , const char* type , char* Current_Scope , int 
     strcpy(sym_table[sym_count].scope , Current_Scope);
     sym_table[sym_count].is_initialized = 0;
     sym_table[sym_count].is_param = is_param;
+    sym_table[sym_count].size = size;
 
     //printf("STORING : name = %s and is_param = %d\n", name , sym_table[sym_count].is_param);
     sym_count++;
@@ -92,6 +93,8 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
 char* get_type(NODE* node , char* Current_Scope){
     if(node == NULL) return "UNKNOWN";
 
+    printf("CHECKING NODE : %d.\n",node->is_Call);
+
     if(node->is_Call == 1){
 
         for(int i=0 ; i<sym_count ; i++){
@@ -103,6 +106,33 @@ char* get_type(NODE* node , char* Current_Scope){
         }
         return "UNKNOWN";
     }
+
+    char base[50];
+        
+    printf("COPYING THE NODE'S VALUE TO THE BASE.\n");
+    strcpy(base , node->value);
+
+    printf("BASE : %s.\n",base);
+
+    int len = strlen(base);
+
+    printf("LENGTH BEFORE:%d.\n",len);
+
+    int j = len-1;
+
+    while(j>0 && isdigit(base[j-1])){
+        base[--j] = '\0';
+        printf("LENGTH : %d.\n",j);
+    }
+    printf("BASE AFTER REDUCTION : %s.\n",base);
+
+    for(int i=0 ; i<sym_count ; i++){
+        if(strcmp(sym_table[i].sym , base) == 0  && strcmp(sym_table[i].scope , Current_Scope) == 0){
+            return sym_table[i].type;
+        }
+    }
+    //return "UNKNOWN";
+    
 
     if(node->left == NULL && node->right == NULL){
         if(isdigit(node->value[0])){
@@ -173,14 +203,14 @@ void parse_declaration(const char* line){
     if(name[strlen(name)-1] == ';'){
         name[strlen(name)-1] = '\0';
     }
-    add_symbol(name , type , Current_Scope , 0);
+    add_symbol(name , type , Current_Scope , 0 , 0);
 }
 
 void print_sym(){
     printf("\n----SYMBOL TABLE----\n");
-    printf("%-15s %-10s %-15s %-10s %15s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM");
+    printf("%-15s %-10s %-15s %-10s %15s %10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
     for(int i=0 ; i<sym_count ; i++){
-        printf("%-15s %-10s %-15s %-10s %15s\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope , sym_table[i].is_param? "YES":"NO");
+        printf("%-15s %-10s %-15s %-10s %15s %10d\n",sym_table[i].sym , sym_table[i].type , sym_table[i].is_initialized?"YES":"NO" , sym_table[i].scope , sym_table[i].is_param? "YES":"NO" , sym_table[i].size);
     }
 }
 

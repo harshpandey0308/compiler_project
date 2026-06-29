@@ -62,7 +62,7 @@ int main(int argc, char* argv[]){
             char* func_name = tokens[i+1].value;
             char* ret_type = tokens[i].value;
 
-            add_symbol(func_name , ret_type  , "global" , 0);
+            add_symbol(func_name , ret_type  , "global" , 0 , 0);
 
             strcpy(Current_Scope , func_name);
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]){
                 char *param_type = tokens[param_end].value;
                 char *param_name = tokens[param_end+1].value;
                 //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
-                add_symbol(param_name , param_type , Current_Scope , 1);
+                add_symbol(param_name , param_type , Current_Scope , 1 , 0);
                 param_end += 2;
                 if(strcmp(tokens[param_end].value , ",") == 0){
                     param_end++;
@@ -190,8 +190,15 @@ int main(int argc, char* argv[]){
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
                 char* name = tokens[start+1].value;
+
+                printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
+                int size = 0;
+
+                if(strcmp(tokens[start + 2].value , "[") == 0){
+                    size = atoi(tokens[start+3].value);
+                }
                 //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
-                add_symbol(name , type , Current_Scope , 0);
+                add_symbol(name , type , Current_Scope , 0 , size);
                 //printf("symbols added.\n");
 
                 if(strcmp(tokens[start + 2].value , "=") == 0){
@@ -217,7 +224,7 @@ int main(int argc, char* argv[]){
 
             Check_Undeclared(root , Current_Scope);
             Type_check(root , Current_Scope);
-            printf("tac generation.\n");
+            printf("\ntac generation.\n");
             Generate_TAC(root);
 
                 //print_TAC();

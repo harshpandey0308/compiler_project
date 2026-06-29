@@ -1,16 +1,14 @@
 #include<stdio.h>
 #define PI 3.14
 
-float  calculate_area(float radius){
-    float area = PI*radius*radius ;
-    return area;
-}
-
 int main(){
-    float radius = 5.0;
-    float area = calculate_area(5);
+    int arr[3];
 
-    int a = area/4;
+    arr[0] = 5;
+    arr[1] = 4;
+    arr[2] = 3;
+
+    int x = arr[2];
 
     return 0;
 }

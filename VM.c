@@ -101,6 +101,15 @@ void run_vm(){
                     set_name(instr.result , val);
                     printf("TAC_ASSIGN: %f\n",val);
                 }
+
+                else if(sym_table[PC].size>0){
+                    for(int i=0 ; i<sym_table[PC].size ; i++){
+                        char arr_slot[50];
+                        sprintf(arr_slot , "%s%d" , sym_table[PC].sym , i);
+                        set_name(arr_slot , 0.0);
+                    }
+                }
+
                 else{
                     float op1_val = get_name(instr.op1);
                     float op2_val = get_name(instr.op2);

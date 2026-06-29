@@ -87,7 +87,8 @@ int lexer(const char* exp[] , const int* n){
             //i--;
             }
 
-            else if(exp[i][j] == '+' || exp[i][j] == '-' || exp[i][j] == '*' || exp[i][j] == '/' || exp[i][j] == '%' || exp[i][j] == '(' || exp[i][j] == ')'){
+            else if(exp[i][j] == '+' || exp[i][j] == '-' || exp[i][j] == '*' || 
+                    exp[i][j] == '/' || exp[i][j] == '%' || exp[i][j] == '(' || exp[i][j] == ')' || exp[i][j] == '[' || exp[i][j] == ']'){
                 buffer[0] = exp[i][j++];
                 buffer[1] = '\0';
                 strcpy(tokens[token_count].value , buffer);

@@ -98,11 +98,11 @@ void print_TAC(){
             case TAC_ASSIGN:
                 if(strcmp(tac_table[i].op2 , "")==0){
                     printf("%s = %s\n",tac_table[i].result , tac_table[i].op1);
-            }
-            else{
-                printf("%s = %s %s %s\n",tac_table[i].result , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2);
-            }
-            break;
+                }
+                else{
+                    printf("%s = %s %s %s\n",tac_table[i].result , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2);
+                }
+                break;
 
             case TAC_IF_GOTO:
                 printf("IF %s %s %s GOTO %s \n",tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2 , tac_table[i].label);

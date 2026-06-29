@@ -8,6 +8,7 @@
 NODE* create_node(char *exp){
     NODE* new = (NODE*)malloc(sizeof(NODE));
     strcpy(new->value,exp);
+    printf("the new node contain %s .\n",new->value);
     new->left = NULL;
     new->right = NULL;
     new->ARG_count = 0;
@@ -80,6 +81,28 @@ int find_operator(TOKEN tokens[] , int start , int end){
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
     if(start == end){
         return create_node(tokens[start].value);
+    }
+
+    if(tokens[start].tokentype == IDENTIFIER && (strcmp(tokens[start+1].value , "[") == 0)){
+        printf("the tokens are %s at %d , %s at %d , %s at %d.\n",tokens[start].value , start , tokens[start+1].value , start+1 , tokens[start+2].value , start+2);
+        char arr_name[50];
+        
+        sprintf(arr_name ,"%s%s " ,tokens[start].value , tokens[start+2].value);
+
+        if(start+4 <= end && strcmp(tokens[start+4].value , "=") == 0){
+            NODE* arr_node = create_node(arr_name);
+
+            NODE* root = create_node(tokens[start+4].value);
+
+            root->left = arr_node;
+            root->right = Build_AST(tokens , start+5 , end);
+
+            return root;
+        }
+        else{
+            return create_node(arr_name);
+        }
+        printf("array name : %s\n",arr_name);
     }
 
     if(tokens[start].tokentype == FUNC_NAME){
