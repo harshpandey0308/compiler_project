@@ -66,6 +66,8 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
         return;
     }
 
+    
+
     if(isalpha(root->value[0]) || root->value[0] == '_'){
 
         if(strcmp(root->value , "RETVAL") == 0){
@@ -77,6 +79,26 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
                 if(strcmp(sym_table[i].sym , root->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
                     found = 1;
                     break;
+                }
+            }
+
+            if(!found){
+                char base[50];
+
+                strcpy(base , root->value);
+                printf("BASE : %s\n",base);
+                int len = strlen(base);
+                int j = len-1;
+                while(j>0 && isdigit(base[j-1])){
+                    base[--j] = '\0';
+                }
+
+                printf("BASE AFTER TRIMMING: %s\n",base);
+                for(int i=0 ; i<sym_count ; i++){
+                    if(strcmp(sym_table[i].sym , base) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
+                        found = 1;
+                        break;
+                    }
                 }
             }
             if(!found){
