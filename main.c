@@ -189,9 +189,28 @@ int main(int argc, char* argv[]){
             //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
-                char* name = tokens[start+1].value;
+                char* name ;
 
-                printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
+                if(strcmp(tokens[start+1].value , "*") == 0){
+                    name = tokens[start+2].value;
+                    printf("pointer declaration detected for %s of type %s\n",name , type);
+                    
+                    if(strcmp(tokens[start + 3].value , "=") == 0){
+                        //printf("declaration with initialization detected for %s of type %s\n",name , type);
+                        NODE* decl_AST = Build_AST(tokens , start+1 , i-1);
+                        Check_Undeclared(decl_AST , Current_Scope);
+                        Type_check(decl_AST , Current_Scope);
+                        Generate_TAC(decl_AST);
+
+                        free_tree(decl_AST);
+                    }
+                }
+                else{
+                    name = tokens[start+1].value;
+                }
+
+                //add_symbol(name , type  , Current_Scope , 0 , 0);
+                //printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
                 int size = 0;
 
                 if(strcmp(tokens[start + 2].value , "[") == 0){
@@ -201,8 +220,10 @@ int main(int argc, char* argv[]){
                 add_symbol(name , type , Current_Scope , 0 , size);
                 //printf("symbols added.\n");
 
-                if(strcmp(tokens[start + 2].value , "=") == 0){
-                    NODE* decl_AST = Build_AST(tokens , start+1 , i-1);
+                int assign_pos = strcmp(tokens[start+1].value , "*") == 0 ? start+3 : start+2;
+                if(strcmp(tokens[assign_pos].value , "=") == 0){
+                    //printf("declaration with initialization detected for %s of type %s\n",name , type);
+                    NODE* decl_AST = Build_AST(tokens , assign_pos-1 , i-1);
                     Check_Undeclared(decl_AST , Current_Scope);
                     Type_check(decl_AST , Current_Scope);
                     Generate_TAC(decl_AST);
@@ -218,13 +239,14 @@ int main(int argc, char* argv[]){
                 continue;
             }
 
+            printf("Generating TAC for statement from token %d to %d.\n", start, i);
             root = Build_AST(tokens , start , i-1);
-            printf("Syntax tree for statement %d.\n", i);
+            //printf("Syntax tree for statement %d.\n", i);
             print(root);
 
             Check_Undeclared(root , Current_Scope);
             Type_check(root , Current_Scope);
-            printf("\ntac generation.\n");
+            //printf("\ntac generation.\n");
             Generate_TAC(root);
 
                 //print_TAC();

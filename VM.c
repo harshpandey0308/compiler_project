@@ -34,7 +34,7 @@ void BUILD_LABEL_TABLE(){
             label_table[lab_count].index = i;
             lab_count++;
             //printf("printing the table.\n");
-            printf("ADDED : label = %s and index = %d with label type : %d\n",tac_table[i].label , i , tac_table[i].type);
+            //printf("ADDED : label = %s and index = %d with label type : %d\n",tac_table[i].label , i , tac_table[i].type);
         }
     }
     printf("the total label found : %d\n",lab_count);
@@ -52,11 +52,15 @@ int find_label(char *target){
 float get_name(char *val){
     if(isdigit(val[0]) || val[0] == '-'){
         float fvalue = atof(val);
-        printf("the value is %f\n",fvalue);
+        //printf("the value is %f\n",fvalue);
         return fvalue;
     }
+    else if(isalpha(val[0])){
+        char value[10];
+        strcpy(value , val);
+    }
     else if(strcmp(val , "RETVAL") == 0){
-        printf("the return value is %f\n", RET_VAL);
+        //printf("the return value is %f\n", RET_VAL);
         return RET_VAL;
     }
 
@@ -68,8 +72,8 @@ float get_name(char *val){
         if(i<mem_count){
             return vm_memory[i].value;
         }
-        printf("The variable is %s\n",val);
-        printf("Variable '%s' not found in the memory.\n",val);
+        //printf("The variable is %s\n",val);
+        //printf("Variable '%s' not found in the memory.\n",val);
         return 0.0;
     }
 }
@@ -77,16 +81,28 @@ float get_name(char *val){
 void set_name(char *name , float value){
     for(int i=0 ; i<mem_count ; i++){
         if(strcmp(vm_memory[i].name , name) == 0){
+            printf("Setting value of %s to %f at index %d\n", name, value, i);
             vm_memory[i].value = value;
+
             return;
         }
         
     }
     strcpy(vm_memory[mem_count].name , name);
     vm_memory[mem_count].value = value;
+    //printf("Adding new variable %s with value %f to memory at index %d\n", name, value, mem_count);
     mem_count++;
     return;
 
+}
+
+void set_by_index(int addr , float value){
+    if(addr >= 0 && addr < mem_count){
+        vm_memory[addr].value = value;
+    }
+    else{
+        printf("Invalid memory address: %d\n", addr);
+    }
 }
 
 void run_vm(){
@@ -96,10 +112,53 @@ void run_vm(){
         TAC instr = tac_table[PC];
         switch (instr.type){
             case TAC_ASSIGN:{
+                //printf("TAC_ASSIGN: %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
+                if(instr.is_deref_write == 1){
+                    //printf("dereference write operation detected for %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
+                    int addr1 = (int)get_name(instr.result);
+                    float val1 = get_name(instr.op1);
+                    set_by_index(addr1 , val1);
+                    break;
+                }
+
                 if(strcmp(instr.op2 , "") == 0){
-                    float val = get_name(instr.op1);
-                    set_name(instr.result , val);
-                    printf("TAC_ASSIGN: %f\n",val);
+                    //printf("TAC_ASSIGN: %s = %s\n",instr.result , instr.op1);
+                    if(strcmp(instr.opr , "&") == 0){
+                        int addr = -1;
+                        //printf("address of operation detected for %s = %s\n",instr.result , instr.op1);
+                        for(int i=0 ; i<mem_count ; i++){
+                            if(strcmp(vm_memory[i].name , instr.op1) == 0){
+                                //printf("found the address of %s at index %d\n",instr.op1 , i);
+                                addr = i;
+                                //printf("addr of %s is %d\n",instr.op1 , addr);
+                                break;
+                            }
+                        }
+                        set_name(instr.result , (float)addr);
+                    }
+                    else if(strcmp(instr.opr , "*") == 0){
+                        float ptr_val;
+                        //printf("dereference read operation detected for %s = %s\n",instr.result , instr.op1);
+                        for(int j=0 ; j<mem_count ; j++){
+                            //printf("checking memory at index %d with name %s\n",j , vm_memory[j].name);
+                            //printf("checking if %s == %s\n",vm_memory[j].name , instr.op1);
+                            if(strcmp(vm_memory[j].name , instr.op1) == 0){
+                                int val = (int)vm_memory[j].value;
+                                //printf("found the pointer value of %s at index %d with value %f\n",instr.op1 , j , vm_memory[j].value);
+                                //printf("dereferencing pointer to get value at address %d\n",val);
+                                ptr_val = vm_memory[val].value;
+                                //printf("value at addr %d is %f\n",val , ptr_val);
+                                break;
+                            }
+                        }
+                        set_name(instr.result , ptr_val);
+                    }
+                    else{
+                        float val = get_name(instr.op1);
+                        //printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
+                        set_name(instr.result , val);
+                        //printf("TAC_ASSIGN: %f\n",val);
+                    }
                 }
 
                 else if(sym_table[PC].size>0){
@@ -127,7 +186,9 @@ void run_vm(){
             
             case TAC_IF_GOTO:{
                 float val1 = get_name(instr.op1);
+                printf("TAC IF GOTO : VAL1 = %s.\n",instr.op1);
                 float val2 = get_name(instr.op2);
+                printf("TAC IF GOTO : VAL2 = %s.\n",instr.op2);
 
                 int cond = 0;
                 if(strcmp(instr.opr , "<") == 0) cond = (val1 < val2);

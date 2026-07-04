@@ -86,14 +86,14 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
                 char base[50];
 
                 strcpy(base , root->value);
-                printf("BASE : %s\n",base);
+                //printf("BASE : %s\n",base);
                 int len = strlen(base);
                 int j = len-1;
                 while(j>0 && isdigit(base[j-1])){
                     base[--j] = '\0';
                 }
 
-                printf("BASE AFTER TRIMMING: %s\n",base);
+                //printf("BASE AFTER TRIMMING: %s\n",base);
                 for(int i=0 ; i<sym_count ; i++){
                     if(strcmp(sym_table[i].sym , base) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
                         found = 1;
@@ -115,13 +115,13 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
 char* get_type(NODE* node , char* Current_Scope){
     if(node == NULL) return "UNKNOWN";
 
-    printf("CHECKING NODE : %d.\n",node->is_Call);
+    //printf("CHECKING NODE : %d.\n",node->is_Call);
 
     if(node->is_Call == 1){
 
         for(int i=0 ; i<sym_count ; i++){
             if(strcmp(node->value , sym_table[i].sym) == 0 && strcmp(sym_table[i].scope , "global") == 0){
-                printf("the type is : %s.\n",sym_table[i].type);
+                //printf("the type is : %s.\n",sym_table[i].type);
                 return sym_table[i].type;
             }
             
@@ -131,22 +131,22 @@ char* get_type(NODE* node , char* Current_Scope){
 
     char base[50];
         
-    printf("COPYING THE NODE'S VALUE TO THE BASE.\n");
+    //printf("COPYING THE NODE'S VALUE TO THE BASE.\n");
     strcpy(base , node->value);
 
-    printf("BASE : %s.\n",base);
+    //printf("BASE : %s.\n",base);
 
     int len = strlen(base);
 
-    printf("LENGTH BEFORE:%d.\n",len);
+    //printf("LENGTH BEFORE:%d.\n",len);
 
     int j = len-1;
 
     while(j>0 && isdigit(base[j-1])){
         base[--j] = '\0';
-        printf("LENGTH : %d.\n",j);
+        //printf("LENGTH : %d.\n",j);
     }
-    printf("BASE AFTER REDUCTION : %s.\n",base);
+    //printf("BASE AFTER REDUCTION : %s.\n",base);
 
     for(int i=0 ; i<sym_count ; i++){
         if(strcmp(sym_table[i].sym , base) == 0  && strcmp(sym_table[i].scope , Current_Scope) == 0){
@@ -164,7 +164,7 @@ char* get_type(NODE* node , char* Current_Scope){
 
         for(int i=0 ; i<sym_count ; i++){
             if(strcmp(sym_table[i].sym , node->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
-                printf("the type is : %s.\n",sym_table[i].type);
+                //printf("the type is : %s.\n",sym_table[i].type);
                 return sym_table[i].type;
             }
         }

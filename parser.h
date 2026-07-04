@@ -10,6 +10,10 @@ typedef struct Node{
     int is_Call;
     struct Node* ARG[50];
     int ARG_count;
+    int is_addr_of;
+    int is_deref;
+    int is_keyword;
+    int ptr_init;
 }NODE;
 
 NODE* create_node(char *exp);

@@ -1,14 +1,20 @@
 #include<stdio.h>
-#define PI 3.14
 
 int main(){
-    int arr[3];
+    int x = 10;
 
-    arr[0] = 5;
-    arr[1] = 4;
-    arr[2] = 3;
+    float y = 34.6;
 
-    int x = arr[2];
+    int *p ;
+
+    p = &x;
+
+    if(*p<5){
+        *p = 50;
+    }
+    else{
+        *p = 100;
+    }
 
     return 0;
 }

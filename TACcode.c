@@ -24,8 +24,11 @@ void emit_IF_GOTO(char* op1 , char* opr , char* op2 , char* label){
     TAC t = {0};
     t.type = TAC_IF_GOTO;
     strcpy(t.op1 , op1);
+    printf(" TAC IF GOTO : t.op1 = %s\n",t.op1);
     strcpy(t.op2 , op2);
+    printf("TAC IF GOTO : t.op2 = %s\n",t.op2);
     strcpy(t.opr , opr);
+    printf("TAC IF GOTO : t.opr = %s\n",t.opr);
     strcpy(t.label , label);
     tac_table[tac_count++] = t;
 }
@@ -130,11 +133,23 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     }
     cond1_end--;
     //printf("Condition starts at %d and ends at %d\n",cond1_start , cond1_end);
+    
+    char* opr;
+    char* op1;
+    char* op2;
 
-    char* op1 = tokens[cond1_start].value;
-    char* opr = tokens[cond1_start + 1].value;
+    if(strcmp(tokens[cond1_start].value , "*") == 0){
+        opr = tokens[cond1_start+2].value;
+        op1 = tokens[cond1_start+1].value;
+        op2 = tokens[cond1_start+3].value;
+    }
+    else{
+        op1 = tokens[cond1_start].value;
+        opr = tokens[cond1_start + 1].value;
     //printf("Operator is %s %d\n",opr,cond1_start + 1);
-    char* op2 = tokens[cond1_start + 2].value;
+        op2 = tokens[cond1_start + 2].value;
+    }
+    
     //printf("emitting if goto\n");
     emit_IF_GOTO(op1 , opr , op2 , l1);
     //printf("goto emitted\n");
@@ -344,50 +359,103 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
 }
 
 char* Generate_TAC(NODE* node){
-        if(node->is_Call == 1){
-            char *ret_labels = Label();
-            for(int i=0 ; i<node->ARG_count ; i++){
-                if(node->ARG[i] == NULL) continue;
-                char* arg_val = Generate_TAC(node->ARG[i]);
-                emit_PARAM(arg_val);
-                free(arg_val);
-            }
-            emit_PUSH(ret_labels);
-            char count_string[10];
-            sprintf(count_string , "%d", node->ARG_count);
-            printf("the value is :%s\n",node->value);
-            emit_CALL(node->value , node->ARG_count);
+    //printf("Generating TAC for node with value %s\n",node->value);
+    if(node->is_addr_of == 1){
+        char* temp = new_temp();
+        TAC t = {0};
 
-            emit_LABEL(ret_labels);
+        t.type = TAC_ASSIGN;
+        strcpy(t.result , temp);
+        printf("t.result : %s.\n",t.result);
+        strcpy(t.op1 , node->value);
+        printf("t.op1: %s.\n",t.op1);
+        strcpy(t.op2 , "");
+        strcpy(t.opr , "&");
+        t.is_deref_write = 0;
+        tac_table[tac_count++] = t;
 
-            return strdup("RETVAL");
+        return temp;
+    }
+
+    if(node->is_deref == 1){
+        char* temp = new_temp();
+        TAC t = {0};
+
+        t.type = TAC_ASSIGN;
+        strcpy(t.result , temp);
+        strcpy(t.op1 , node->value);
+        strcpy(t.op2 , "");
+        strcpy(t.opr , "*");
+        t.is_deref_write = 0;
+        tac_table[tac_count++] = t;
+
+        return temp;
+    }
+
+    if(node->is_Call == 1){
+        char *ret_labels = Label();
+        for(int i=0 ; i<node->ARG_count ; i++){
+            if(node->ARG[i] == NULL) continue;
+            char* arg_val = Generate_TAC(node->ARG[i]);
+            emit_PARAM(arg_val);
+            free(arg_val);
         }
+        emit_PUSH(ret_labels);
+        char count_string[10];
+        sprintf(count_string , "%d", node->ARG_count);
+        //printf("the value is :%s\n",node->value);
+        emit_CALL(node->value , node->ARG_count);
 
-        if(node->left == NULL && node->right == NULL){
-            char* value = (char*)malloc(50);
-            strcpy(value , node->value);
+        emit_LABEL(ret_labels);
 
-            //printf("Leaf node : %s\n",value);
+        return strdup("RETVAL");
+    }
 
-            return value;
-        }
+    if(node->left == NULL && node->right == NULL){
+        char* value = (char*)malloc(50);
+        strcpy(value , node->value);
+        //printf("Leaf node : %s\n",value);
+        return value;
+    }
 
     char* left_result = Generate_TAC(node->left);
     char* right_result = Generate_TAC(node->right);
 
     if(node->value[0] == '='){
-        TAC t = {0};
-        strcpy(t.result , left_result);
-        strcpy(t.op1 , right_result);
-        strcpy(t.op2,"");
-        strcpy(t.opr , node->value);
-        tac_table[tac_count++] = t;
 
-        printf("%s = %s\n",left_result , right_result);
+        if(node->left->is_deref == 1 && node->left != NULL){
+            char* right_result = Generate_TAC(node->right);
+            TAC t = {0};
+            strcpy(t.result , node->left->value);
+            printf("the left result is %s\n",node->left->value);
+            strcpy(t.op1 , right_result);
+            //printf("the right result is %s\n",right_result);
+            strcpy(t.op2,"");
+            strcpy(t.opr , "");
+            t.is_deref_write = 1;
+            tac_table[tac_count++] = t;
 
-        free(left_result);
-        free(right_result);
-        return strdup("");
+            printf("%s = %s\n",node->left->value , right_result);
+
+            free(node->left->value);
+            free(right_result);
+            return strdup("");
+        }
+            else{
+                TAC t = {0};
+                    strcpy(t.result , left_result);
+                    strcpy(t.op1 , right_result);
+                    strcpy(t.op2,"");
+                    strcpy(t.opr , node->value);
+                    tac_table[tac_count++] = t;
+
+                    printf("%s = %s\n",left_result , right_result);
+
+                    free(left_result);
+                    free(right_result);
+                    return strdup("");
+            }
+        
     }
 
     
@@ -399,7 +467,7 @@ char* Generate_TAC(NODE* node){
     strcpy(t.op1 , left_result);
     strcpy(t.op2 , right_result);
     strcpy(t.opr , node->value);
-
+    t.is_deref_write = 0;
     tac_table[tac_count++] = t;
 
     printf(" %s = %s %s %s\n",temp , left_result , node->value , right_result);

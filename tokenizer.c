@@ -88,7 +88,7 @@ int lexer(const char* exp[] , const int* n){
             }
 
             else if(exp[i][j] == '+' || exp[i][j] == '-' || exp[i][j] == '*' || 
-                    exp[i][j] == '/' || exp[i][j] == '%' || exp[i][j] == '(' || exp[i][j] == ')' || exp[i][j] == '[' || exp[i][j] == ']'){
+                    exp[i][j] == '/' || exp[i][j] == '%' || exp[i][j] == '(' || exp[i][j] == ')' || exp[i][j] == '[' || exp[i][j] == ']' || exp[i][j] == '&'){
                 buffer[0] = exp[i][j++];
                 buffer[1] = '\0';
                 strcpy(tokens[token_count].value , buffer);
@@ -97,6 +97,21 @@ int lexer(const char* exp[] , const int* n){
 
             }
 
+            /*else if(exp[i][j] == '&'){
+                buffer[0] = exp[i][j++];
+                buffer[1] = '\0';
+
+                strcpy(tokens[token_count].value , buffer);
+                tokens[token_count].tokentype = ADD_OPR;
+                token_count++;
+            }
+            else if(exp[i][j] == '*' && isalpha(exp[i][j+1])){
+                buffer[0] = exp[i][j++];
+                buffer[1] = '\0';
+                strcpy(tokens[token_count].value , buffer);
+                tokens[token_count].tokentype = DEREF_OPR;
+                token_count++;
+            }*/
             else if(exp[i][j] == '=' || exp[i][j] == '<' || exp[i][j] == '>' || exp[i][j] == '!'){
                 buffer[0] = exp[i][j++];
 

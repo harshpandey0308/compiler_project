@@ -8,11 +8,13 @@
 NODE* create_node(char *exp){
     NODE* new = (NODE*)malloc(sizeof(NODE));
     strcpy(new->value,exp);
-    printf("the new node contain %s .\n",new->value);
+    //printf("the new node contain %s .\n",new->value);
     new->left = NULL;
     new->right = NULL;
     new->ARG_count = 0;
     new->is_Call = 0;
+    new->is_addr_of = 0;
+    new->is_deref = 0;
     for(int i=0 ; i<50 ; i++){
         new->ARG[i] = NULL;
     }
@@ -79,12 +81,13 @@ int find_operator(TOKEN tokens[] , int start , int end){
 }
 
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
+    //printf("Building AST for tokens from %d to %d.\n",start , end);
     if(start == end){
         return create_node(tokens[start].value);
     }
 
     if(tokens[start].tokentype == IDENTIFIER && (strcmp(tokens[start+1].value , "[") == 0)){
-        printf("the tokens are %s at %d , %s at %d , %s at %d.\n",tokens[start].value , start , tokens[start+1].value , start+1 , tokens[start+2].value , start+2);
+        //printf("the tokens are %s at %d , %s at %d , %s at %d.\n",tokens[start].value , start , tokens[start+1].value , start+1 , tokens[start+2].value , start+2);
         char arr_name[50];
         
         sprintf(arr_name ,"%s%s " ,tokens[start].value , tokens[start+2].value);
@@ -102,7 +105,35 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
         else{
             return create_node(arr_name);
         }
-        printf("array name : %s\n",arr_name);
+        //printf("array name : %s\n",arr_name);
+    }
+
+    if(strcmp(tokens[start].value , "&") == 0){
+        //printf("address of operator detected for %s\n",tokens[start+1].value);
+        NODE* addr_node = create_node(tokens[start+1].value);
+        //NODE* left = create_node(tokens[start+1].value);
+        //addr_node->left = left;
+        addr_node->is_addr_of = 1;
+        return addr_node;
+    }
+
+    if(strcmp(tokens[start].value , "*") == 0 && tokens[start+1].tokentype == IDENTIFIER ){
+        if(start + 2 <= end && strcmp(tokens[start+2].value , "=") == 0){
+            NODE* deref_node = create_node(tokens[start+2].value);
+            NODE* left_node = create_node(tokens[start+1].value);
+            //NODE* left_l_node = create_node(tokens[start+1].value);
+            //left_node->left = left_l_node;
+            left_node->is_deref = 1;
+            deref_node->left = left_node;
+            deref_node->right = Build_AST(tokens , start+3 , end);
+            return deref_node;
+        }
+        else{
+            NODE* deref_node = create_node(tokens[start+1].value);
+            deref_node->is_deref = 1;
+            return deref_node;
+        }
+        
     }
 
     if(tokens[start].tokentype == FUNC_NAME){
@@ -166,6 +197,7 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
     }
 
     NODE* root = create_node(tokens[pos].value);
+    printf("the operator is %s at position %d\n",tokens[pos].value , pos);
     root->left = Build_AST(tokens , start , pos-1);
     root->right = Build_AST(tokens , pos+1 , end);
 

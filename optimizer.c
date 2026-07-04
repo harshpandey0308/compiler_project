@@ -72,6 +72,7 @@ void dead_code(){
             if(i==j) continue;
 
             if(strcmp(tac_table[j].op1 , tac_table[i].result) == 0 || strcmp(tac_table[j].op2 , tac_table[i].result)==0){
+                printf("t%d is used in t%d.\n",i+1 , j+1);
                 is_used = 1;
                 break;
             }
@@ -97,7 +98,13 @@ void print_TAC(){
         switch(tac_table[i].type){
             case TAC_ASSIGN:
                 if(strcmp(tac_table[i].op2 , "")==0){
-                    printf("%s = %s\n",tac_table[i].result , tac_table[i].op1);
+                    if(strcmp(tac_table[i].opr , "&") == 0 || strcmp(tac_table[i].opr , "*") == 0){
+                        
+                        printf("%s = %s %s\n",tac_table[i].result , tac_table[i].opr , tac_table[i].op1);
+                    }
+                    else{
+                        printf("%s = %s \n",tac_table[i].result , tac_table[i].op1);
+                    }
                 }
                 else{
                     printf("%s = %s %s %s\n",tac_table[i].result , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2);
@@ -105,6 +112,7 @@ void print_TAC(){
                 break;
 
             case TAC_IF_GOTO:
+                printf("%s , %s , %s , %s\n",tac_table[i].op1 , tac_table[i].op2 , tac_table[i].opr);
                 printf("IF %s %s %s GOTO %s \n",tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2 , tac_table[i].label);
                 break;
             

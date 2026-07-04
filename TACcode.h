@@ -29,6 +29,8 @@ typedef struct tac{
     char scope[50];
     int is_dead;
     int type;
+    int is_deref_write;
+    int keyword;
 }TAC;
 
 extern TAC tac_table[100];
