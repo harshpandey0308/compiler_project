@@ -55,10 +55,6 @@ float get_name(char *val){
         //printf("the value is %f\n",fvalue);
         return fvalue;
     }
-    else if(isalpha(val[0])){
-        char value[10];
-        strcpy(value , val);
-    }
     else if(strcmp(val , "RETVAL") == 0){
         //printf("the return value is %f\n", RET_VAL);
         return RET_VAL;
@@ -90,7 +86,7 @@ void set_name(char *name , float value){
     }
     strcpy(vm_memory[mem_count].name , name);
     vm_memory[mem_count].value = value;
-    //printf("Adding new variable %s with value %f to memory at index %d\n", name, value, mem_count);
+    printf("Adding new variable %s with value %f to memory at index %d\n", name, value, mem_count);
     mem_count++;
     return;
 
@@ -112,11 +108,14 @@ void run_vm(){
         TAC instr = tac_table[PC];
         switch (instr.type){
             case TAC_ASSIGN:{
+                //printf("instr.result = %s , instr.op1 = %s , instr.opr = %s , instr.op2 = %s.\n",instr.result , instr.op1 ,instr.opr , instr.op2);
                 //printf("TAC_ASSIGN: %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
                 if(instr.is_deref_write == 1){
-                    //printf("dereference write operation detected for %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
+                    //printf("dereference write operation detected for %s = %s %s \n",instr.result , instr.op1 , instr.opr);
                     int addr1 = (int)get_name(instr.result);
+                    //printf("addr1 = %d\n",addr1);
                     float val1 = get_name(instr.op1);
+                    //printf("the right side value = %f\n",val1);
                     set_by_index(addr1 , val1);
                     break;
                 }
@@ -155,9 +154,9 @@ void run_vm(){
                     }
                     else{
                         float val = get_name(instr.op1);
-                        //printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
+                        printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
                         set_name(instr.result , val);
-                        //printf("TAC_ASSIGN: %f\n",val);
+                        printf("TAC_ASSIGN: %f\n",val);
                     }
                 }
 
@@ -185,18 +184,38 @@ void run_vm(){
             }
             
             case TAC_IF_GOTO:{
-                float val1 = get_name(instr.op1);
-                printf("TAC IF GOTO : VAL1 = %s.\n",instr.op1);
-                float val2 = get_name(instr.op2);
-                printf("TAC IF GOTO : VAL2 = %s.\n",instr.op2);
-
+                //printf("PC value at TAC IF GOTO:%d\n",PC);
+                //printf("instr.op1 = %s , instr.op2 = %s\n",instr.op1 , instr.op2);
+                float val1;
+                float val2;
+                float ptr_val1;
+                float ptr_val2;
                 int cond = 0;
-                if(strcmp(instr.opr , "<") == 0) cond = (val1 < val2);
-                else if(strcmp(instr.opr , ">") == 0) cond = (val1 > val2);
-                else if(strcmp(instr.opr , "<=") == 0) cond = (val1 <= val2);
-                else if(strcmp(instr.opr , ">=") == 0) cond = (val1 >= val2);
-                else if(strcmp(instr.opr , "==") == 0) cond = (val1 == val2);
-                else if(strcmp(instr.opr , "!=") == 0) cond = (val1 != val2);
+                
+                if(instr.op1[0] == '*' && isalpha(instr.op1[1]) && isdigit(instr.op2[0])){
+                    char ptr_name[50];
+                    strcpy(ptr_name , instr.op1 + 1);
+                    int p_index = (int)get_name(ptr_name);
+                    ptr_val1 = vm_memory[p_index].value;
+                    ptr_val2 = get_name(instr.op2);
+                    //printf("ptr_val1 = %s , ptr_val2 = %f.\n",ptr_val1 , ptr_val2);
+                    if(strcmp(instr.opr , "<") == 0) cond = (ptr_val1 < ptr_val2);
+                    else if(strcmp(instr.opr , ">") == 0) cond = (ptr_val1 > ptr_val2);
+                    else if(strcmp(instr.opr , "<=") == 0) cond = (ptr_val1 <= ptr_val2);
+                    else if(strcmp(instr.opr , ">=") == 0) cond = (ptr_val1 >= ptr_val2);
+                    else if(strcmp(instr.opr , "==") == 0) cond = (ptr_val1 == ptr_val2);
+                    else if(strcmp(instr.opr , "!=") == 0) cond = (ptr_val1 != ptr_val2);
+                }
+                else{
+                    val1 = get_name(instr.op1);
+                    val2 = get_name(instr.op2);
+                    if(strcmp(instr.opr , "<") == 0) cond = (val1 < val2);
+                    else if(strcmp(instr.opr , ">") == 0) cond = (val1 > val2);
+                    else if(strcmp(instr.opr , "<=") == 0) cond = (val1 <= val2);
+                    else if(strcmp(instr.opr , ">=") == 0) cond = (val1 >= val2);
+                    else if(strcmp(instr.opr , "==") == 0) cond = (val1 == val2);
+                    else if(strcmp(instr.opr , "!=") == 0) cond = (val1 != val2);
+                }
 
                 if(cond){
                     int index;
@@ -205,6 +224,7 @@ void run_vm(){
                     PC = index;
                     continue;
                 }
+                break;
             }
 
             case TAC_GOTO:{

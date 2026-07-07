@@ -190,6 +190,8 @@ int main(int argc, char* argv[]){
             if(tokens[start].tokentype == KEYWORD){
                 char* type = tokens[start].value;
                 char* name ;
+                int assign_pos = -1;
+                int size = 0;
 
                 if(strcmp(tokens[start+1].value , "*") == 0){
                     name = tokens[start+2].value;
@@ -197,32 +199,31 @@ int main(int argc, char* argv[]){
                     
                     if(strcmp(tokens[start + 3].value , "=") == 0){
                         //printf("declaration with initialization detected for %s of type %s\n",name , type);
-                        NODE* decl_AST = Build_AST(tokens , start+1 , i-1);
-                        Check_Undeclared(decl_AST , Current_Scope);
-                        Type_check(decl_AST , Current_Scope);
-                        Generate_TAC(decl_AST);
-
-                        free_tree(decl_AST);
+                        assign_pos = start + 3;
                     }
+                }
+
+                else if(strcmp(tokens[start + 2].value , "[") == 0){
+                    name = tokens[start+1].value;
+                    size = atoi(tokens[start+3].value);
                 }
                 else{
                     name = tokens[start+1].value;
+                    if(strcmp(tokens[start+2].value , "=") == 0){
+                        assign_pos = start + 2;
+                    }
                 }
 
                 //add_symbol(name , type  , Current_Scope , 0 , 0);
                 //printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
-                int size = 0;
-
-                if(strcmp(tokens[start + 2].value , "[") == 0){
-                    size = atoi(tokens[start+3].value);
-                }
                 //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
                 add_symbol(name , type , Current_Scope , 0 , size);
                 //printf("symbols added.\n");
 
-                int assign_pos = strcmp(tokens[start+1].value , "*") == 0 ? start+3 : start+2;
-                if(strcmp(tokens[assign_pos].value , "=") == 0){
+                
+                if(assign_pos != -1){
                     //printf("declaration with initialization detected for %s of type %s\n",name , type);
+                    printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
                     NODE* decl_AST = Build_AST(tokens , assign_pos-1 , i-1);
                     Check_Undeclared(decl_AST , Current_Scope);
                     Type_check(decl_AST , Current_Scope);

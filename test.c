@@ -1,20 +1,18 @@
 #include<stdio.h>
 
 int main(){
-    int x = 10;
-
-    float y = 34.6;
+    int x = 3;
 
     int *p ;
 
     p = &x;
 
-    if(*p<5){
-        *p = 50;
+    if(x > 5){
+        *p =100;
     }
     else{
-        *p = 100;
+        *p = 20;
     }
-
+    
     return 0;
 }

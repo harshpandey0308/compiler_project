@@ -6,8 +6,14 @@
 #include"parser.h"
 
 NODE* create_node(char *exp){
+    //printf("node creation : '%s'.\n",exp);
     NODE* new = (NODE*)malloc(sizeof(NODE));
-    strcpy(new->value,exp);
+
+    if(new == NULL){
+        printf("node is not allocated.\n");
+    }
+    //printf("inserting value.\n");
+    strcpy(new->value , exp);
     //printf("the new node contain %s .\n",new->value);
     new->left = NULL;
     new->right = NULL;
@@ -81,7 +87,7 @@ int find_operator(TOKEN tokens[] , int start , int end){
 }
 
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
-    //printf("Building AST for tokens from %d to %d.\n",start , end);
+    printf("Building AST for tokens from %d to %d.\n",start , end);
     if(start == end){
         return create_node(tokens[start].value);
     }
@@ -118,14 +124,21 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
     }
 
     if(strcmp(tokens[start].value , "*") == 0 && tokens[start+1].tokentype == IDENTIFIER ){
-        if(start + 2 <= end && strcmp(tokens[start+2].value , "=") == 0){
+        if(start + 2 < end && strcmp(tokens[start+2].value , "=") == 0){
+            //printf("creating node for dereferencing.\n");
+            //printf("start = %d and end = %d.\n",start , end);
+            //printf("tokens[start+1].value = %s , tokens[start+2].value = %s , tokens[start+3].value = %s\n",tokens[start+1].value , tokens[start+2].value , tokens[start+3].value);
             NODE* deref_node = create_node(tokens[start+2].value);
+            //printf("creating left node.\n");
             NODE* left_node = create_node(tokens[start+1].value);
             //NODE* left_l_node = create_node(tokens[start+1].value);
             //left_node->left = left_l_node;
             left_node->is_deref = 1;
             deref_node->left = left_node;
-            deref_node->right = Build_AST(tokens , start+3 , end);
+            //printf("creating right node");
+            
+            deref_node->right = (start + 3 <= end )? Build_AST(tokens , start+3 , end) : NULL;
+            //printf("dereference node = %s\n",deref_node->value);
             return deref_node;
         }
         else{
