@@ -30,7 +30,7 @@ typedef struct tac{
     int is_dead;
     int type;
     int is_deref_write;
-    int keyword;
+    int is_addr;
 }TAC;
 
 extern TAC tac_table[100];

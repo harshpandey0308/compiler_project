@@ -204,7 +204,7 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     }
     if_end--;
 
-    printf("if ends at %d\n",if_end);
+    //printf("if ends at %d\n",if_end);
     NODE* if_ast = Build_AST(tokens , if_start , if_end);
     //printf("generate tac for if");
     Generate_TAC(if_ast);
@@ -377,7 +377,9 @@ char* Generate_TAC(NODE* node){
         //printf("t.op1: %s.\n",t.op1);
         strcpy(t.op2 , "");
         strcpy(t.opr , "&");
+        
         t.is_deref_write = 0;
+        t.is_addr = 1;
         tac_table[tac_count++] = t;
 
         return temp;
@@ -436,7 +438,7 @@ char* Generate_TAC(NODE* node){
             strcpy(t.op1 , right_result);
             //printf("the right result is %s\n",right_result);
             strcpy(t.op2,"");
-            strcpy(t.opr , "");
+            strcpy(t.opr , "*");
             t.type = TAC_ASSIGN;
             t.is_deref_write = 1;
             tac_table[tac_count++] = t;
@@ -447,7 +449,7 @@ char* Generate_TAC(NODE* node){
             free(right_result);
             return strdup("");
         }
-        
+
         char* left_result = Generate_TAC(node->left);
         char* right_result = Generate_TAC(node->right);
         TAC t = {0};
@@ -455,8 +457,9 @@ char* Generate_TAC(NODE* node){
         strcpy(t.op1 , right_result);
         strcpy(t.op2,"");
         strcpy(t.opr , node->value);
+        t.is_addr = 1;
         tac_table[tac_count++] = t;
-
+        //printf("statement : \n");
         printf("%s = %s\n",left_result , right_result);
 
         free(left_result);

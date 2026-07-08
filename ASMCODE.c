@@ -62,13 +62,31 @@ void Generate_code(){
                 char* op2 = tac_table[i].op2;
                 char* opr = tac_table[i].opr;
 
+                //printf("RESULT FOR ASM = %s\n",result);
+                //printf("OP1 FOR ASM = %s\n",op1);
+                //printf("OP2 FOR ASM = %s\n",op2);
+                //printf("OPR FOR ASM = %s\n",opr);
+                //printf("DEREFERENCE WRITE = %d\n",tac_table[i].is_deref_write);
+                //printf("addr of = %d\n",tac_table[i].is_addr);
                 if(strcmp(op2 , "")==0){
                 int reg = find_reg(op1);
-                if(reg != -1){
+                if(reg != -1 && isalpha(tac_table[i].op1[0])){
+                    //printf("if.\n");
                     printf("MOV %s, %s\n", result , regs_name[reg]);
                     free_reg(reg);
                 }
+                else if(tac_table[i].is_addr == 1 && strcmp(tac_table[i].opr , "&") == 0){
+                    //printf("else if for addr.\n");
+                    printf("MOV %s , &%s\n",result , op1);
+                    free_reg(reg);
+                }
+                else if(tac_table[i].is_deref_write == 1 && strcmp(tac_table[i].opr , "*") == 0){
+                    //printf("else if\n");
+                    printf("MOV *%s , ",result);
+                    printf("%s\n",op1);
+                }
                 else{
+                    //printf("else\n");
                     printf("MOV %s, %s\n",result , op1);
                 }
                 continue;

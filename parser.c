@@ -87,7 +87,7 @@ int find_operator(TOKEN tokens[] , int start , int end){
 }
 
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
-    printf("Building AST for tokens from %d to %d.\n",start , end);
+    //printf("Building AST for tokens from %d to %d.\n",start , end);
     if(start == end){
         return create_node(tokens[start].value);
     }
@@ -210,7 +210,7 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
     }
 
     NODE* root = create_node(tokens[pos].value);
-    printf("the operator is %s at position %d\n",tokens[pos].value , pos);
+    //printf("the operator is %s at position %d\n",tokens[pos].value , pos);
     root->left = Build_AST(tokens , start , pos-1);
     root->right = Build_AST(tokens , pos+1 , end);
 

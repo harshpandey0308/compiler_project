@@ -86,7 +86,7 @@ void set_name(char *name , float value){
     }
     strcpy(vm_memory[mem_count].name , name);
     vm_memory[mem_count].value = value;
-    printf("Adding new variable %s with value %f to memory at index %d\n", name, value, mem_count);
+    //printf("Adding new variable %s with value %f to memory at index %d\n", name, value, mem_count);
     mem_count++;
     return;
 
@@ -154,9 +154,9 @@ void run_vm(){
                     }
                     else{
                         float val = get_name(instr.op1);
-                        printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
+                        //printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
                         set_name(instr.result , val);
-                        printf("TAC_ASSIGN: %f\n",val);
+                        //printf("TAC_ASSIGN: %f\n",val);
                     }
                 }
 
@@ -177,7 +177,7 @@ void run_vm(){
                     else if(strcmp(instr.opr , "*") == 0) result = op1_val*op2_val;
                     else if(strcmp(instr.opr , "/") == 0) result = op1_val/op2_val;
                     set_name(instr.result , result);
-                    printf("TAC_ASSIGN: %f\n", result);
+                    //printf("TAC_ASSIGN: %f\n", result);
                 }
                 
                 break;
@@ -220,7 +220,7 @@ void run_vm(){
                 if(cond){
                     int index;
                     index = find_label(instr.label);
-                    printf("TAC_IF_GOTO: %d\n",index);
+                    //printf("TAC_IF_GOTO: %d\n",index);
                     PC = index;
                     continue;
                 }
@@ -229,7 +229,7 @@ void run_vm(){
 
             case TAC_GOTO:{
                 int ind = find_label(instr.label);
-                printf("TAC_GOTO: %d\n",ind);
+                //printf("TAC_GOTO: %d\n",ind);
                 PC = ind;
                 continue;
             }

@@ -99,8 +99,13 @@ void print_TAC(){
             case TAC_ASSIGN:
                 if(strcmp(tac_table[i].op2 , "")==0){
                     if(strcmp(tac_table[i].opr , "&") == 0 || strcmp(tac_table[i].opr , "*") == 0){
+                        if(tac_table[i].is_deref_write == 1){
+                            printf("%s %s = %s\n",tac_table[i].opr , tac_table[i].result ,  tac_table[i].op1);
+                        }
+                        else{
+                            printf("%s = %s %s\n",tac_table[i].result , tac_table[i].opr , tac_table[i].op1);
+                        }
                         
-                        printf("%s = %s %s\n",tac_table[i].result , tac_table[i].opr , tac_table[i].op1);
                     }
                     else{
                         printf("%s = %s \n",tac_table[i].result , tac_table[i].op1);
@@ -112,7 +117,7 @@ void print_TAC(){
                 break;
 
             case TAC_IF_GOTO:
-                printf("%s , %s , %s , %s\n",tac_table[i].op1 , tac_table[i].op2 , tac_table[i].opr);
+                //printf("%s , %s , %s , %s\n",tac_table[i].op1 , tac_table[i].op2 , tac_table[i].opr);
                 printf("IF %s %s %s GOTO %s \n",tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2 , tac_table[i].label);
                 break;
             
