@@ -2,7 +2,7 @@
 #include<ctype.h>
 #include<string.h>
 #include<stdlib.h>
-#include "preproceesor.h"
+#include "preprocessor.h"
 
 DEFINE define_table[MAX_DEFINES];
 int define_count = 0;

@@ -6,7 +6,7 @@
 #include"TACcode.h"
 #include"optimizer.h"
 #include"ASMCODE.h"
-#include"preproceesor.h"
+#include"preprocessor.h"
 #include"VM.h"
 
 NODE* root;
