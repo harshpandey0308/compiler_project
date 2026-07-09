@@ -1,47 +1,34 @@
-# Compiler
-CC = gcc
+#compiler
 
-# Compiler flags
-CFLAGS = -Wall -Wextra -std=c11
+output : main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o 
+	gcc main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o -o pc
 
-# Executable name
-TARGET = compiler
+main.o : main.c 
+	gcc	-c	main.c
 
-# Source files
-SRC = main.c \
-        tokenizer.c \
-        parser.c \
-        semantic.c \
-        TACcode.c \
-        optimizer.c \
-        ASMCODE.c \
-		preprocessor.c \
-		VM.c
+tokenizer.o : tokenizer.c tokenizer.h
+	gcc -c tokenizer.c 
 
-# Object files
-OBJ = $(SRC:.c=.o)
+parser.o : parser.c	parser.h
+	gcc -c parser.c
 
-# Default target
-all: $(TARGET)
+semantic.o : semantic.c	semantic.h
+	gcc -c semantic.c
 
-# Link object files
-$(TARGET): $(OBJ)
-	$(CC) $(OBJ) -o $(TARGET)
+TACcode.o : TACcode.c	TACcode.h
+	gcc -c TACcode.c 
 
-# Compile .c into .o
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+optimizer.o : optimizer.c optimizer.h
+	gcc -c optimizer.c 
 
-# Remove generated files
-clean:
-	del /Q	*.o
-	del	/Q	compiler.exe
+ASMCODE.o : ASMCODE.c ASMCODE.h
+	gcc -c ASMCODE.c 
 
-# Rebuild everything
-rebuild: clean all
+Preprocessor.o : preprocessor.c	preprocessor.h
+	gcc -c preprocessor.c 
 
-# Run the program
-run: $(TARGET)
-	./$(TARGET)
+VM.o : VM.c VM.h
+	gcc -c VM.c
 
-.PHONY: all clean rebuild run
+clean :
+	rm *.o pc

@@ -3,16 +3,15 @@
 int main(){
     int x = 3;
 
+    int y = 4;
+
     int *p ;
 
     p = &x;
 
-    if(x > 5){
-        *p =100;
-    }
-    else{
-        *p = 20;
-    }
-    
+    x = y;
+
+    *p = 56;
+
     return 0;
 }
