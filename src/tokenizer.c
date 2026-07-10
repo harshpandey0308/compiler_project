@@ -9,7 +9,7 @@ int token_count = 0;
 
 void print_tokens(TOKEN tokens[500] , int token_count){
 
-    char *type_name[] = {"IDENTIFIER" , "OPERATOR" , "NUMBER" , "DELIMITER" , "KEYWORD","COMPARATORS" , "FUNC_NAME"};
+    char *type_name[] = {"IDENTIFIER" , "OPERATOR" , "NUMBER" , "DELIMITER" , "KEYWORD","COMPARATORS" , "FUNC_NAME" , "STRING" , "CHAR_LIT"};
 
     for(int i=0 ; i<token_count ; i++){
         printf("\nToken %d : ",i);
@@ -97,21 +97,33 @@ int lexer(const char* exp[] , const int* n){
 
             }
 
-            /*else if(exp[i][j] == '&'){
-                buffer[0] = exp[i][j++];
-                buffer[1] = '\0';
+            else if(exp[i][j] == '"'){
+                j++;
+                int k=0;
+                while(exp[i][j] != '"' && exp[i][j] != '\0'){
+                    buffer[k++] = exp[i][j++];
+                }
+                buffer[k] = '\0';
+                j++;
 
                 strcpy(tokens[token_count].value , buffer);
-                tokens[token_count].tokentype = ADD_OPR;
+                tokens[token_count].tokentype = STRING;
                 token_count++;
             }
-            else if(exp[i][j] == '*' && isalpha(exp[i][j+1])){
-                buffer[0] = exp[i][j++];
+
+            else if(exp[i][j] == '\''){
+                j++;
+                while(exp[i][j] != '\'' && exp[i][j] != '\0'){
+                    buffer[0] = exp[i][j++];
+                }
                 buffer[1] = '\0';
+                j++;
+
                 strcpy(tokens[token_count].value , buffer);
-                tokens[token_count].tokentype = DEREF_OPR;
+                tokens[token_count].tokentype = CHAR_LIT;
                 token_count++;
-            }*/
+            }
+
             else if(exp[i][j] == '=' || exp[i][j] == '<' || exp[i][j] == '>' || exp[i][j] == '!'){
                 buffer[0] = exp[i][j++];
 

@@ -3,6 +3,8 @@
 int main(){
     int x = 3;
 
+    printf("HELLO WORLD\n");
+
     int y = 4;
 
     int *p ;

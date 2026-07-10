@@ -9,8 +9,8 @@ typedef enum type{
     KEYWORD,
     COMPARATORS,
     FUNC_NAME,
-    ADD_OPR,
-    DEREF_OPR
+    STRING,
+    CHAR_LIT
 }token_type;
 
 
