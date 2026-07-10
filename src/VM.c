@@ -101,6 +101,62 @@ void set_by_index(int addr , float value){
     }
 }
 
+void handle_printf(int arg_count){
+    char ret_value[50];
+    SP--;
+    strcpy(ret_value , vm_stack[SP].data);
+    char arg_arr[10][50];
+    for(int i=arg_count-1 ; i>=0 ; i--){
+        SP--;
+        strcpy(arg_arr[i] , vm_stack[i].data);
+    }
+    
+
+    char *fmt = arg_arr[0];
+    int arg_indx = 1;
+    for(int i=0 ; fmt[i] != '\0' ; i++){
+        if(fmt[i] == '%'){
+            i++;
+            if(fmt[i] == 'd'){
+                int arg = (int)atof(arg_arr[arg_indx++]);
+                printf("%d",arg);
+            }
+            else if(fmt[i] == 'f'){
+                float arg1 = (int)atof(arg_arr[arg_indx++]);
+                printf("%f",arg1);
+            }
+            else if(fmt[i] == 'c'){
+                char arg2 = (char)atof(arg_arr[arg_indx++]);
+                printf("%c",arg2);
+            }
+            else if(fmt[i] == 's'){
+                char arg3[10];
+                strcpy(arg3 , arg_arr[arg_indx++]);
+                printf("%s",arg3);
+            }
+        }
+        else if(fmt[i] == '\\'){
+            i++;
+            if(fmt[i] == 'n'){
+                printf("\n");
+            }
+            else if(fmt[i] == 't'){
+                printf("\t");
+            }
+        }
+        else{
+            printf("%c",fmt[i]);
+        }
+    }
+
+    strcpy(vm_stack[SP].data , ret_value);
+    vm_stack[SP].is_label = 1;
+    SP++;
+
+    PC = find_label(ret_value);
+
+}
+
 void run_vm(){
     PC = find_label("main");
     printf("TAC_COUNT:%d\n",tac_count);
@@ -248,6 +304,14 @@ void run_vm(){
             case FUNC_CALL:{
                 char *func_name = instr.op1;
                 int param_count = 0;
+
+                int arg_count = atoi(instr.op2);
+
+                if(strcmp(func_name , "printf") == 0){
+                    handle_printf(arg_count);
+                    continue;
+                }
+
                 int i=0;
                 while(i<sym_count){
                     if(sym_table[i].is_param == 1 && strcmp(sym_table[i].scope , func_name) == 0){
@@ -296,6 +360,14 @@ void run_vm(){
                 //printf("JUMPING TO PC = %d FOR FUNCTION:%s\n",PC , func_name);
                 continue;
             }
+
+            case TAC_PARAM_STRING:{
+                strcpy(vm_stack[SP].data , instr.op1);
+                vm_stack[SP].is_label = 0;
+                SP++;
+                break;
+            }
+
             case RETURN:{
                 float value1 = get_name(instr.op1);
                 //printf("RETURN VALUE = %f and SP = %d\n",value1 , SP);

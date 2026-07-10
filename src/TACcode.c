@@ -101,6 +101,13 @@ void emit_FUNC_BEG(char *name){
     tac_table[tac_count++] = t;
 }
 
+void emit_param_string(char *str){
+    TAC t = {0};
+    t.type = TAC_PARAM_STRING;
+    strcpy(t.op1 , str);
+    tac_table[tac_count++] = t;
+}
+
 char* new_temp(){
     char *temp  = (char*)malloc(10);
     sprintf(temp,"t%d",++temp_count);
@@ -403,10 +410,15 @@ char* Generate_TAC(NODE* node){
     if(node->is_Call == 1){
         char *ret_labels = Label();
         for(int i=0 ; i<node->ARG_count ; i++){
-            if(node->ARG[i] == NULL) continue;
-            char* arg_val = Generate_TAC(node->ARG[i]);
-            emit_PARAM(arg_val);
-            free(arg_val);
+            if(node->ARG[i]->is_string == 1){
+                emit_param_string(node->ARG[i]->value);
+            }
+            else{
+                char* arg_val = Generate_TAC(node->ARG[i]);
+                emit_PARAM(arg_val);
+                free(arg_val);
+            }
+            
         }
         emit_PUSH(ret_labels);
         char count_string[10];

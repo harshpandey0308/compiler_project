@@ -24,6 +24,8 @@ float get_name(char *val);
 
 void set_name(char *name , float value);
 
+void handling_printf(int arg_count);
+
 void run_vm();
 
 void print_vm_memory();

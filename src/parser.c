@@ -158,11 +158,19 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
 
         while(strcmp(tokens[arg_pos].value , ")") != 0){
             int arg_end = arg_pos;
-            if(strcmp(tokens[arg_end].value , ",") != 0 && strcmp(tokens[arg_end].value , ")") != 0){
-                arg_end++;
+            if(tokens[arg_end].tokentype == STRING){
+                NODE *arg_node = create_node(tokens[arg_end].value);
+                arg_node->is_string = 1;
+                call_node->ARG[call_node->ARG_count++] = arg_node;
             }
+            else{
+                while(strcmp(tokens[arg_end].value , ",") != 0 && strcmp(tokens[arg_end].value , ")") != 0){
+                arg_end++;
+                }
 
-            call_node->ARG[call_node->ARG_count++] = Build_AST(tokens , arg_pos , arg_end-1);
+                call_node->ARG[call_node->ARG_count++] = Build_AST(tokens , arg_pos , arg_end-1);
+            }
+            
 
             if(strcmp(tokens[arg_end].value , ",") == 0){
                 arg_pos = arg_end + 1;

@@ -12,8 +12,7 @@ typedef struct Node{
     int ARG_count;
     int is_addr_of;
     int is_deref;
-    int is_keyword;
-    int ptr_init;
+    int is_string;
 }NODE;
 
 NODE* create_node(char *exp);

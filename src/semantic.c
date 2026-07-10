@@ -61,6 +61,7 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
 
     if(root->is_Call == 1){
         for(int i=0 ; i<root->ARG_count ; i++){
+            if(root->ARG[i]->is_string == 1) continue;
             Check_Undeclared(root->ARG[i] , Current_Scope);
         }
         return;
