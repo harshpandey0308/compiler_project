@@ -156,6 +156,10 @@ void print_TAC(){
             case TAC_FUNC_BEGIN:
                 printf("%s:\n",tac_table[i].label);
                 break;
+
+            case TAC_PARAM_STRING:
+                printf("PARAM STRING : %s\n",tac_table[i].op1);
+                break;
         }   
 
         

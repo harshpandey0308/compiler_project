@@ -21,6 +21,7 @@ NODE* create_node(char *exp){
     new->is_Call = 0;
     new->is_addr_of = 0;
     new->is_deref = 0;
+    new->is_string = 0;
     for(int i=0 ; i<50 ; i++){
         new->ARG[i] = NULL;
     }
@@ -158,10 +159,13 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
 
         while(strcmp(tokens[arg_pos].value , ")") != 0){
             int arg_end = arg_pos;
+            printf("tokens[%d].value = %s\n",arg_end , tokens[arg_end].value);
             if(tokens[arg_end].tokentype == STRING){
                 NODE *arg_node = create_node(tokens[arg_end].value);
                 arg_node->is_string = 1;
                 call_node->ARG[call_node->ARG_count++] = arg_node;
+                //printf("ARG[%d] = %s\n",arg_end , arg_node->value);
+                arg_end++;
             }
             else{
                 while(strcmp(tokens[arg_end].value , ",") != 0 && strcmp(tokens[arg_end].value , ")") != 0){
@@ -171,14 +175,23 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
                 call_node->ARG[call_node->ARG_count++] = Build_AST(tokens , arg_pos , arg_end-1);
             }
             
-
+            //printf("arg_end = %d\n",arg_end);
+            //printf("tokens[%d] = %s\n",arg_end , tokens[arg_end].value);
             if(strcmp(tokens[arg_end].value , ",") == 0){
                 arg_pos = arg_end + 1;
+                printf("tokens[%d].value = %s\n",arg_pos , tokens[arg_pos].value);
             }
             else{
                 break;
             }
         }
+        //printf("BUILDING CALL NODE FOR %s\n",tokens[start].value);
+
+        //printf("total argument found : %d\n",call_node->ARG_count);
+
+        //for(int i=0 ; i<call_node->ARG_count ; i++){
+        //    printf("ARG[%d] = %s , is_string = %d\n",i , call_node->ARG[i] , call_node->ARG[i]->is_string);
+        //}
         return call_node;
     }
 

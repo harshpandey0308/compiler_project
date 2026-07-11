@@ -26,7 +26,7 @@ int lexer(const char* exp[] , const int* n){
         int j = 0;
 
         while(exp[i][j] != '\0'){
-            //printf("the exp starts at %s.\n" ,exp);
+            //printf("the exp starts at %c.\n" ,exp[i][j]);
             char buffer[50];
             int k = 0;
 
@@ -106,6 +106,9 @@ int lexer(const char* exp[] , const int* n){
                 buffer[k] = '\0';
                 j++;
 
+                //printf("string token found : %s\n",buffer);
+                //printf("NEXT char after string is %c\n",exp[i][j]);
+
                 strcpy(tokens[token_count].value , buffer);
                 tokens[token_count].tokentype = STRING;
                 token_count++;
@@ -121,6 +124,16 @@ int lexer(const char* exp[] , const int* n){
 
                 strcpy(tokens[token_count].value , buffer);
                 tokens[token_count].tokentype = CHAR_LIT;
+                token_count++;
+            }
+
+            else if(exp[i][j] == ','){
+                buffer[0] = exp[i][j++];
+                buffer[1] = '\0';
+                j++;
+
+                strcpy(tokens[token_count].value , buffer);
+                tokens[token_count].tokentype = DELIMITER;
                 token_count++;
             }
 
