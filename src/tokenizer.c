@@ -19,7 +19,7 @@ void print_tokens(TOKEN tokens[500] , int token_count){
 
 int lexer(const char* exp[] , const int* n){
     
-    printf("Lexical analysis started.\n");
+    //printf("Lexical analysis started.\n");
 
     for(int i=0 ; i<*n ; i++){
         //printf("lexical analysis......\n");
@@ -176,9 +176,9 @@ int lexer(const char* exp[] , const int* n){
         }
     }
 
-    print_tokens(tokens , token_count);
+    //print_tokens(tokens , token_count);
 
-    printf("Lexical analysis completed.\n");
+    //printf("Lexical analysis completed.\n");
 
     return token_count;
 

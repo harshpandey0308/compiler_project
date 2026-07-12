@@ -58,6 +58,13 @@ void emit_PARAM(char* value){
     tac_table[tac_count++] = t;
 }
 
+void emit_param_addr(char *value){
+    TAC t = {0};
+    t.type = TAC_PARAM_ADDR;
+    strcpy(t.op1 , value);
+    tac_table[tac_count++] = t;
+}
+
 void emit_CALL(char* name , int arg_count){
     TAC t = {0};
     t.type = FUNC_CALL;
@@ -412,6 +419,9 @@ char* Generate_TAC(NODE* node){
         for(int i=0 ; i<node->ARG_count ; i++){
             if(node->ARG[i]->is_string == 1){
                 emit_param_string(node->ARG[i]->value);
+            }
+            else if(node->ARG[i]->is_addr_of == 1){
+                emit_param_addr(node->ARG[i]->value);
             }
             else{
                 char* arg_val = Generate_TAC(node->ARG[i]);

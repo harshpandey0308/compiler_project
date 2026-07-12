@@ -160,6 +160,10 @@ void print_TAC(){
             case TAC_PARAM_STRING:
                 printf("PARAM STRING : %s\n",tac_table[i].op1);
                 break;
+
+            case TAC_PARAM_ADDR:
+                printf("PARAM ADDR : %s\n",tac_table[i].op1);
+                break;
         }   
 
         

@@ -37,7 +37,7 @@ void BUILD_LABEL_TABLE(){
             //printf("ADDED : label = %s and index = %d with label type : %d\n",tac_table[i].label , i , tac_table[i].type);
         }
     }
-    printf("the total label found : %d\n",lab_count);
+    //printf("the total label found : %d\n",lab_count);
 }
 
 int find_label(char *target){
@@ -77,7 +77,7 @@ float get_name(char *val){
 void set_name(char *name , float value){
     for(int i=0 ; i<mem_count ; i++){
         if(strcmp(vm_memory[i].name , name) == 0){
-            printf("Setting value of %s to %f at index %d\n", name, value, i);
+            //printf("Setting value of %s to %f at index %d\n", name, value, i);
             vm_memory[i].value = value;
 
             return;
@@ -157,11 +157,61 @@ void handle_printf(int arg_count){
 
 }
 
+void handle_scanf(int arg_count){
+    //printf("a\n");
+    SP--;
+    char ret_label[50];
+    strcpy(ret_label , vm_stack[SP].data);
+    
+    //printf("b\n");
+    char arg_arr[100][50];
+    for(int i=arg_count-1 ; i>=0 ; i--){
+        SP--;
+        strcpy(arg_arr[i] , vm_stack[SP].data);
+    }
+
+    //printf("c\n");
+
+    char *fmt = arg_arr[0];
+    int arr_ind = 1;
+    for(int i=0 ; fmt[i] != '\0' ; i++){
+        //printf("d\n");
+        if(fmt[i] == '%'){
+            i++;
+            int addr = atoi(arg_arr[arr_ind++]);
+
+            if(fmt[i] == 'd'){
+                int i_value;
+                scanf("%d",&i_value);
+                vm_memory[addr].value = (float)i_value;
+            }
+            else if(fmt[i] == 'f'){
+                float f_value;
+                scanf("%f",&f_value);
+                vm_memory[addr].value = f_value;
+            }
+            else if(fmt[i] == 'c'){
+                float c_val;
+                scanf("%c",&c_val);
+                vm_memory[addr].value = (float)c_val;
+            }
+            //printf("scanf completed.\n");
+        }
+    }
+
+    strcpy(vm_stack[SP].data , ret_label);
+    vm_stack[SP].is_label = 1;
+    SP++;
+
+    PC = find_label(ret_label);
+}
+
 void run_vm(){
     PC = find_label("main");
-    printf("TAC_COUNT:%d\n",tac_count);
+    //printf("TAC_COUNT:%d\n",tac_count);
     while(PC < tac_count && SP >= 0){
         TAC instr = tac_table[PC];
+        //printf("instr.type = %d\n",instr.type);
         switch (instr.type){
             case TAC_ASSIGN:{
                 //printf("instr.result = %s , instr.op1 = %s , instr.opr = %s , instr.op2 = %s.\n",instr.result , instr.op1 ,instr.opr , instr.op2);
@@ -297,18 +347,25 @@ void run_vm(){
                 vm_stack[SP].is_label = 0;
                 SP++;
                 //printf("AFTER PARAM SP = %d\n",SP);
-                printf("PARAM: %f\n",op1_value);
+                //printf("PARAM: %f\n",op1_value);
                 break;
             }
             
             case FUNC_CALL:{
                 char *func_name = instr.op1;
+                //printf("func name = %s\n",func_name);
                 int param_count = 0;
 
                 int arg_count = atoi(instr.op2);
 
                 if(strcmp(func_name , "printf") == 0){
                     handle_printf(arg_count);
+                    continue;
+                }
+
+                if(strcmp(func_name , "scanf") == 0){
+                    //printf("scanf is going to perform.\n");
+                    handle_scanf(arg_count);
                     continue;
                 }
 
@@ -351,7 +408,7 @@ void run_vm(){
 
                 
                 strcpy(vm_stack[SP].data , ret_label);
-                printf("ret_label:%s\n",ret_label);
+                //printf("ret_label:%s\n",ret_label);
                 vm_stack[SP].is_label = 1;
                 SP++;
                 //printf("AFTER PUSHING RETURN LABEL BACK:SP = %d\n",SP);
@@ -363,6 +420,23 @@ void run_vm(){
 
             case TAC_PARAM_STRING:{
                 strcpy(vm_stack[SP].data , instr.op1);
+                vm_stack[SP].is_label = 0;
+                SP++;
+                break;
+            }
+
+            case TAC_PARAM_ADDR:{
+                int addr = -1;
+                for(int i=0 ; i<mem_count ; i++){
+                    if(strcmp(vm_memory[i].name , instr.op1) == 0){
+                        addr = i;
+                        break;
+                    }
+                }
+
+                char addr_str[50];
+                sprintf(addr_str , "%d" , addr);
+                strcpy(vm_stack[SP].data , addr_str);
                 vm_stack[SP].is_label = 0;
                 SP++;
                 break;
@@ -424,7 +498,7 @@ void run_vm(){
                 break;
         }
         PC++;
-        printf("PC:%d\n",PC);
+        //printf("PC:%d\n",PC);
         if(PC<0){
             break;
         }
@@ -434,7 +508,7 @@ void run_vm(){
 void print_vm_memory(){
     printf("\n-----VM_MEMORY_STATE-----\n");
     for(int i=0 ; i<mem_count ; i++){
-        printf("%-15s = %f\n",vm_memory[i].name , vm_memory[i].value);
+        printf("%-15s = %d\n",vm_memory[i].name , (int)vm_memory[i].value);
     }
     printf("RET_VAL = %f\n",RET_VAL);
 }

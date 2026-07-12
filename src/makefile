@@ -1,7 +1,7 @@
 #compiler
 
-output : main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o 
-	gcc main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o -o pc
+output : main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o compiler.o  
+	gcc main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o compiler.o -o pc
 
 main.o : main.c 
 	gcc	-c	main.c
@@ -29,6 +29,9 @@ Preprocessor.o : preprocessor.c	preprocessor.h
 
 VM.o : VM.c VM.h
 	gcc -c VM.c
+
+compiler.o : compiler.c compiler.h
+	gcc -c compiler.c
 
 clean :
 	rm *.o pc

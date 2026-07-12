@@ -187,7 +187,7 @@ void Type_check(NODE* root , char* Current_Scope){
     if(root->value[0] == '='){
 
         if(root->is_Call == 1){
-            printf("Type check passed(function call).\n");
+            //printf("Type check passed(function call).\n");
             return;
         }
         
@@ -197,17 +197,17 @@ void Type_check(NODE* root , char* Current_Scope){
         char* left_type = get_type(root->left , Current_Scope);
         char* right_type = get_type(root->right , Current_Scope);
 
-        printf("\nleft type : %s.\n",left_type);
-        printf(" right type : %s.\n",right_type);
+        //printf("\nleft type : %s.\n",left_type);
+        //printf(" right type : %s.\n",right_type);
 
         if(strcmp(left_type , right_type) == 0){
-            printf("\nType check passed.");
+            //printf("\nType check passed.");
         }
         else if((strcmp(left_type , "float") == 0 && strcmp(right_type , "int") == 0)){
-            printf("\nType check passed (implicit conversion of int->float).\n");
+            //printf("\nType check passed (implicit conversion of int->float).\n");
         }
         else if( (strcmp(right_type , "float") == 0) && (strcmp(left_type , "int") == 0) ){
-            printf("Type check passed , (float to int implicit conversion , possible data loss!)");
+            //printf("Type check passed , (float to int implicit conversion , possible data loss!)");
         }
         else{
             printf("\nType check ERROR : can not assign '%s' to '%s' variable.",right_type,left_type);

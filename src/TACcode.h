@@ -20,6 +20,7 @@
 #define TAC_JMP_DYNAMIC 9
 #define TAC_FUNC_BEGIN 10
 #define TAC_PARAM_STRING 11
+#define TAC_PARAM_ADDR 12
 
 typedef struct tac{
     char result[50];
@@ -58,6 +59,8 @@ void emit_RETURN(char* value);
 void emit_FUNC_BEG(char *name);
 
 void emit_param_string(char *str);
+
+void emit_param_addr(char *value);
 
 void Generate_if_tac(TOKEN tokens[] , int if_pos);
 
