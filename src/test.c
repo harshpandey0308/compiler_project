@@ -1,13 +1,22 @@
 #include<stdio.h>
 
 int main(){
-    int x = 3;
+    int x;
+    int y;
+    int z;
 
-    x = 4;
+    float c;
+
+    scanf("%f", &c);
+
 
     scanf("%d", &x);
+    scanf("%d", &y);
 
-    printf("x = %d\n", x);
+    z = x + y;
+
+    printf("\nsum  = %d\n", z);
+    printf("float value = %f\n", c);
 
     return 0;
 }

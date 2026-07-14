@@ -246,7 +246,7 @@ int compile_file(const char *file_name){
             //printf("\ntac generation.\n");
             Generate_TAC(root);
 
-                //print_TAC();
+            //print_TAC();
 
             free_tree(root);
             start = i+1;
@@ -254,7 +254,7 @@ int compile_file(const char *file_name){
         }
     }
 
-    //print_sym();
+    print_sym();
     
 
     //printf("\nBefore optimization :\n");
@@ -265,7 +265,7 @@ int compile_file(const char *file_name){
     dead_code();
 
     //printf("\nAfter optimization :\n");
-    //print_TAC();
+    print_TAC();
 
     Generate_code();
 

@@ -1,7 +1,9 @@
+#include"parser.h"
+
 #ifndef SEMANTIC_H
 #define SEMANTIC_H
 
-#include"parser.h"
+
 
 typedef struct symbol{
     char sym[50];

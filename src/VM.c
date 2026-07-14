@@ -105,16 +105,22 @@ void handle_printf(int arg_count){
     char ret_value[50];
     SP--;
     strcpy(ret_value , vm_stack[SP].data);
+
+    //printf("DEBUG RET_LABEL : %s\n",ret_value);
     char arg_arr[10][50];
     for(int i=arg_count-1 ; i>=0 ; i--){
         SP--;
         strcpy(arg_arr[i] , vm_stack[i].data);
+        
     }
     
-
+    //printf("c\n");
     char *fmt = arg_arr[0];
+    //printf("DEBUG fmt='%s'\n", fmt);
+    //printf("DEBUG arg_arr[1]='%s'\n", arg_arr[1]);
     int arg_indx = 1;
     for(int i=0 ; fmt[i] != '\0' ; i++){
+        //printf("%d\n",i);
         if(fmt[i] == '%'){
             i++;
             if(fmt[i] == 'd'){
@@ -145,6 +151,7 @@ void handle_printf(int arg_count){
             }
         }
         else{
+            //printf("ab\n");
             printf("%c",fmt[i]);
         }
     }
@@ -163,7 +170,7 @@ void handle_scanf(int arg_count){
     char ret_label[50];
     strcpy(ret_label , vm_stack[SP].data);
     
-    //printf("b\n");
+    //printf("DEBUG RETURN LABEL :%s\n",ret_label);
     char arg_arr[100][50];
     for(int i=arg_count-1 ; i>=0 ; i--){
         SP--;
@@ -173,6 +180,7 @@ void handle_scanf(int arg_count){
     //printf("c\n");
 
     char *fmt = arg_arr[0];
+    //printf("fmt = %s\n",fmt);
     int arr_ind = 1;
     for(int i=0 ; fmt[i] != '\0' ; i++){
         //printf("d\n");
@@ -184,6 +192,7 @@ void handle_scanf(int arg_count){
                 int i_value;
                 scanf("%d",&i_value);
                 vm_memory[addr].value = (float)i_value;
+                printf("value : %f\n",vm_memory[addr].value);
             }
             else if(fmt[i] == 'f'){
                 float f_value;
@@ -197,13 +206,17 @@ void handle_scanf(int arg_count){
             }
             //printf("scanf completed.\n");
         }
+        
     }
 
-    strcpy(vm_stack[SP].data , ret_label);
-    vm_stack[SP].is_label = 1;
-    SP++;
+    //strcpy(vm_stack[SP].data , ret_label);
+    //vm_stack[SP].is_label = 1;
+    //SP++;
+
+    //printf("label at the top of stack : %s\n",ret_label);
 
     PC = find_label(ret_label);
+    //printf("After scanf, SP=%d\n", SP);
 }
 
 void run_vm(){
@@ -434,6 +447,11 @@ void run_vm(){
                     }
                 }
 
+                if(addr == -1){
+                    set_name(instr.op1 , 0.0);
+                    addr = mem_count - 1;
+                }
+
                 char addr_str[50];
                 sprintf(addr_str , "%d" , addr);
                 strcpy(vm_stack[SP].data , addr_str);
@@ -505,10 +523,39 @@ void run_vm(){
     }
 }
 
+char *find_type(char *name){
+    //printf("the name is : %s\n",name);
+    for(int i=0 ; i<sym_count ; i++){
+        if(strcmp(sym_table[i].sym , name) == 0){
+            return sym_table[i].type;
+        }
+    }
+    return "UNKNOWN";
+}
 void print_vm_memory(){
     printf("\n-----VM_MEMORY_STATE-----\n");
     for(int i=0 ; i<mem_count ; i++){
-        printf("%-15s = %d\n",vm_memory[i].name , (int)vm_memory[i].value);
+        if(vm_memory[i].name[0] == 't' && isdigit(vm_memory[i].name[1])){
+            continue;
+        }
+        if(strcmp(vm_memory[i].name , "RETVAL") == 0){
+            continue;
+        }
+
+        char *type = find_type(vm_memory[i].name);
+
+        if(strcmp(type , "int") == 0){
+            printf("%15s = %d\n",vm_memory[i].name , (int)vm_memory[i].value);
+        }
+        else if(strcmp(type , "float") == 0){
+            printf("%15s = %f\n",vm_memory[i].name , vm_memory[i].value);
+        }
+        else if(strcmp(type , "char") == 0){
+            printf("%15s = %c\n",vm_memory[i].name , (char)vm_memory[i].value);
+        }
+        else if(strcmp(type , "UNKNOWN") == 0){
+            printf("THE VALUE IS UNKNOWN\n");
+        }
     }
     printf("RET_VAL = %f\n",RET_VAL);
 }
