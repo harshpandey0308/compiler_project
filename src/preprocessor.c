@@ -11,7 +11,7 @@ void add_define(const char* name , const char* value){
     strcpy(define_table[define_count].name , name);
     strcpy(define_table[define_count].value , value);
     define_count++;
-    printf("DEFINE ADDED: %s = %s\n" , name , value);
+    //printf("DEFINE ADDED: %s = %s\n" , name , value);
 }
 
 void substitute(char* line , char* result){
@@ -126,6 +126,6 @@ int preprocesses(const char* filename , char lines[][MAX_LINE_LEN]){
 
     fclose(file);
 
-    printf("Preprocessing complete : %d lines\n" , line_count);
+    //printf("Preprocessing complete : %d lines\n" , line_count);
     return line_count;
 }

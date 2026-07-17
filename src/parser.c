@@ -159,7 +159,7 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
 
         while(strcmp(tokens[arg_pos].value , ")") != 0){
             int arg_end = arg_pos;
-            printf("tokens[%d].value = %s\n",arg_end , tokens[arg_end].value);
+            //printf("tokens[%d].value = %s\n",arg_end , tokens[arg_end].value);
             if(tokens[arg_end].tokentype == STRING){
                 NODE *arg_node = create_node(tokens[arg_end].value);
                 arg_node->is_string = 1;
@@ -179,7 +179,7 @@ NODE* Build_AST(TOKEN tokens[] , int start , int end){
             //printf("tokens[%d] = %s\n",arg_end , tokens[arg_end].value);
             if(strcmp(tokens[arg_end].value , ",") == 0){
                 arg_pos = arg_end + 1;
-                printf("tokens[%d].value = %s\n",arg_pos , tokens[arg_pos].value);
+                //printf("tokens[%d].value = %s\n",arg_pos , tokens[arg_pos].value);
             }
             else{
                 break;

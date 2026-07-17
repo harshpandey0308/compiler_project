@@ -156,9 +156,9 @@ void handle_printf(int arg_count){
         }
     }
 
-    strcpy(vm_stack[SP].data , ret_value);
-    vm_stack[SP].is_label = 1;
-    SP++;
+    //strcpy(vm_stack[SP].data , ret_value);
+    //vm_stack[SP].is_label = 1;
+    //SP++;
 
     PC = find_label(ret_value);
 
@@ -192,7 +192,7 @@ void handle_scanf(int arg_count){
                 int i_value;
                 scanf("%d",&i_value);
                 vm_memory[addr].value = (float)i_value;
-                printf("value : %f\n",vm_memory[addr].value);
+                //printf("value : %f\n",vm_memory[addr].value);
             }
             else if(fmt[i] == 'f'){
                 float f_value;

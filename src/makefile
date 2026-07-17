@@ -24,7 +24,7 @@ optimizer.o : optimizer.c optimizer.h
 ASMCODE.o : ASMCODE.c ASMCODE.h
 	gcc -c ASMCODE.c 
 
-Preprocessor.o : preprocessor.c	preprocessor.h
+preprocessor.o : preprocessor.c	preprocessor.h
 	gcc -c preprocessor.c 
 
 VM.o : VM.c VM.h

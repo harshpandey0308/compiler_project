@@ -177,7 +177,7 @@ int compile_file(const char *file_name){
         if(strcmp(tokens[i].value , ";")==0){
             if(tokens[start].tokentype == KEYWORD && strcmp(tokens[start].value , "return") == 0){
                 char* ret_val = tokens[start+1].value;
-                printf("RETURN VALUE: %s\n",tokens[start+1].value);
+                //printf("RETURN VALUE: %s\n",tokens[start+1].value);
                 emit_RETURN(ret_val);
                 start = i+1;
                 continue;
@@ -254,7 +254,7 @@ int compile_file(const char *file_name){
         }
     }
 
-    print_sym();
+    //print_sym();
     
 
     //printf("\nBefore optimization :\n");
@@ -265,9 +265,9 @@ int compile_file(const char *file_name){
     dead_code();
 
     //printf("\nAfter optimization :\n");
-    print_TAC();
+    //print_TAC();
 
-    Generate_code();
+    //Generate_code();
 
     //printf("\n----VM EXECUTION----\n");
 
