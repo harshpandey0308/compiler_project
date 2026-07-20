@@ -1,5 +1,8 @@
 #include"TACcode.h"
+#include"compiler_result.h"
 
+
+const char* TAC_text(char *buffer);
 
 float eval_TAC(char* op1 , char* op2 , char* opr){
     float a = atof(op1);
@@ -11,6 +14,10 @@ float eval_TAC(char* op1 , char* op2 , char* opr){
     if(strcmp(opr,"/")==0)return a/b;
 
     return 0;
+}
+
+void append_TAC(char *buffer , const char* text){
+    strcat(buffer , text);
 }
 
 void constant_fold(){
@@ -85,14 +92,21 @@ void dead_code(){
     }
 }
 
-void print_TAC(){
-    printf("\n-----------TAC CODE-----------\n");
+void BUILD_TAC_TEXT(char *buffer){
+
+    buffer[0] = '\0';
+
+    char line[256];
+
+    sprintf(line , "\n-----------TAC CODE-----------\n");
     //printf("TAC is :\n");
     for(int i=0 ; i<tac_count ; i++){
         //printf("checking dead code\n");
         if(tac_table[i].is_dead){
-            printf("dead code found");
-            continue;}
+            sprintf(line , "%s\n" , "DEAD CODE FOUND.");
+            append_TAC(buffer , line);
+            continue;
+        }
 
         //printf("tac is printing using switch\n");
         switch(tac_table[i].type){
@@ -100,69 +114,85 @@ void print_TAC(){
                 if(strcmp(tac_table[i].op2 , "")==0){
                     if(strcmp(tac_table[i].opr , "&") == 0 || strcmp(tac_table[i].opr , "*") == 0){
                         if(tac_table[i].is_deref_write == 1){
-                            printf("%s %s = %s\n",tac_table[i].opr , tac_table[i].result ,  tac_table[i].op1);
+                            sprintf(line , "%s %s = %s\n" ,tac_table[i].opr , tac_table[i].result ,  tac_table[i].op1);
+                            append_TAC(buffer , line);
                         }
                         else{
-                            printf("%s = %s %s\n",tac_table[i].result , tac_table[i].opr , tac_table[i].op1);
+                            sprintf(line , "%s = %s %s\n" , tac_table[i].result , tac_table[i].opr , tac_table[i].op1);
+                            append_TAC(buffer , line);
                         }
                         
                     }
                     else{
-                        printf("%s = %s \n",tac_table[i].result , tac_table[i].op1);
+                        sprintf(line , "%s = %s \n" , tac_table[i].result , tac_table[i].op1);
+                        append_TAC(buffer , line);
                     }
                 }
                 else{
-                    printf("%s = %s %s %s\n",tac_table[i].result , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2);
+                    sprintf(line , "%s = %s %s %s\n" , tac_table[i].result , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2);
+                    append_TAC(buffer , line);
                 }
                 break;
 
             case TAC_IF_GOTO:
                 //printf("%s , %s , %s , %s\n",tac_table[i].op1 , tac_table[i].op2 , tac_table[i].opr);
-                printf("IF %s %s %s GOTO %s \n",tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2 , tac_table[i].label);
+                sprintf(line , "IF %s %s %s GOTO %s \n" , tac_table[i].op1 , tac_table[i].opr , tac_table[i].op2 , tac_table[i].label);
+                append_TAC(buffer , line);
                 break;
             
             case TAC_GOTO:
-                printf("GOTO %s\n",tac_table[i].label);
+                sprintf(line , "GOTO %s\n" , tac_table[i].label);
+                append_TAC(buffer , line);
                 break;
 
             case TAC_LABEL:
-                printf("%s:\n",tac_table[i].label);
+                sprintf(line , "%s:\n" , tac_table[i].label);
+                append_TAC(buffer , line);
                 break;
 
             case PARAM:
-                printf("PARAM %s\n",tac_table[i].op1);
+                sprintf(line , "PARAM %s\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
             
             case FUNC_CALL:
-                printf("CALL %s , %s\n",tac_table[i].op1 , tac_table[i].op2);
+                sprintf(line , "CALL %s , %s\n" , tac_table[i].op1 , tac_table[i].op2);
+                append_TAC(buffer , line);
                 break;
             
             case RETURN:
-                printf("RETURN %s\n", tac_table[i].op1);
+                sprintf(line , "RETURN %s\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
 
             case TAC_PUSH:
-                printf("PUSH %s\n",tac_table[i].op1);
+                sprintf(line , "PUSH %s\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
             
             case TAC_POP:
-                printf("POP %s\n",tac_table[i].result);
+                sprintf(line , "POP %s\n" , tac_table[i].result);
+                append_TAC(buffer , line);
                 break;
             
             case TAC_JMP_DYNAMIC:
-                printf("JMP [%S]\n",tac_table[i].op1);
+                sprintf(line , "JMP [%s]\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
             
             case TAC_FUNC_BEGIN:
-                printf("%s:\n",tac_table[i].label);
+                sprintf(line , "%s:\n" , tac_table[i].label);
+                append_TAC(buffer , line);
                 break;
 
             case TAC_PARAM_STRING:
-                printf("PARAM STRING : %s\n",tac_table[i].op1);
+                sprintf(line , "PARAM STRING : %s\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
 
             case TAC_PARAM_ADDR:
-                printf("PARAM ADDR : %s\n",tac_table[i].op1);
+                sprintf(line , "PARAM ADDR : %s\n" , tac_table[i].op1);
+                append_TAC(buffer , line);
                 break;
         }   
 
@@ -170,15 +200,19 @@ void print_TAC(){
     }
 }
 
-void optimizer(){
-    printf("Optimizer started\n");
-    print_TAC();
-
-    constant_fold();
-    Const_propagate();
-    dead_code();
-
-    printf("After Optimization:\n.");
-
-    print_TAC();
+const char* TAC_text(char *buffer){
+    return buffer;
 }
+
+    //void optimizer(){
+    //    printf("Optimizer started\n");
+    //    print_TAC();
+
+    //    constant_fold();
+    //    Const_propagate();
+    //    dead_code();
+
+    //    printf("After Optimization:\n.");
+
+    //    print_TAC();
+    //}

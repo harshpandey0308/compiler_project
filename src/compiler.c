@@ -12,6 +12,7 @@
 #include"compiler.h"
 
 NODE* root;
+CompilerResult result;
 
 int compile_file(const char *file_name){
     FILE *file;
@@ -246,7 +247,7 @@ int compile_file(const char *file_name){
             //printf("\ntac generation.\n");
             Generate_TAC(root);
 
-            //print_TAC();
+            //BUILD_TAC_TEXT(result.TAC_buffer);
 
             free_tree(root);
             start = i+1;
@@ -265,7 +266,7 @@ int compile_file(const char *file_name){
     dead_code();
 
     //printf("\nAfter optimization :\n");
-    //print_TAC();
+    BUILD_TAC_TEXT(result.TAC_buffer);
 
     //Generate_code();
 

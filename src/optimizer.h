@@ -11,8 +11,12 @@ void Const_propagate();
 
 void dead_code();
 
-void print_TAC();
+void append_TAC(const char* text);
+
+void BUILD_TAC_TEXT(char *buffer);
 
 void optimizer();
+
+const char* TAC_text(char *buffer);
 
 #endif // OPTIMIZER_H

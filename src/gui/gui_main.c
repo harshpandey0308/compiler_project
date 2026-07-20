@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include"compiler.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include"raygui.h"
@@ -8,6 +9,7 @@ const int screen_height = 900;
 
 const Color black = (Color){0, 0, 0, 255};
 const Color green = (Color){0, 255, 0, 255};
+
 const Color text_color = (Color){255, 255, 255, 255};
 
 typedef enum{
@@ -101,7 +103,7 @@ int main(){
                 break;
             
             case VIEW_TAC:
-                DrawText("TAC OUTPUT" , left_width+1 , header_height+1 , 30 , green);
+                DrawText(result.TAC_buffer , left_width+1 , header_height+1 , 30 , green);
                 break;
 
             case VIEW_VM:
