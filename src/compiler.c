@@ -14,22 +14,19 @@
 NODE* root;
 CompilerResult result;
 
-
-
-int compile_file(const char *file_name){
+static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE_LEN] , const char* exp[MAX_LINES] , int *lines_count){
     FILE *file;
-
+    
     file = fopen(file_name, "r");
 
     if(file == NULL){
         //printf("Error opening file %s.\n", file_name);
-        return 1;
+        return 0;
     }
 
-    char lines[MAX_LINES][MAX_LINE_LEN];
-    int lines_count = preprocesses(file_name, lines);
+    *lines_count = preprocesses(file_name, lines);
 
-    if(lines_count == 0) return 1;
+    if(*lines_count == 0) return 0;
 
     printf("File read : %d lines.\n", lines_count);
 
@@ -37,8 +34,7 @@ int compile_file(const char *file_name){
 
     //print_sym();
 
-    const char* exp[MAX_LINES];
-    for(int i=0 ; i<lines_count ; i++){
+    for(int i=0 ; i<*lines_count ; i++){
         exp[i] = lines[i];
         //printf("content of lines are %c.\n",exp[i]);
     }
@@ -46,6 +42,21 @@ int compile_file(const char *file_name){
     const int n = lines_count;
 
     lexer(exp , &n);
+
+    fclose(file);
+
+    return 1;
+
+}
+
+int compile_file(const char *file_name){
+    char lines[MAX_LINES][MAX_LINE_LEN];
+    const char* exp[MAX_LINES];
+    int lines_count;
+
+    if(!prepare_source(file_name , lines , exp , &lines_count)){
+        return 1;
+    }
 
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
