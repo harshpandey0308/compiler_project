@@ -126,6 +126,6 @@ int preprocesses(const char* filename , char lines[][MAX_LINE_LEN]){
 
     fclose(file);
 
-    //printf("Preprocessing complete : %d lines\n" , line_count);
+    printf("Preprocessing complete : %d lines\n" , line_count);
     return line_count;
 }

@@ -14,6 +14,8 @@
 NODE* root;
 CompilerResult result;
 
+
+
 int compile_file(const char *file_name){
     FILE *file;
 
@@ -29,7 +31,7 @@ int compile_file(const char *file_name){
 
     if(lines_count == 0) return 1;
 
-    //printf("File read : %d lines.\n", lines_count);
+    printf("File read : %d lines.\n", lines_count);
 
     //
 

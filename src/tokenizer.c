@@ -38,12 +38,13 @@ int lexer(const char* exp[] , const int* n){
                 while(isalnum(exp[i][j]) || exp[i][j] == '_'){
                     //printf("identifier checking.\n");
                     buffer[k] = exp[i][j];
-                    //printf("%s\n",exp);
                     j++;
                     k++;
                 }
                 //printf("identifier checked\n");
                 buffer[k] = '\0';
+
+                //printf("the exp is : %s\n",buffer);
 
                 strcpy(tokens[token_count].value , buffer);
                 //printf("the value of buffer is copied into tokens .\n");

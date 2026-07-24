@@ -1,5 +1,5 @@
 
-CC =  C:/raylib/w64devkit/bin/gcc
+CC =  C:/raylib/w64devkit/bin/gcc.exe
 all : pc compiler_gui
 
 RAYLIB_INC = -IC:/raylib/raylib/src	\

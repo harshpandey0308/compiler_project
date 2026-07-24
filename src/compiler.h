@@ -7,4 +7,6 @@ extern CompilerResult result;
 
 int compile_file(const char *file_name);
 
+int compiler_source(const char* source);
+
 #endif
