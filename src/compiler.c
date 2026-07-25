@@ -28,7 +28,7 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
     if(*lines_count == 0) return 0;
 
-    printf("File read : %d lines.\n", lines_count);
+    printf("File read : %d lines.\n", *lines_count);
 
     //
 
@@ -39,9 +39,9 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
         //printf("content of lines are %c.\n",exp[i]);
     }
 
-    const int n = lines_count;
+    const int *n = lines_count;
 
-    lexer(exp , &n);
+    lexer(exp , n);
 
     fclose(file);
 
@@ -49,15 +49,98 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
 }
 
-int compile_file(const char *file_name){
-    char lines[MAX_LINES][MAX_LINE_LEN];
-    const char* exp[MAX_LINES];
-    int lines_count;
+static int is_func_def(int index){
+    if(index+2 >= token_count){
+        return 0;
+    }
+    if(tokens[index].tokentype != KEYWORD)
+        return 0;
 
-    if(!prepare_source(file_name , lines , exp , &lines_count)){
-        return 1;
+    if(tokens[index+1].tokentype != FUNC_NAME && tokens[index+1].tokentype != IDENTIFIER){
+        return 0;
+    }
+    if(strcmp(tokens[index+2].value , "(") != 0){
+        return 0;
     }
 
+    return 1;
+}
+
+static int parse_function(int *i , int *start){
+    if(!is_func_def(*i)){
+        return 0;
+    }
+
+    char* func_name = tokens[*i+1].value;
+    char* ret_type = tokens[*i].value;
+
+    add_symbol(func_name , ret_type  , "global" , 0 , 0);
+
+    strcpy(Current_Scope , func_name);
+
+    emit_FUNC_BEG(func_name);
+
+    while(*i<token_count && strcmp(tokens[*i].value , "(") != 0){
+        (*i)++;
+    }
+    int param_start = *i + 1;
+    int param_end = param_start;
+
+    while(*i<token_count && strcmp(tokens[param_end].value , ")") != 0){
+        char *param_type = tokens[param_end].value;
+        char *param_name = tokens[param_end+1].value;
+        //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
+        add_symbol(param_name , param_type , Current_Scope , 1 , 0);
+        param_end += 2;
+        if(strcmp(tokens[param_end].value , ",") == 0){
+            param_end++;
+        }
+    }
+    *i = param_end + 1;
+
+    *start = *i+1;
+
+    return 1;
+}
+
+static int is_if_statement(int index){
+    if(tokens[index].tokentype == KEYWORD && (strcmp(tokens[index].value , "if") == 0)){
+        return 1;
+    }
+    return 0;
+}
+
+static int parse_if_statement(int *i , int *start){
+    if(is_if_statement(*i)){
+            //printf("if statement found at token %d\n",i);
+            Generate_if_tac(tokens , *i);
+
+            while(*i<token_count && !(tokens[*i].tokentype == KEYWORD && strcmp(tokens[*i].value , "else") == 0)){
+                (*i)++;
+            }
+
+            int depth = 0;
+            while(*i<token_count){
+                if(strcmp(tokens[*i].value , "{") == 0) depth++;
+                if(strcmp(tokens[*i].value , "}") == 0){
+                    depth--;
+                    if(depth == 0){
+                        (*i)++;
+                        //printf("After if-else body %d : %s\n",i , tokens[i].value);
+                        break;
+                    }
+                } 
+                (*i)++;
+            }
+            //printf("i is at token %d : %s\n",i , tokens[i].value);
+            (*i)--;
+            *start = *i;
+            return 1;
+    }
+    return 0;
+}
+
+static void parse_program(){
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
         
@@ -68,70 +151,14 @@ int compile_file(const char *file_name){
             continue;
         }
 
-        if(tokens[i].tokentype == KEYWORD && (tokens[i+1].tokentype == FUNC_NAME || tokens[i+1].tokentype == IDENTIFIER) && strcmp(tokens[i+2].value , "(") == 0){
-            char* func_name = tokens[i+1].value;
-            char* ret_type = tokens[i].value;
-
-            add_symbol(func_name , ret_type  , "global" , 0 , 0);
-
-            strcpy(Current_Scope , func_name);
-
-            emit_FUNC_BEG(func_name);
-
-            while(i<token_count && strcmp(tokens[i].value , "(") != 0){
-                i++;
-            }
-            int param_start = i + 1;
-            int param_end = param_start;
-
-            while(i<token_count && strcmp(tokens[param_end].value , ")") != 0){
-                char *param_type = tokens[param_end].value;
-                char *param_name = tokens[param_end+1].value;
-                //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
-                add_symbol(param_name , param_type , Current_Scope , 1 , 0);
-                param_end += 2;
-                if(strcmp(tokens[param_end].value , ",") == 0){
-                    param_end++;
-                }
-            }
-            i = param_end + 1;
-
-
-            int body_start = i;
-            
-            start = i+1;
-            continue;
-
-        }
-
-        if(tokens[i].tokentype == KEYWORD && (strcmp(tokens[i].value , "if") == 0)){
-            //printf("if statement found at token %d\n",i);
-            Generate_if_tac(tokens , i);
-
-            while(i<token_count && !(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "else") == 0)){
-                i++;
-            }
-
-            int depth = 0;
-            while(i<token_count){
-                if(strcmp(tokens[i].value , "{") == 0) depth++;
-                if(strcmp(tokens[i].value , "}") == 0){
-                    depth--;
-                    if(depth == 0){
-                        i++;
-                        //printf("After if-else body %d : %s\n",i , tokens[i].value);
-                        break;
-                    }
-                } 
-                i++;
-            }
-            //printf("i is at token %d : %s\n",i , tokens[i].value);
-            i--;
-            start = i;
+        if(parse_function(&i , &start)){
             continue;
         }
 
-        //
+        if(parse_if_statement(&i , &start)){
+            continue;
+        }
+
         //printf("while detection\n");
 
         if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "while") == 0){
@@ -267,6 +294,20 @@ int compile_file(const char *file_name){
 
         }
     }
+}
+
+
+
+int compile_file(const char *file_name){
+    char lines[MAX_LINES][MAX_LINE_LEN];
+    const char* exp[MAX_LINES];
+    int lines_count;
+
+    if(!prepare_source(file_name , lines , exp , &lines_count)){
+        return 1;
+    }
+
+    parse_program();
 
     //print_sym();
     
