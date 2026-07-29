@@ -74,6 +74,10 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
         if(strcmp(root->value , "RETVAL") == 0){
 
         }
+
+        else if(root->is_chr_lit == 1){
+            
+        }
         else{
             int found = 0;
             for(int i=0 ; i<sym_count ; i++){

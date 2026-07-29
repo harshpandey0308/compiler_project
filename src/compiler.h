@@ -11,6 +11,18 @@ static int is_func_def(int index);
 
 static int parse_function(int *i , int *start);
 
+static int is_if_statement(int index);
+
+static int parse_if_statement(int *i , int *start);
+
+static int is_while_statement(int index);
+
+static int parse_while(int *i , int *start);
+
+static int is_for_statement(int index);
+
+static int parse_for(int *i , int *start);
+
 static void parse_program();
 
 int compile_file(const char *file_name);

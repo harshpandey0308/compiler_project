@@ -88,8 +88,14 @@ int find_operator(TOKEN tokens[] , int start , int end){
 }
 
 NODE* Build_AST(TOKEN tokens[] , int start , int end){
-    //printf("Building AST for tokens from %d to %d.\n",start , end);
+    printf("Building AST for tokens from %d to %d.\n",start , end);
+    printf("the tokens are %s , %s\n",tokens[start].value , tokens[end].value);
     if(start == end){
+        if(tokens[start].tokentype == CHAR_LIT){
+            NODE* char_node = create_node(tokens[start].value);
+            char_node->is_chr_lit = 1;
+            return char_node;
+        }
         return create_node(tokens[start].value);
     }
 

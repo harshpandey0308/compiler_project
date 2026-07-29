@@ -177,7 +177,7 @@ int lexer(const char* exp[] , const int* n){
         }
     }
 
-    //print_tokens(tokens , token_count);
+    print_tokens(tokens , token_count);
 
     //printf("Lexical analysis completed.\n");
 

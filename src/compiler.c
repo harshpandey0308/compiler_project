@@ -104,15 +104,19 @@ static int parse_function(int *i , int *start){
 }
 
 static int is_if_statement(int index){
+    //printf("checking the statement include if or not.\n");
     if(tokens[index].tokentype == KEYWORD && (strcmp(tokens[index].value , "if") == 0)){
+        //printf("yes the statement include if keyword.\n");
         return 1;
     }
+    //printf("no , does not include if.\n");
     return 0;
 }
 
 static int parse_if_statement(int *i , int *start){
+    //printf("checking if statement and value of i = %d.\n",*i);
     if(is_if_statement(*i)){
-            //printf("if statement found at token %d\n",i);
+            //printf("if statement found at token %d\n",*i);
             Generate_if_tac(tokens , *i);
 
             while(*i<token_count && !(tokens[*i].tokentype == KEYWORD && strcmp(tokens[*i].value , "else") == 0)){
@@ -126,18 +130,195 @@ static int parse_if_statement(int *i , int *start){
                     depth--;
                     if(depth == 0){
                         (*i)++;
-                        //printf("After if-else body %d : %s\n",i , tokens[i].value);
+                        printf("After if-else body %d : %s\n",*i , tokens[*i].value);
                         break;
                     }
                 } 
                 (*i)++;
             }
-            //printf("i is at token %d : %s\n",i , tokens[i].value);
+            //printf("i is at token %d : %s\n",*i , tokens[*i].value);
             (*i)--;
             *start = *i;
             return 1;
     }
     return 0;
+}
+
+static int is_while_statement(int index){
+    if(tokens[index].tokentype == KEYWORD && strcmp(tokens[index].value , "while") == 0){
+        //printf("while included.\n");
+        return 1;
+    }
+    //printf("while not included.\n");
+    return 0;
+}
+
+static int parse_while(int *i , int *start){
+    //printf("checking the while statement.\n");
+    if(is_while_statement(*i)){
+        //printf("while statement found at token %d\n",*i);
+        Generate_while_tac(tokens , *i);
+
+        //printf("while body ends at token %d\n",*i);
+
+        while(*i<token_count && strcmp(tokens[*i].value , "{") != 0){
+            (*i)++;
+        }
+
+        int depth1 = 0;
+        while(*i<token_count){
+            if(strcmp(tokens[*i].value , "{") == 0) depth1++;
+            if(strcmp(tokens[*i].value , "}") == 0){
+                depth1--;
+                if(depth1 == 0){
+                    (*i)++;
+                    break;
+                }
+            }
+            (*i)++;
+        }
+        printf("After while body %d : %s\n",*i , tokens[*i].value);
+        *start = *i;
+        return 1;
+    }
+
+    return 0;
+}
+
+static int is_for_statement(int index){
+    if(tokens[index].tokentype == KEYWORD && strcmp(tokens[index].value , "for") == 0){
+        //printf("included.\n");
+        return 1;
+    }
+    //printf("not included.\n");
+    return 0;
+}
+
+static int parse_for(int *i , int *start){
+    if(is_for_statement(*i)){
+        //printf("for statement found at token %d\n",*i);
+        Generate_for_TAC(tokens , *i);
+
+        while(*i<token_count && strcmp(tokens[*i].value , "{") != 0){
+            (*i)++;
+        }
+
+        int depth3 = 0;
+        while(*i<token_count){
+            if(strcmp(tokens[*i].value , "{") == 0) depth3++;
+            if(strcmp(tokens[*i].value , "}") == 0){
+                depth3--;
+                if(depth3 == 0){
+                    (*i)++;
+                    break;
+                }
+            }
+            (*i)++;
+        }
+
+        *start = *i;
+        return 1;
+    }
+    
+    return 0;
+}
+
+static void parse_return(int *start , int *i){
+    char* ret_val = tokens[*start+1].value;
+    //printf("RETURN VALUE: %s\n",tokens[start+1].value);
+    emit_RETURN(ret_val);
+    *start = *i+1;
+}
+
+static void parse_declaration_(int *start , int *assign_pos , char **name){
+    *name = tokens[*start+1].value;
+    if(strcmp(tokens[*start+2].value , "=") == 0){
+        *assign_pos = *start + 2;
+    }
+}
+
+static int parse_statement(int *i , int *start){
+    if(strcmp(tokens[*i].value , ";")==0){
+            if(tokens[*start].tokentype == KEYWORD && strcmp(tokens[*start].value , "return") == 0){
+                parse_return(start , i);
+                return 1;
+            }
+            //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
+            if(tokens[*start].tokentype == KEYWORD){
+                char* type = tokens[*start].value;
+                char* name = NULL;
+                int assign_pos = -1;
+                int *pos_assign = &assign_pos;
+
+                int size = 0;
+
+                if(strcmp(tokens[*start+1].value , "*") == 0){
+                    name =  tokens[*start + 2].value;
+                    //printf("pointer declaration detected for %s of type %s\n",name , type);
+                    
+                    if(strcmp(tokens[*start + 3].value , "=") == 0){
+                        //printf("declaration with initialization detected for %s of type %s\n",name , type);
+                        *pos_assign = *start + 3;
+                        printf("assign position  = %d\n", assign_pos);
+                    }
+                }
+
+                else if(strcmp(tokens[*start + 2].value , "[") == 0){
+                    name = tokens[*start+1].value;
+                    size = atoi(tokens[*start+3].value);
+                }
+                else{
+                    parse_declaration_(start , pos_assign , &name);
+                }
+
+                //printf("assign position  = %d\n", assign_pos);
+
+                //add_symbol(name , type  , Current_Scope , 0 , 0);
+                //printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
+                //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
+                add_symbol(name , type , Current_Scope , 0 , size);
+                //printf("symbols added.\n");
+
+                
+                if(assign_pos != -1){
+                    //printf("declaration with initialization detected for %s of type %s\n",name , type);
+                    //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
+                    NODE* decl_AST = Build_AST(tokens , assign_pos-1 , (*i)-1);
+                    Check_Undeclared(decl_AST , Current_Scope);
+                    Type_check(decl_AST , Current_Scope);
+                    Generate_TAC(decl_AST);
+
+                    free_tree(decl_AST);
+                }
+                *start = *i+1;
+                return 1;
+            }
+
+            if(*start >= *i){
+                *start = *i+1;
+                return 1;
+            }
+
+            //printf("Generating TAC for statement from token %d to %d.\n", start, i);
+            root = Build_AST(tokens , *start , *i-1);
+            //printf("Syntax tree for statement %d.\n", i);
+            //print(root);
+
+            Check_Undeclared(root , Current_Scope);
+            Type_check(root , Current_Scope);
+            //printf("\ntac generation.\n");
+            Generate_TAC(root);
+
+            //BUILD_TAC_TEXT(result.TAC_buffer);
+
+            free_tree(root);
+            *start = *i+1;
+            return 1;
+        }
+        else{
+            //printf("NO parse statement.\n");
+            return 0;
+        }
 }
 
 static void parse_program(){
@@ -152,146 +333,31 @@ static void parse_program(){
         }
 
         if(parse_function(&i , &start)){
+            //printf("parsing function .\n");
             continue;
         }
 
         if(parse_if_statement(&i , &start)){
+            //printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
         //printf("while detection\n");
 
-        if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "while") == 0){
-                //printf("while statement found at token %d\n",i);
-            Generate_while_tac(tokens , i);
+        if(parse_while(&i , &start)){
+            //printf("parsing while statement.\n");
+            continue;
+        }
+        //printf("for detection : token=%s , type =  %d\n", tokens[i].value, tokens[i].tokentype);
 
-                //printf("while body ends at token %d\n",i);
-
-            while(i<token_count && strcmp(tokens[i].value , "{") != 0){
-                i++;
-            }
-
-            int depth1 = 0;
-            while(i<token_count){
-                if(strcmp(tokens[i].value , "{") == 0) depth1++;
-                if(strcmp(tokens[i].value , "}") == 0){
-                    depth1--;
-                    if(depth1 == 0){
-                        i++;
-                        break;
-                    }
-                }
-                i++;
-            }
-                //printf("After while body %d : %s\n",i , tokens[i].value);
-            start = i;
+        if(parse_for(&i , &start)){
+            //printf("parsing for statement.\n");
             continue;
         }
 
-        //printf("for detection : token=%s , type =  %d , KEYWORD=%d\n", tokens[i].value, tokens[i].tokentype, KEYWORD);
-
-        if(tokens[i].tokentype == KEYWORD && strcmp(tokens[i].value , "for") == 0){
-            //printf("for statement found at token %d\n",i);
-            Generate_for_TAC(tokens , i);
-
-            while(i<token_count && strcmp(tokens[i].value , "{") != 0){
-                i++;
-            }
-
-            int depth3 = 0;
-            while(i<token_count){
-                if(strcmp(tokens[i].value , "{") == 0) depth3++;
-                if(strcmp(tokens[i].value , "}") == 0){
-                    depth3--;
-                    if(depth3 == 0){
-                        i++;
-                        break;
-                    }
-                }
-                i++;
-            }
-
-            start = i;
+        if(parse_statement(&i , &start)){
+            //printf("parsing statement.\n");
             continue;
-        }
-
-        if(strcmp(tokens[i].value , ";")==0){
-            if(tokens[start].tokentype == KEYWORD && strcmp(tokens[start].value , "return") == 0){
-                char* ret_val = tokens[start+1].value;
-                //printf("RETURN VALUE: %s\n",tokens[start+1].value);
-                emit_RETURN(ret_val);
-                start = i+1;
-                continue;
-            }
-            //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
-            if(tokens[start].tokentype == KEYWORD){
-                char* type = tokens[start].value;
-                char* name ;
-                int assign_pos = -1;
-                int size = 0;
-
-                if(strcmp(tokens[start+1].value , "*") == 0){
-                    name = tokens[start+2].value;
-                    //printf("pointer declaration detected for %s of type %s\n",name , type);
-                    
-                    if(strcmp(tokens[start + 3].value , "=") == 0){
-                        //printf("declaration with initialization detected for %s of type %s\n",name , type);
-                        assign_pos = start + 3;
-                    }
-                }
-
-                else if(strcmp(tokens[start + 2].value , "[") == 0){
-                    name = tokens[start+1].value;
-                    size = atoi(tokens[start+3].value);
-                }
-                else{
-                    name = tokens[start+1].value;
-                    if(strcmp(tokens[start+2].value , "=") == 0){
-                        assign_pos = start + 2;
-                    }
-                }
-
-                //add_symbol(name , type  , Current_Scope , 0 , 0);
-                //printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
-                //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
-                add_symbol(name , type , Current_Scope , 0 , size);
-                //printf("symbols added.\n");
-
-                
-                if(assign_pos != -1){
-                    //printf("declaration with initialization detected for %s of type %s\n",name , type);
-                    //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
-                    NODE* decl_AST = Build_AST(tokens , assign_pos-1 , i-1);
-                    Check_Undeclared(decl_AST , Current_Scope);
-                    Type_check(decl_AST , Current_Scope);
-                    Generate_TAC(decl_AST);
-
-                    free_tree(decl_AST);
-                }
-                start = i+1;
-                continue;
-            }
-
-            if(start >= i){
-                start = i+1;
-                continue;
-            }
-
-            //printf("Generating TAC for statement from token %d to %d.\n", start, i);
-            root = Build_AST(tokens , start , i-1);
-            //printf("Syntax tree for statement %d.\n", i);
-            //print(root);
-
-            Check_Undeclared(root , Current_Scope);
-            Type_check(root , Current_Scope);
-            //printf("\ntac generation.\n");
-            Generate_TAC(root);
-
-            //BUILD_TAC_TEXT(result.TAC_buffer);
-
-            free_tree(root);
-            start = i+1;
-
         }
     }
 }
@@ -309,7 +375,7 @@ int compile_file(const char *file_name){
 
     parse_program();
 
-    //print_sym();
+    print_sym();
     
 
     //printf("\nBefore optimization :\n");
@@ -320,9 +386,9 @@ int compile_file(const char *file_name){
     dead_code();
 
     //printf("\nAfter optimization :\n");
-    BUILD_TAC_TEXT(result.TAC_buffer);
+    //BUILD_TAC_TEXT(result.TAC_buffer);
 
-    //Generate_code();
+    Generate_code();
 
     //printf("\n----VM EXECUTION----\n");
 

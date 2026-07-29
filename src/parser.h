@@ -13,6 +13,7 @@ typedef struct Node{
     int is_addr_of;
     int is_deref;
     int is_string;
+    int is_chr_lit;
 }NODE;
 
 NODE* create_node(char *exp);

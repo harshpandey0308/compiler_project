@@ -482,7 +482,7 @@ char* Generate_TAC(NODE* node){
         t.is_addr = 1;
         tac_table[tac_count++] = t;
         //printf("statement : \n");
-        printf("%s = %s\n",left_result , right_result);
+        printf("\n%s = %s\n",left_result , right_result);
 
         free(left_result);
         free(right_result);

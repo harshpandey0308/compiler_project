@@ -50,14 +50,24 @@ int find_label(char *target){
 }
 
 float get_name(char *val){
-    if(isdigit(val[0]) || val[0] == '-'){
+    if(val == NULL){
+        return 0.0f;
+    }
+
+    if(isdigit((unsigned char)val[0]) || val[0] == '-'){
         float fvalue = atof(val);
         //printf("the value is %f\n",fvalue);
         return fvalue;
     }
+    
     else if(strcmp(val , "RETVAL") == 0){
         //printf("the return value is %f\n", RET_VAL);
         return RET_VAL;
+    }
+
+    else if(strlen(val) == 3 && val[0] == '\'' && val[2] == '\''){
+        float ascii = val[0];
+        return ascii;
     }
 
     else{
@@ -68,9 +78,9 @@ float get_name(char *val){
         if(i<mem_count){
             return vm_memory[i].value;
         }
-        //printf("The variable is %s\n",val);
+        printf("The variable is %s\n",val);
         //printf("Variable '%s' not found in the memory.\n",val);
-        return 0.0;
+        return 0.0f;
     }
 }
 
@@ -110,7 +120,8 @@ void handle_printf(int arg_count){
     char arg_arr[10][50];
     for(int i=arg_count-1 ; i>=0 ; i--){
         SP--;
-        strcpy(arg_arr[i] , vm_stack[i].data);
+        strcpy(arg_arr[i] , vm_stack[SP].data);
+        //printf("stack data = %s and SP = %d\n",vm_stack[SP].data , SP);
         
     }
     
@@ -128,10 +139,12 @@ void handle_printf(int arg_count){
                 printf("%d",arg);
             }
             else if(fmt[i] == 'f'){
-                float arg1 = (int)atof(arg_arr[arg_indx++]);
+                float arg1 = atof(arg_arr[arg_indx++]);
                 printf("%f",arg1);
             }
             else if(fmt[i] == 'c'){
+                //printf("value is %f.\n",arg_arr[arg_indx]);
+                //printf("index = %d\n", arg_indx);
                 char arg2 = (char)atof(arg_arr[arg_indx++]);
                 printf("%c",arg2);
             }
@@ -273,9 +286,10 @@ void run_vm(){
                     }
                     else{
                         float val = get_name(instr.op1);
+                        //printf("instr.op1 = %s.\n",instr.op1);
                         //printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
                         set_name(instr.result , val);
-                        //printf("TAC_ASSIGN: %f\n",val);
+                        printf("TAC_ASSIGN: %f\n",val);
                     }
                 }
 
