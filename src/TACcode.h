@@ -33,6 +33,7 @@ typedef struct tac{
     int type;
     int is_deref_write;
     int is_addr;
+    //int is_char_lit;
 }TAC;
 
 extern TAC tac_table[100];

@@ -11,7 +11,21 @@ int SP = 0;
 
 stack_entry vm_stack[1000];
 
+/*char *ascii(char *val[]){
+    char asc_val[3];
+    if(strlen(val[0]) == 1){
+        asc_val[0] = val[0][0];
+        asc_val[1] = '\0';
+        asc_val[2] = '\0';
 
+        char ch = asc_val[0];
+        int asc = (int)ch;
+
+        char asc_val[0] = (char)asc;
+        printf("ascii : %c\n",asc_val[0]);
+        return asc_val;
+    }
+}*/
 
 mem_entry vm_memory[1000];
 int mem_count = 0;
@@ -65,10 +79,11 @@ float get_name(char *val){
         return RET_VAL;
     }
 
-    else if(strlen(val) == 3 && val[0] == '\'' && val[2] == '\''){
-        float ascii = val[0];
-        return ascii;
-    }
+    /*else if(strlen(val) == 1 ){
+        int ascii = val[0];
+        printf("ascii : %d\n",ascii);
+        return (float)ascii;
+    }*/
 
     else{
         int i = 0;
@@ -285,9 +300,15 @@ void run_vm(){
                         set_name(instr.result , ptr_val);
                     }
                     else{
-                        float val = get_name(instr.op1);
+                        float val;
+                        //int n = strlen(instr.op1);
+                    
+                        val = get_name(instr.op1);
+                        
+                        //printf("string length : %d\n",n);
+                        
                         //printf("instr.op1 = %s.\n",instr.op1);
-                        //printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
+                        printf("TAC_ASSIGN is : %s = %f\n",instr.result , val);
                         set_name(instr.result , val);
                         printf("TAC_ASSIGN: %f\n",val);
                     }

@@ -18,6 +18,8 @@ typedef struct{
 
 void BUILD_LABEL_TABLE();
 
+char *ascii(char *val[]);
+
 int find_label(char *target);
 
 float get_name(char *val);

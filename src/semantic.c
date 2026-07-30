@@ -120,7 +120,7 @@ void Check_Undeclared(NODE* root , char* Current_Scope){
 char* get_type(NODE* node , char* Current_Scope){
     if(node == NULL) return "UNKNOWN";
 
-    //printf("CHECKING NODE : %d.\n",node->is_Call);
+    printf("CHECKING NODE : %s.\n",node->value);
 
     if(node->is_Call == 1){
 
@@ -151,7 +151,7 @@ char* get_type(NODE* node , char* Current_Scope){
         base[--j] = '\0';
         //printf("LENGTH : %d.\n",j);
     }
-    //printf("BASE AFTER REDUCTION : %s.\n",base);
+    printf("BASE AFTER REDUCTION : %s.\n",base);
 
     for(int i=0 ; i<sym_count ; i++){
         if(strcmp(sym_table[i].sym , base) == 0  && strcmp(sym_table[i].scope , Current_Scope) == 0){
@@ -166,6 +166,9 @@ char* get_type(NODE* node , char* Current_Scope){
             if(is_float(node->value)) return "float";
             else return "int";
         }
+        else if(node->is_chr_lit == 1){
+            return "char";
+        }
 
         for(int i=0 ; i<sym_count ; i++){
             if(strcmp(sym_table[i].sym , node->value) == 0 && strcmp(sym_table[i].scope , Current_Scope) == 0){
@@ -175,6 +178,8 @@ char* get_type(NODE* node , char* Current_Scope){
         }
         return "UNKNOWN";
     }
+
+    
 
     char* left_type = get_type(node->left , Current_Scope);
     char* right_type = get_type(node->right , Current_Scope);
@@ -201,8 +206,8 @@ void Type_check(NODE* root , char* Current_Scope){
         char* left_type = get_type(root->left , Current_Scope);
         char* right_type = get_type(root->right , Current_Scope);
 
-        //printf("\nleft type : %s.\n",left_type);
-        //printf(" right type : %s.\n",right_type);
+        printf("\nleft type : %s.\n",left_type);
+        printf(" right type : %s.\n",right_type);
 
         if(strcmp(left_type , right_type) == 0){
             //printf("\nType check passed.");
