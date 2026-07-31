@@ -27,13 +27,13 @@ typedef struct tac{
     char op1[50];
     char op2[50];
     char opr[5];
-    char label[10];
+    char label[50];
     char scope[50];
     int is_dead;
     int type;
     int is_deref_write;
     int is_addr;
-    //int is_char_lit;
+    int is_char_lit;
 }TAC;
 
 extern TAC tac_table[100];

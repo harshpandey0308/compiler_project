@@ -130,7 +130,7 @@ static int parse_if_statement(int *i , int *start){
                     depth--;
                     if(depth == 0){
                         (*i)++;
-                        printf("After if-else body %d : %s\n",*i , tokens[*i].value);
+                        //printf("After if-else body %d : %s\n",*i , tokens[*i].value);
                         break;
                     }
                 } 
@@ -177,7 +177,7 @@ static int parse_while(int *i , int *start){
             }
             (*i)++;
         }
-        printf("After while body %d : %s\n",*i , tokens[*i].value);
+        //printf("After while body %d : %s\n",*i , tokens[*i].value);
         *start = *i;
         return 1;
     }
@@ -259,7 +259,7 @@ static int parse_statement(int *i , int *start){
                     if(strcmp(tokens[*start + 3].value , "=") == 0){
                         //printf("declaration with initialization detected for %s of type %s\n",name , type);
                         *pos_assign = *start + 3;
-                        printf("assign position  = %d\n", assign_pos);
+                        //printf("assign position  = %d\n", assign_pos);
                     }
                 }
 

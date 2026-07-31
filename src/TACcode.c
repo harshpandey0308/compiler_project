@@ -465,7 +465,7 @@ char* Generate_TAC(NODE* node){
             t.is_deref_write = 1;
             tac_table[tac_count++] = t;
 
-            printf("*%s = %s\n",t.result , t.op1);
+            //printf("*%s = %s\n",t.result , t.op1);
 
             //free(node->left->value);
             free(right_result);
@@ -480,9 +480,12 @@ char* Generate_TAC(NODE* node){
         strcpy(t.op2,"");
         strcpy(t.opr , node->value);
         t.is_addr = 1;
+        if(node->right->is_chr_lit == 1){
+            t.is_char_lit = 1;
+        }
         tac_table[tac_count++] = t;
         //printf("statement : \n");
-        printf("\n%s = %s\n",left_result , right_result);
+        //printf("\n%s = %s\n",left_result , right_result);
 
         free(left_result);
         free(right_result);
@@ -504,7 +507,7 @@ char* Generate_TAC(NODE* node){
     t.is_deref_write = 0;
     tac_table[tac_count++] = t;
 
-    printf(" %s = %s %s %s\n",temp , left_result , node->value , right_result);
+    //printf(" %s = %s %s %s\n",temp , left_result , node->value , right_result);
 
     free(left_result);
     free(right_result);
