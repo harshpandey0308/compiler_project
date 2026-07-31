@@ -17,4 +17,4 @@
                                                     |
                                          ASSEMBLY CODE GENERATION
 
- This is the workflow compiler follow for the translation. In token generation the compiler
+ This is the workflow compiler follow for the translation.
