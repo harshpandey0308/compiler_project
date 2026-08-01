@@ -4,11 +4,14 @@
 #define SEMANTIC_H
 
 
-
-typedef struct symbol{
-    char sym[50];
-    char type[10];
-    char scope[50];
+#define SYMBOL_TABLE_SIZE 200
+#define SYMBOL_SIZE 50
+#define SYMBOL_TYPE_SIZE 10
+#define SCOPE_SIZE 50
+typedef struct SYMBOL{
+    char sym[SYMBOL_SIZE];
+    char type[SYMBOL_TYPE_SIZE];
+    char scope[SCOPE_SIZE];
     union 
     {
         int ival;
@@ -21,9 +24,12 @@ typedef struct symbol{
     int size;
 }SYMBOL;
 
-extern SYMBOL sym_table[50];
-extern int sym_count;
-extern char Current_Scope[50];
+typedef struct SymbolTable{
+    SYMBOL sym_table[SYMBOL_TABLE_SIZE];
+    int sym_count;
+}SymbolTable;
+
+extern char Current_Scope[SCOPE_SIZE];
 
 int is_float(const char* s);
 

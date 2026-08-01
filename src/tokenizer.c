@@ -17,40 +17,8 @@ void print_tokens(TOKEN tokens[MAX_TOKENS] , int token_count){
     }
 }
 
-int lexer_keyword(int *i , int *j , int *k , const char* source[] , char buffer[50]){
-    while(isalnum(source[*i][*j]) || source[*i][*j] == '_'){
-                    //printf("identifier checking.\n");
-                    buffer[*k] = source[*i][*j];
-                    (*j)++;
-                    (*k)++;
-                }
-                //printf("identifier checked\n");
-                buffer[*k] = '\0';
-
-                //printf("the source is : %s\n",buffer);
-
-                strcpy(tokens[token_count].lexeme , buffer);
-                //printf("the lexeme of buffer is copied into tokens .\n");
-                int peek = *j;
-
-                while(source[*i][peek] == ' ') peek++;
-
-                //printf("the lexeme of peek is %d and source is %c.\n",peek , source[i][peek]);
-
-
-                if(source[*i][peek] == '(' && (strcmp(buffer , "if") != 0 && strcmp(buffer , "while") != 0 && strcmp(buffer , "for") != 0)){
-                    tokens[token_count].tokentype = TOKEN_FUNCTION;
-                }
-                else if(strcmp(buffer , "int") == 0 || strcmp(buffer , "char") == 0 || 
-                    strcmp(buffer , "float") == 0 || strcmp(buffer , "double") == 0 || 
-                    strcmp(buffer , "if") == 0 || strcmp(buffer , "else") == 0 ||
-                    strcmp(buffer , "while") == 0 || strcmp(buffer , "for") == 0 || strcmp(buffer , "return") == 0){
-                        tokens[token_count].tokentype = TOKEN_KEYWORD;
-                }
-                else{
-                    tokens[token_count].tokentype = TOKEN_IDENTIFIER;
-                }
-                token_count++;
+int lexer_keyword(int i , int j , int k , const char* source[] , char buffer[50]){
+    
 }
 
 int lexer(const char* source[] , const int* n){
@@ -71,7 +39,39 @@ int lexer(const char* source[] , const int* n){
                 continue;
             }
             else if(isalpha(source[i][j]) || source[i][j] == '_'){
-                lexer_keyword(&i , &j , &k , source , &buffer);
+                while(isalnum(source[i][j]) || source[i][j] == '_'){
+                    //printf("identifier checking.\n");
+                    buffer[k] = source[i][j];
+                    (j)++;
+                    (k)++;
+                }
+                //printf("identifier checked\n");
+                buffer[k] = '\0';
+
+                //printf("the source is : %s\n",buffer);
+
+                strcpy(tokens[token_count].lexeme , buffer);
+                //printf("the lexeme of buffer is copied into tokens .\n");
+                int peek = j;
+
+                while(source[i][peek] == ' ') peek++;
+
+                //printf("the lexeme of peek is %d and source is %c.\n",peek , source[i][peek]);
+
+
+                if(source[i][peek] == '(' && (strcmp(buffer , "if") != 0 && strcmp(buffer , "while") != 0 && strcmp(buffer , "for") != 0)){
+                    tokens[token_count].tokentype = TOKEN_FUNCTION;
+                }
+                else if(strcmp(buffer , "int") == 0 || strcmp(buffer , "char") == 0 || 
+                    strcmp(buffer , "float") == 0 || strcmp(buffer , "double") == 0 || 
+                    strcmp(buffer , "if") == 0 || strcmp(buffer , "else") == 0 ||
+                    strcmp(buffer , "while") == 0 || strcmp(buffer , "for") == 0 || strcmp(buffer , "return") == 0){
+                        tokens[token_count].tokentype = TOKEN_KEYWORD;
+                }
+                else{
+                    tokens[token_count].tokentype = TOKEN_IDENTIFIER;
+                }
+                token_count++;
             }
 
             else if(isdigit(source[i][j])){
