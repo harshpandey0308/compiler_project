@@ -8,60 +8,67 @@
 #include"parser.h"
 #include"tokenizer.h"
 
-#define TAC_ASSIGN 0
-#define TAC_IF_GOTO 1
-#define TAC_GOTO 2
-#define TAC_LABEL 3
-#define PARAM 4
-#define FUNC_CALL 5
-#define RETURN 6
-#define TAC_PUSH 7
-#define TAC_POP 8
-#define TAC_JMP_DYNAMIC 9
-#define TAC_FUNC_BEGIN 10
-#define TAC_PARAM_STRING 11
-#define TAC_PARAM_ADDR 12
-
+#define MAX_TAC_INSTR_SIZE 1000
+#define MAX_OPERAND_SIZE 50
+#define MAX_OPERATOR_LENGTH 10
+#define MAX_LENGTH 50
+typedef enum{
+    TAC_ASSIGN, 
+    TAC_IF_GOTO, 
+    TAC_GOTO, 
+    TAC_LABEL, 
+    PARAM, 
+    FUNC_CALL, 
+    RETURN, 
+    TAC_PUSH, 
+    TAC_POP, 
+    TAC_JMP_DYNAMIC, 
+    TAC_FUNC_BEGIN, 
+    TAC_PARAM_STRING, 
+    TAC_PARAM_ADDR, 
+}TAC_type;
 typedef struct tac{
     char result[50];
-    char op1[50];
-    char op2[50];
-    char opr[5];
-    char label[50];
-    char scope[50];
+    char op1[MAX_OPERAND_SIZE];
+    char op2[MAX_OPERAND_SIZE];
+    char opr[MAX_OPERATOR_LENGTH];
+    char label[MAX_LENGTH];
+    char scope[MAX_LENGTH];
     int is_dead;
-    int type;
+    TAC_type type;
     int is_deref_write;
     int is_addr;
     int is_char_lit;
 }TAC;
 
-extern TAC tac_table[100];
-extern int tac_count;
+typedef struct{
+    TAC code[MAX_TAC_INSTR_SIZE];
+    int tac_count;
+}TACProgram;
 
-char* new_temp();
+char* new_temp_name();
 
-char* Label();
+char* new_label();
 
-void emit_ASSIGN(char* result , char* op1 , char* op2 , char* opr);
+void emit_ASSIGN(TACProgram *program , char* result , char* op1 , char* op2 , char* opr);
 
-void emit_IF_GOTO(char* op1 , char* opr , char* op2 , char* label);
+void emit_IF_GOTO(TACProgram *program , char* op1 , char* opr , char* op2 , char* label);
 
-void emit_GOTO(char* label);
+void emit_GOTO(TACProgram *program, char* label);
 
-void emit_LABEL(char* label);
+void emit_LABEL(TACProgram *program , char* label);
 
-void emit_PARAM(char* value);
+void emit_PARAM(TACProgram *program , char* value);
 
-void emit_CALL(char* name , int arg_count);
+void emit_CALL(TACProgram *program , char* name , int arg_count);
 
-void emit_RETURN(char* value);
+void emit_RETURN(TACProgram *program , char* value);
 
-void emit_FUNC_BEG(char *name);
+void emit_FUNC_BEG(TACProgram *program , char *name);
 
-void emit_param_string(char *str);
+void emit_param_string(TACProgram *program , char *str);
 
-void emit_param_addr(char *value);
+void emit_param_addr(TACProgram *program , char *value);
 
 void Generate_if_tac(TOKEN tokens[] , int if_pos);
 

@@ -5,7 +5,7 @@
 
 
 
-TAC tac_table[100];
+TAC tac_table[500];
 int tac_count = 0 ;
 int temp_count = 0;
 int label_count = 0;
@@ -51,17 +51,17 @@ void emit_LABEL(char* label){
     tac_table[tac_count++] = t;
 }
 
-void emit_PARAM(char* value){
+void emit_PARAM(char* lexeme){
     TAC t = {0};
     t.type = PARAM;
-    strcpy(t.op1 , value);
+    strcpy(t.op1 , lexeme);
     tac_table[tac_count++] = t;
 }
 
-void emit_param_addr(char *value){
+void emit_param_addr(char *lexeme){
     TAC t = {0};
     t.type = TAC_PARAM_ADDR;
-    strcpy(t.op1 , value);
+    strcpy(t.op1 , lexeme);
     tac_table[tac_count++] = t;
 }
 
@@ -73,17 +73,17 @@ void emit_CALL(char* name , int arg_count){
     tac_table[tac_count++] = t;
 }
 
-void emit_RETURN(char* value){
+void emit_RETURN(char* lexeme){
     TAC t = {0};
     t.type = RETURN;
-    strcpy(t.op1 , value);
+    strcpy(t.op1 , lexeme);
     tac_table[tac_count++] = t;
 }
 
-void emit_PUSH(char *value){
+void emit_PUSH(char *lexeme){
     TAC t = {0};
     t.type = TAC_PUSH;
-    strcpy(t.op1 , value);
+    strcpy(t.op1 , lexeme);
     tac_table[tac_count++] = t;
 }
 
@@ -146,7 +146,7 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     int cond1_start = if_pos + 2;
     int cond1_end = cond1_start;
 
-    while(strcmp(tokens[cond1_end].value , ")") != 0){
+    while(strcmp(tokens[cond1_end].lexeme , ")") != 0){
         cond1_end++;
     }
     cond1_end--;
@@ -156,16 +156,16 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     char* op1;
     char* op2;
 
-    if(strcmp(tokens[cond1_start].value , "*") == 0){
-        opr = tokens[cond1_start+2].value;
-        sprintf(op1 , "*%s" , tokens[cond1_start + 1].value);
-        op2 = tokens[cond1_start+3].value;
+    if(strcmp(tokens[cond1_start].lexeme , "*") == 0){
+        opr = tokens[cond1_start+2].lexeme;
+        sprintf(op1 , "*%s" , tokens[cond1_start + 1].lexeme);
+        op2 = tokens[cond1_start+3].lexeme;
     }
     else{
-        op1 = tokens[cond1_start].value;
-        opr = tokens[cond1_start + 1].value;
+        op1 = tokens[cond1_start].lexeme;
+        opr = tokens[cond1_start + 1].lexeme;
     //printf("Operator is %s %d\n",opr,cond1_start + 1);
-        op2 = tokens[cond1_start + 2].value;
+        op2 = tokens[cond1_start + 2].lexeme;
     }
     
     //printf("emitting if goto\n");
@@ -174,7 +174,7 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     int else_pos = if_pos;
     //printf("else_pos = %d\n",else_pos);
 
-    while(!(tokens[else_pos].tokentype == KEYWORD && (strcmp(tokens[else_pos].value , "else") == 0 || strcmp(tokens[else_pos].value , "else if") == 0))){
+    while(!(tokens[else_pos].tokentype == TOKEN_KEYWORD && (strcmp(tokens[else_pos].lexeme , "else") == 0 || strcmp(tokens[else_pos].lexeme , "else if") == 0))){
         else_pos++;
     }
     
@@ -183,16 +183,16 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
     int else_start = else_pos + 2;
     int else_end = else_start;
     
-    while(strcmp(tokens[else_end].value , ";") != 0){
+    while(strcmp(tokens[else_end].lexeme , ";") != 0){
         else_end++;
     }
     else_end--;
 
-    //printf("%d %s\n",else_start , tokens[else_start].value);
-    //printf("else_end = %d , value at %d = %s\n",else_end , else_end , tokens[else_end].value);
+    //printf("%d %s\n",else_start , tokens[else_start].lexeme);
+    //printf("else_end = %d , lexeme at %d = %s\n",else_end , else_end , tokens[else_end].lexeme);
 
     //printf("build ast\n");
-    //printf("tokens at else start = %s\n",tokens[else_start].value);
+    //printf("tokens at else start = %s\n",tokens[else_start].lexeme);
     NODE* else_ast = Build_AST(tokens , else_start , else_end);
     //printf("generate tac for else\n");
     Generate_TAC(else_ast);
@@ -206,14 +206,14 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos){
 
     int if_start = if_pos;
     
-    while(strcmp(tokens[if_start].value , "{") != 0){
+    while(strcmp(tokens[if_start].lexeme , "{") != 0){
         if_start++;
     }
     if_start++;
 
     int if_end = if_start;
     
-    while(strcmp(tokens[if_end].value , ";") != 0){
+    while(strcmp(tokens[if_end].lexeme , ";") != 0){
         if_end++;
     }
     if_end--;
@@ -240,14 +240,14 @@ void Generate_while_tac(TOKEN tokens[] , int while_pos){
     int cond_start = while_pos + 2;
     int cond_end = cond_start;
 
-    while(strcmp(tokens[cond_end].value , ")") != 0){
+    while(strcmp(tokens[cond_end].lexeme , ")") != 0){
         cond_end++;
     }
     cond_end--;
 
-    char* op1 = tokens[cond_start].value;
-    char* opr = tokens[cond_start + 1].value;
-    char* op2 = tokens[cond_start + 2].value;
+    char* op1 = tokens[cond_start].lexeme;
+    char* opr = tokens[cond_start + 1].lexeme;
+    char* op2 = tokens[cond_start + 2].lexeme;
 
     emit_LABEL(l3);
 
@@ -258,7 +258,7 @@ void Generate_while_tac(TOKEN tokens[] , int while_pos){
 
     //printf("while condition starts at %d and ends at %d\n",cond_start , cond_end);
 
-    while(strcmp(tokens[body_start].value , "{") != 0){
+    while(strcmp(tokens[body_start].lexeme , "{") != 0){
         body_start++;
     }
     body_start++;
@@ -269,9 +269,9 @@ void Generate_while_tac(TOKEN tokens[] , int while_pos){
     int stmt_start = body_start;
     int j = body_start;
 
-    while(j<token_count && strcmp(tokens[j].value , "}") != 0){
-        //printf("token at %d is %s\n",j , tokens[j].value);
-        if(strcmp(tokens[j].value , ";") == 0){
+    while(j<token_count && strcmp(tokens[j].lexeme , "}") != 0){
+        //printf("token at %d is %s\n",j , tokens[j].lexeme);
+        if(strcmp(tokens[j].lexeme , ";") == 0){
             //printf("join me \n");
             //printf("building ast for statement starting at %d and ending at %d\n",stmt_start , j);
             NODE* stmt_ast = Build_AST(tokens , stmt_start , j-1);
@@ -306,8 +306,12 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
     int init_start = for_pos + 2;
     int init_end = init_start;
 
-    while(strcmp(tokens[init_end].value , ";") != 0){
+    while(strcmp(tokens[init_end].lexeme , ";") != 0){
         init_end++;
+    }
+
+    if(tokens[init_start].tokentype == TOKEN_KEYWORD){
+        init_start = init_start + 1;
     }
 
     NODE* init_ast = Build_AST(tokens , init_start , init_end - 1);
@@ -319,8 +323,8 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
     int cond_stt = init_end + 1;
     int cond_end = cond_stt;
 
-    if(strcmp(tokens[cond_stt - 1].value , ";") == 0){
-        while(strcmp(tokens[cond_end].value , ";") != 0 ){
+    if(strcmp(tokens[cond_stt - 1].lexeme , ";") == 0){
+        while(strcmp(tokens[cond_end].lexeme , ";") != 0 ){
         cond_end++;
         }
     }
@@ -330,16 +334,16 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
     //Generate_TAC(cond_ast);
     //free_tree(cond_ast);
 
-    char* op1 = tokens[cond_stt].value;
-    char* opr = tokens[cond_stt + 1].value;
-    char* op2 = tokens[cond_stt + 2].value;
+    char* op1 = tokens[cond_stt].lexeme;
+    char* opr = tokens[cond_stt + 1].lexeme;
+    char* op2 = tokens[cond_stt + 2].lexeme;
 
     char* invert_opr = invert_condition(opr);
     emit_IF_GOTO(op1 , invert_opr , op2 , L6);
 
 
     int body_begins = for_pos;
-    while(strcmp(tokens[body_begins].value , "{") != 0){
+    while(strcmp(tokens[body_begins].lexeme , "{") != 0){
         body_begins++;
     }
     body_begins++;
@@ -347,8 +351,8 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
     int stmt_stt = body_begins;
     int j = body_begins;
 
-    while(j < token_count && strcmp(tokens[j].value , "}") != 0){
-        if(strcmp(tokens[j].value , ";") == 0){
+    while(j < token_count && strcmp(tokens[j].lexeme , "}") != 0){
+        if(strcmp(tokens[j].lexeme , ";") == 0){
             NODE* body_ast = Build_AST(tokens , stmt_stt , j - 1);
             Generate_TAC(body_ast);
             free_tree(body_ast);
@@ -360,13 +364,17 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
     int up_stt = cond_end + 1;
     int up_end = up_stt;
     
-    while(strcmp(tokens[up_end].value , ")") != 0){
+    while(strcmp(tokens[up_end].lexeme , ")") != 0){
         up_end++;
     }
     
 
     NODE* up_ast = Build_AST(tokens , up_stt , up_end - 1);
     Generate_TAC(up_ast);
+
+    printf("FOR: init_end=%d cond_stt=%d cond_end=%d up_stt=%d\n",init_end, cond_stt, cond_end, up_stt);
+    printf("UPDATE tokens: %s %s %s %s\n",tokens[up_stt].lexeme, tokens[up_stt+1].lexeme,tokens[up_stt+2].lexeme, tokens[up_stt+3].lexeme);
+
     free_tree(up_ast);
 
     emit_GOTO(L5);
@@ -379,15 +387,15 @@ void Generate_for_TAC(TOKEN tokens[] , int for_pos){
 }
 
 char* Generate_TAC(NODE* node){
-    //printf("Generating TAC for node with value %s\n",node->value);
-    if(node->is_addr_of == 1){
+    //printf("Generating TAC for node with lexeme %s\n",node->lexeme);
+    if(node->type == AST_ADDRESS_OF){
         char* temp = new_temp();
         TAC t = {0};
 
         t.type = TAC_ASSIGN;
         strcpy(t.result , temp);
         //printf("t.result : %s.\n",t.result);
-        strcpy(t.op1 , node->value);
+        strcpy(t.op1 , node->lexeme);
         //printf("t.op1: %s.\n",t.op1);
         strcpy(t.op2 , "");
         strcpy(t.opr , "&");
@@ -399,13 +407,13 @@ char* Generate_TAC(NODE* node){
         return temp;
     }
 
-    if(node->is_deref == 1){
+    if(node->type == AST_DEREFERENCE){
         char* temp = new_temp();
         TAC t = {0};
 
         t.type = TAC_ASSIGN;
         strcpy(t.result , temp);
-        strcpy(t.op1 , node->value);
+        strcpy(t.op1 , node->lexeme);
         strcpy(t.op2 , "");
         strcpy(t.opr , "*");
         t.is_deref_write = 0;
@@ -414,14 +422,14 @@ char* Generate_TAC(NODE* node){
         return temp;
     }
 
-    if(node->is_Call == 1){
+    if(node->type == AST_FUNCTION_CALL){
         char *ret_labels = Label();
         for(int i=0 ; i<node->ARG_count ; i++){
-            if(node->ARG[i]->is_string == 1){
-                emit_param_string(node->ARG[i]->value);
+            if(node->ARG[i]->type == AST_STRING){
+                emit_param_string(node->ARG[i]->lexeme);
             }
-            else if(node->ARG[i]->is_addr_of == 1){
-                emit_param_addr(node->ARG[i]->value);
+            else if(node->ARG[i]->type == AST_ADDRESS_OF){
+                emit_param_addr(node->ARG[i]->lexeme);
             }
             else{
                 char* arg_val = Generate_TAC(node->ARG[i]);
@@ -433,8 +441,8 @@ char* Generate_TAC(NODE* node){
         emit_PUSH(ret_labels);
         char count_string[10];
         sprintf(count_string , "%d", node->ARG_count);
-        //printf("the value is :%s\n",node->value);
-        emit_CALL(node->value , node->ARG_count);
+        //printf("the lexeme is :%s\n",node->lexeme);
+        emit_CALL(node->lexeme , node->ARG_count);
 
         emit_LABEL(ret_labels);
 
@@ -442,21 +450,21 @@ char* Generate_TAC(NODE* node){
     }
 
     if(node->left == NULL && node->right == NULL){
-        char* value = (char*)malloc(50);
-        strcpy(value , node->value);
-        //printf("Leaf node : %s\n",value);
-        return value;
+        char* lexeme = (char*)malloc(strlen(node->lexeme)+1);
+        strcpy(lexeme , node->lexeme);
+        //printf("Leaf node : %s\n",lexeme);
+        return lexeme;
     }
 
     
 
-    if(node->value[0] == '='){
+    if(node->lexeme[0] == '='){
 
-        if(node->left->is_deref == 1 && node->left != NULL){
+        if(node->left->type == AST_DEREFERENCE && node->left != NULL){
             char* right_result = Generate_TAC(node->right);
             TAC t = {0};
-            strcpy(t.result , node->left->value);
-            //printf("the left result is %s\n",node->left->value);
+            strcpy(t.result , node->left->lexeme);
+            //printf("the left result is %s\n",node->left->lexeme);
             strcpy(t.op1 , right_result);
             //printf("the right result is %s\n",right_result);
             strcpy(t.op2,"");
@@ -467,7 +475,7 @@ char* Generate_TAC(NODE* node){
 
             //printf("*%s = %s\n",t.result , t.op1);
 
-            //free(node->left->value);
+            //free(node->left->lexeme);
             free(right_result);
             return strdup("");
         }
@@ -478,9 +486,9 @@ char* Generate_TAC(NODE* node){
         strcpy(t.result , left_result);
         strcpy(t.op1 , right_result);
         strcpy(t.op2,"");
-        strcpy(t.opr , node->value);
+        strcpy(t.opr , node->lexeme);
         t.is_addr = 1;
-        if(node->right->is_chr_lit == 1){
+        if(node->right->type == AST_CHARACTER){
             t.is_char_lit = 1;
         }
         tac_table[tac_count++] = t;
@@ -503,11 +511,11 @@ char* Generate_TAC(NODE* node){
     strcpy(t.result , temp);
     strcpy(t.op1 , left_result);
     strcpy(t.op2 , right_result);
-    strcpy(t.opr , node->value);
+    strcpy(t.opr , node->lexeme);
     t.is_deref_write = 0;
     tac_table[tac_count++] = t;
 
-    //printf(" %s = %s %s %s\n",temp , left_result , node->value , right_result);
+    //printf(" %s = %s %s %s\n",temp , left_result , node->lexeme , right_result);
 
     free(left_result);
     free(right_result);
