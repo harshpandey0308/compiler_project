@@ -23,7 +23,7 @@ NODE* create_node(const char *lexeme , AST_NODE_TYPE type){
     new->right = NULL;
     new->type = type;
     new->ARG_count = 0;
-    for(int i=0 ; i<MAX_ARGUMENT ; i++){
+    for(int i=0 ; i<MAX_ARGUMENT ; ){
         new->ARG[i] = NULL;
     }
     return new;
@@ -206,7 +206,7 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
 
         //printf("total argument found : %d\n",call_node->ARG_count);
 
-        //for(int i=0 ; i<call_node->ARG_count ; i++){
+        //for(int i=0 ; i<call_node->ARG_count ; ){
         //    printf("ARG[%d] = %s , is_string = %d\n",i , call_node->ARG[i] , call_node->ARG[i]->is_string);
         //}
         return call_node;
@@ -219,7 +219,7 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
     }
     else{
         int depth = 0;
-        for(int i=start ; i<=end ; i++){
+        for(int i=start ; i<=end ; ){
             if(strcmp(tokens[i].lexeme , "(")==0){
             depth++;
             }
@@ -255,25 +255,42 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
     return root;
 }
 
-NODE *parse_block(int start){
+NODE *parse_block(TOKEN tokens[] , int start , int end){
+    BLOCK B;
+    B.head = NULL;
+    B.tail = NULL;
     NODE *node = NULL;
     int i=start;
-    while(strcmp(tokens[i].lexeme , "}") != 0){
+    while(i <= end){
         if(strcmp(tokens[i].lexeme , "if") == 0){
-            node = parse_statement(tokens , &i);
-            i++;
-            node->next = parse_block(&i);
-            
+            node =parse_statement(tokens , &i);
+            if(B.head == NULL){
+                B.head = node;
+            }
+            else{
+                B.tail->next = node;
+            }
+            B.tail = node;
         }
-        else if(strcmp(tokens[i].lexeme , "else" && strcmp(tokens[i+1].lexeme , "if")) != 0){
-            node = parse_statement(tokens , &i);
-            i++;
-            node->next = parse_block(&i);
+        else if((strcmp(tokens[i].lexeme , "else") == 0 && strcmp(tokens[i+1].lexeme , "if") != 0)){
+            node =parse_statement(tokens , &i);
+            if(B.head == NULL){
+                B.head = node;
+            }
+            else{
+                B.tail->next = node;
+            }
+            B.tail = node;
         }
         else if(strcmp(tokens[i].lexeme , "else") == 0 && strcmp(tokens[i+1].lexeme , "if") == 0){
-            node = parse_statement(tokens , &i);
-            i++;
-            node->next = parse_block(&i);
+            node =parse_statement(tokens , &i);
+            if(B.head == NULL){
+                B.head = node;
+            }
+            else{
+                B.tail->next = node;
+            }
+            B.tail = node;
         }
         else{
             int statement_begin = i;
@@ -284,14 +301,19 @@ NODE *parse_block(int start){
 
             node = build_AST(tokens , statement_begin , statement_end - 1);
             i = statement_end+1;
-            node->next = parse_block(i);
-            return node;
+            if(B.head == NULL){
+                B.head = node;
+            }
+            else{
+                B.tail->next = node;
+            }
+            B.tail = node;
         }
     }
-    return NULL;
+    return B.head;
 }
 
-NODE *parse_if(TOKEN tokens[] , int *pos){
+NODE *parse_statement(TOKEN tokens[] , int *pos){
     NODE *node = NULL;
     if(strcmp(tokens[*pos].lexeme , "if") == 0 && tokens[*pos].tokentype == TOKEN_KEYWORD){
         node = create_node(tokens[*pos].lexeme , AST_IF);
@@ -303,24 +325,77 @@ NODE *parse_if(TOKEN tokens[] , int *pos){
 
         NODE *cond_root = build_AST(tokens , condition_start , condition_end-1);
         node->left = cond_root;
-
+        
+        
         while(strcmp(tokens[condition_end].lexeme , "{") != 0){
             (condition_end)++;
         }
 
-        int block_start;
-        block_start = condition_end + 1;
-        int block_end;
-        block_end = block_start;
+        int block_start =  condition_end + 1;
+        int block_end = block_start;
 
-        while(strcmp(tokens[block_end].lexeme , "}") != 0){
-            (block_end)++;
+        int depth = 1;
+        while(depth > 0){
+            if(strcmp(tokens[block_end].lexeme , "{") == 0){
+                depth++;
+                block_end++;
+            }
+            else if(strcmp(tokens[block_end].lexeme , "}") == 0){
+                depth--;
+                block_end++;
+            }
+            else{
+                block_end++;
+            }
         }
 
-        NODE *state_root = parse_block(block_start);
+        NODE *state_root = parse_block(tokens , block_start , block_end-1);
         node->right = state_root;
         *pos = block_end;
     }
+
+    else if(strcmp(tokens[*pos].lexeme , "else") == 0 && strcmp(tokens[*pos+1].lexeme , "{") == 0){
+        int else_begin = *pos+2;
+        int else_end = else_begin;
+        int else_depth = 1;
+        while(else_depth > 0){
+            if(strcmp(tokens[else_end].lexeme , "{") == 0){
+                else_depth++;
+                else_end++;
+            }
+            else if(strcmp(tokens[else_end] .lexeme , "}") == 0){
+                else_depth--;
+                else_end++;
+            }
+            else{
+                else_end++;
+            }
+        }
+        node = parse_block(tokens , else_begin , else_end-1);
+        *pos = else_end-1;
+    }
+
+    else if(strcmp(tokens[*pos].lexeme , "else") == 0 && strcmp(tokens[*pos + 1].lexeme , "if") == 0){
+        int else_if_begin = *pos+2;
+        int else_if_end = else_if_begin;
+        int else_if_depth = 1;
+        while(else_if_depth > 0){
+            if(strcmp(tokens[else_if_end].lexeme , "{") == 0){
+                else_if_depth++;
+                else_if_end++;
+            }
+            else if(strcmp(tokens[else_if_end].lexeme , "}") == 0){
+                else_if_depth--;
+                else_if_end++;
+            }
+            else{
+                else_if_end++;
+            }
+        }
+        node = parse_block(tokens , else_if_begin , else_if_end-1);
+        *pos = else_if_end-1;
+    }
+
     return node;
 }
 

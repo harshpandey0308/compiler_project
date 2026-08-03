@@ -47,7 +47,8 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end);
 
 NODE *parse_statement(TOKEN tokens[] , int *pos);
 
-NODE *parse_block(int start);
+
+NODE *parse_block(TOKEN tokens[] , int start , int end);
 
 //NODE* parser(const char* exp[] , const int* n);
 
