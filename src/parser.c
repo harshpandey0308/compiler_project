@@ -88,7 +88,7 @@ int find_operator(const TOKEN tokens[] , int start , int end){
     return -1;
 }
 
-NODE* build_AST(TOKEN tokens[] , int start , int end){
+NODE* build_AST(const TOKEN tokens[] , int start , int end){
     //printf("Building AST for tokens from %d to %d.\n",start , end);
     //printf("the tokens are %s , %s\n",tokens[start].lexeme , tokens[end].lexeme);
     if(start == end){
@@ -255,44 +255,72 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
     return root;
 }
 
-/*NODE *parser(const char* exp[] , const int* n){
-    
-    //TOKEN tokens[50];
-    printf("Parsing started.\n");
-
-    token_count = lexer(exp , n);
-
-    printf("After tokenization\n");
-
-    int start = 0;
-    NODE* root = NULL;
-
-    for(int i=0 ; i<token_count ; i++){
-
-        if(strcmp(tokens[i].lexeme , ";")== 0){
-
-            if(strcmp(tokens[i].lexeme , "=")==0){
-            start = i + 1;
-            continue;
-            }
+NODE *parse_block(int start){
+    NODE *node = NULL;
+    int i=start;
+    while(strcmp(tokens[i].lexeme , "}") != 0){
+        if(strcmp(tokens[i].lexeme , "if") == 0){
+            node = parse_statement(tokens , &i);
+            i++;
+            node->next = parse_block(&i);
             
-            root = Build_AST(tokens , start , i-1);
+        }
+        else if(strcmp(tokens[i].lexeme , "else" && strcmp(tokens[i+1].lexeme , "if")) != 0){
+            node = parse_statement(tokens , &i);
+            i++;
+            node->next = parse_block(&i);
+        }
+        else if(strcmp(tokens[i].lexeme , "else") == 0 && strcmp(tokens[i+1].lexeme , "if") == 0){
+            node = parse_statement(tokens , &i);
+            i++;
+            node->next = parse_block(&i);
+        }
+        else{
+            int statement_begin = i;
+            int statement_end = statement_begin;
+            while(strcmp(tokens[statement_end].lexeme , ";") != 0){
+                statement_end++;
+            }
 
-            printf("Syntax tree for statement %d.\n", i );
+            node = build_AST(tokens , statement_begin , statement_end - 1);
+            i = statement_end+1;
+            node->next = parse_block(i);
+            return node;
+        }
+    }
+    return NULL;
+}
 
-            print(root);
-
-            start = i + 1;
-
+NODE *parse_if(TOKEN tokens[] , int *pos){
+    NODE *node = NULL;
+    if(strcmp(tokens[*pos].lexeme , "if") == 0 && tokens[*pos].tokentype == TOKEN_KEYWORD){
+        node = create_node(tokens[*pos].lexeme , AST_IF);
+        int condition_start = *pos + 2;
+        int condition_end = condition_start;
+        while(strcmp(tokens[condition_end].lexeme , ")") != 0){
+            (condition_end)++;
         }
 
-        
+        NODE *cond_root = build_AST(tokens , condition_start , condition_end-1);
+        node->left = cond_root;
+
+        while(strcmp(tokens[condition_end].lexeme , "{") != 0){
+            (condition_end)++;
+        }
+
+        int block_start;
+        block_start = condition_end + 1;
+        int block_end;
+        block_end = block_start;
+
+        while(strcmp(tokens[block_end].lexeme , "}") != 0){
+            (block_end)++;
+        }
+
+        NODE *state_root = parse_block(block_start);
+        node->right = state_root;
+        *pos = block_end;
     }
+    return node;
+}
 
-    
-
-    
-    printf("\nParsing completed.\n");
-    
-    return root;
-}*/
