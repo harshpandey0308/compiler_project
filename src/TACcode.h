@@ -70,13 +70,13 @@ void emit_param_string(TACProgram *program , char *str);
 
 void emit_param_addr(TACProgram *program , char *value);
 
-void Generate_if_tac(TOKEN tokens[] , int if_pos);
+void Generate_if_tac(TOKEN tokens[] , int if_pos , TACProgram *program);
 
-void Generate_while_tac(TOKEN tokens[] , int while_pos);
+void Generate_while_tac(TOKEN tokens[] , int while_pos , TACProgram *program);
 
-void Generate_for_TAC(TOKEN tokens[] , int for_pos);
+void Generate_for_TAC(TOKEN tokens[] , int for_pos , TACProgram *program);
 
-char* Generate_TAC(NODE* node);
+char* Generate_TAC(NODE* node , TACProgram *program);
 
 //void print_TAC();
 
