@@ -131,7 +131,7 @@ char* invert_condition(char* opr){
     else return opr;
 }
 
-char* Label(){
+char* new_label(){
     char* label = (char*)malloc(10);
     sprintf(label , "L%d" , ++label_count);
     return label;
@@ -139,9 +139,9 @@ char* Label(){
 
 void Generate_if_tac(TOKEN tokens[] , int if_pos , TACProgram *program){
     //printf("generate if position %d:\n", if_pos);
-    char* l1 = Label();
-    char* l2 = Label();
-    //char* l3 = Label();
+    char* l1 = new_label();
+    char* l2 = new_label();
+    //char* l3 = new_label();
 
     int cond1_start = if_pos + 2;
     int cond1_end = cond1_start;
@@ -234,8 +234,8 @@ void Generate_if_tac(TOKEN tokens[] , int if_pos , TACProgram *program){
 void Generate_while_tac(TOKEN tokens[] , int while_pos , TACProgram *program){
 //printf("while tac generation starts\n");
 
-    char* l3 = Label();
-    char* l4 = Label();
+    char* l3 = new_label();
+    char* l4 = new_label();
 
     int cond_start = while_pos + 2;
     int cond_end = cond_start;
@@ -300,8 +300,8 @@ void Generate_while_tac(TOKEN tokens[] , int while_pos , TACProgram *program){
 }
 
 void Generate_for_TAC(TOKEN tokens[] , int for_pos , TACProgram *program){
-    char* L5 = Label();
-    char* L6 = Label();
+    char* L5 = new_label();
+    char* L6 = new_label();
 
     int init_start = for_pos + 2;
     int init_end = init_start;
@@ -423,7 +423,7 @@ char* Generate_TAC(NODE* node , TACProgram *program){
     }
 
     if(node->type == AST_FUNCTION_CALL){
-        char *ret_labels = Label();
+        char *ret_labels = new_label();
         for(int i=0 ; i<node->ARG_count ; i++){
             if(node->ARG[i]->type == AST_STRING){
                 emit_param_string(program , node->ARG[i]->lexeme);
