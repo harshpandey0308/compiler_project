@@ -126,7 +126,7 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
             NODE* root = create_node(tokens[start+4].lexeme , AST_OPERATOR);
 
             root->left = arr_node;
-            root->right = Build_AST(tokens , start+5 , end);
+            root->right = build_AST(tokens , start+5 , end);
 
             return root;
         }
@@ -235,7 +235,7 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
     
 
     if(is_wrapped){
-        return Build_AST(tokens , start+1 , end-1);
+        return build_AST(tokens , start+1 , end-1);
     }
     //if(start<=end && tokens[start].lexeme == '(' && tokens[end].lexeme == ')'){
       //  return Build_AST(tokens , start+1 , end-1);
