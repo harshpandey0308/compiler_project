@@ -1,35 +1,71 @@
 #ifndef VM_H
 #define  VM_H
 
+#define MAX_VALUE_LENGTH 50
+#define MAX_NAME_LENGTH 50
+#define MAX_LABEL_LENGTH 50
+#define MAX_STACK_SIZE 1000
+#define MAX_MEMORY_SIZE 1000
+#define MAX_LABEL_SIZE 100
 typedef struct{
-    char data[50];
+    char data[MAX_VALUE_LENGTH];
     int is_label;
-}stack_entry;
+}STACK_ENTRY;
 
 typedef struct{
-    char name[50];
+    STACK_ENTRY data[MAX_STACK_SIZE];
+    int top;
+}VMSTACK;
+
+typedef struct{
+    char name[MAX_NAME_LENGTH];
     float value;
-}mem_entry;
+}MEMORY_ENTRY;
 
 typedef struct{
-    char label[50];
+    MEMORY_ENTRY data[MAX_MEMORY_SIZE];
+    int memory_count;
+}VM_MEMORY;
+
+typedef struct{
+    char label[MAX_LABEL_LENGTH];
     int index;
-}Label_entry;
+}LABEL_ENTRY;
 
-void BUILD_LABEL_TABLE();
+typedef struct{
+    LABEL_ENTRY data[MAX_LABEL_SIZE];
+    int label_count;
+}LABEL;
 
-char *ascii(char *val[]);
 
-int find_label(char *target);
+typedef struct{
+    TACProgram program;
+    VMSTACK vm_stack;
+    VM_MEMORY memory;
+    LABEL label_table;
+    SymbolTable symbol;
 
-float get_name(char *val);
+    float RET_VAL;
+    float  registers[4];
+    int PC;
+}VM;
 
-void set_name(char *name , float value);
+void BUILD_LABEL_TABLE(VM *vm);
 
-void handling_printf(int arg_count);
+int find_label(char *target , VM *VM);
 
-void run_vm();
+float get_name(char *val , VM *vm);
 
-void print_vm_memory();
+void set_name(char *name , float value , VM *vm);
+
+void handling_printf(int arg_count , VM *vm);
+
+void handle_scanf(int arg_count , VM *vm);
+
+void run_vm(VM *vm);
+
+char *find_type(char *name , VM *vm);
+
+void print_vm_memory(VM *vm);
 
 #endif
