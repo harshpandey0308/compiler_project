@@ -1,5 +1,9 @@
 #include<stdio.h>
 #include"compiler.h"
+#include"ASMCODE.h"
+#include"TACcode.h"
+#include"semantic.h"
+#include"VM.h"
 
 int main(int argc, char* argv[]){
 

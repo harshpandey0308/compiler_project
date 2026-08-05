@@ -23,7 +23,7 @@ NODE* create_node(const char *lexeme , AST_NODE_TYPE type){
     new->right = NULL;
     new->type = type;
     new->ARG_count = 0;
-    for(int i=0 ; i<MAX_ARGUMENT ; i++){
+    for(int i=0 ; i<MAX_ARGUMENT ; ){
         new->ARG[i] = NULL;
     }
     return new;
@@ -88,7 +88,7 @@ int find_operator(const TOKEN tokens[] , int start , int end){
     return -1;
 }
 
-NODE* build_AST(TOKEN tokens[] , int start , int end){
+NODE* build_AST(const TOKEN tokens[] , int start , int end){
     //printf("Building AST for tokens from %d to %d.\n",start , end);
     //printf("the tokens are %s , %s\n",tokens[start].lexeme , tokens[end].lexeme);
     if(start == end){
@@ -126,7 +126,7 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
             NODE* root = create_node(tokens[start+4].lexeme , AST_OPERATOR);
 
             root->left = arr_node;
-            root->right = Build_AST(tokens , start+5 , end);
+            root->right = build_AST(tokens , start+5 , end);
 
             return root;
         }
@@ -157,7 +157,7 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
             //left_node->left = left_l_node;
             //printf("creating right node");
             
-            deref_node->right = (start + 3 <= end )? Build_AST(tokens , start+3 , end) : NULL;
+            deref_node->right = (start + 3 <= end )? build_AST(tokens , start+3 , end) : NULL;
             //printf("dereference node = %s\n",deref_node->lexeme);
             return deref_node;
         }
@@ -206,7 +206,7 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
 
         //printf("total argument found : %d\n",call_node->ARG_count);
 
-        //for(int i=0 ; i<call_node->ARG_count ; i++){
+        //for(int i=0 ; i<call_node->ARG_count ; ){
         //    printf("ARG[%d] = %s , is_string = %d\n",i , call_node->ARG[i] , call_node->ARG[i]->is_string);
         //}
         return call_node;
@@ -219,7 +219,7 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
     }
     else{
         int depth = 0;
-        for(int i=start ; i<=end ; i++){
+        for(int i=start ; i<=end ; ){
             if(strcmp(tokens[i].lexeme , "(")==0){
             depth++;
             }
@@ -235,7 +235,7 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
     
 
     if(is_wrapped){
-        return Build_AST(tokens , start+1 , end-1);
+        return build_AST(tokens , start+1 , end-1);
     }
     //if(start<=end && tokens[start].lexeme == '(' && tokens[end].lexeme == ')'){
       //  return Build_AST(tokens , start+1 , end-1);
@@ -254,45 +254,3 @@ NODE* build_AST(TOKEN tokens[] , int start , int end){
 
     return root;
 }
-
-/*NODE *parser(const char* exp[] , const int* n){
-    
-    //TOKEN tokens[50];
-    printf("Parsing started.\n");
-
-    token_count = lexer(exp , n);
-
-    printf("After tokenization\n");
-
-    int start = 0;
-    NODE* root = NULL;
-
-    for(int i=0 ; i<token_count ; i++){
-
-        if(strcmp(tokens[i].lexeme , ";")== 0){
-
-            if(strcmp(tokens[i].lexeme , "=")==0){
-            start = i + 1;
-            continue;
-            }
-            
-            root = Build_AST(tokens , start , i-1);
-
-            printf("Syntax tree for statement %d.\n", i );
-
-            print(root);
-
-            start = i + 1;
-
-        }
-
-        
-    }
-
-    
-
-    
-    printf("\nParsing completed.\n");
-    
-    return root;
-}*/
