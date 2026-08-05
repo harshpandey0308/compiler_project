@@ -53,46 +53,46 @@ static int is_func_def(int index){
     if(index+2 >= token_count){
         return 0;
     }
-    if(tokens[index].tokentype != KEYWORD)
+    if(tokens[index].tokentype != TOKEN_KEYWORD)
         return 0;
 
-    if(tokens[index+1].tokentype != FUNC_NAME && tokens[index+1].tokentype != IDENTIFIER){
+    if(tokens[index+1].tokentype != TOKEN_FUNCTION && tokens[index+1].tokentype != TOKEN_IDENTIFIER){
         return 0;
     }
-    if(strcmp(tokens[index+2].value , "(") != 0){
+    if(strcmp(tokens[index+2].lexeme , "(") != 0){
         return 0;
     }
 
     return 1;
 }
 
-static int parse_function(int *i , int *start){
+static int parse_function(int *i , int *start , Semantic_ctxt *context , TACProgram *program){
     if(!is_func_def(*i)){
         return 0;
     }
 
-    char* func_name = tokens[*i+1].value;
-    char* ret_type = tokens[*i].value;
+    char* func_name = tokens[*i+1].lexeme;
+    char* ret_type = tokens[*i].lexeme;
 
     add_symbol(func_name , ret_type  , "global" , 0 , 0);
 
-    strcpy(Current_Scope , func_name);
+    strcpy(context->current_scope , func_name);
 
-    emit_FUNC_BEG(func_name);
+    emit_FUNC_BEG(program , func_name );
 
-    while(*i<token_count && strcmp(tokens[*i].value , "(") != 0){
+    while(*i<token_count && strcmp(tokens[*i].lexeme , "(") != 0){
         (*i)++;
     }
     int param_start = *i + 1;
     int param_end = param_start;
 
-    while(*i<token_count && strcmp(tokens[param_end].value , ")") != 0){
-        char *param_type = tokens[param_end].value;
-        char *param_name = tokens[param_end+1].value;
-        //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , Current_Scope);
-        add_symbol(param_name , param_type , Current_Scope , 1 , 0);
+    while(*i<token_count && strcmp(tokens[param_end].lexeme , ")") != 0){
+        char *param_type = tokens[param_end].lexeme;
+        char *param_name = tokens[param_end+1].lexeme;
+        //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , context->current_scope);
+        add_symbol(param_name , param_type , context->current_scope , 1 , 0);
         param_end += 2;
-        if(strcmp(tokens[param_end].value , ",") == 0){
+        if(strcmp(tokens[param_end].lexeme , ",") == 0){
             param_end++;
         }
     }
@@ -105,7 +105,7 @@ static int parse_function(int *i , int *start){
 
 static int is_if_statement(int index){
     //printf("checking the statement include if or not.\n");
-    if(tokens[index].tokentype == KEYWORD && (strcmp(tokens[index].value , "if") == 0)){
+    if(tokens[index].tokentype == TOKEN_KEYWORD && (strcmp(tokens[index].lexeme , "if") == 0)){
         //printf("yes the statement include if keyword.\n");
         return 1;
     }
@@ -113,30 +113,30 @@ static int is_if_statement(int index){
     return 0;
 }
 
-static int parse_if_statement(int *i , int *start){
-    //printf("checking if statement and value of i = %d.\n",*i);
+static int parse_if_statement(int *i , int *start , TACProgram *program){
+    //printf("checking if statement and lexeme of i = %d.\n",*i);
     if(is_if_statement(*i)){
             //printf("if statement found at token %d\n",*i);
-            Generate_if_tac(tokens , *i);
+            Generate_if_tac(tokens , *i , program);
 
-            while(*i<token_count && !(tokens[*i].tokentype == KEYWORD && strcmp(tokens[*i].value , "else") == 0)){
+            while(*i<token_count && !(tokens[*i].tokentype == TOKEN_KEYWORD && strcmp(tokens[*i].lexeme , "else") == 0)){
                 (*i)++;
             }
 
             int depth = 0;
             while(*i<token_count){
-                if(strcmp(tokens[*i].value , "{") == 0) depth++;
-                if(strcmp(tokens[*i].value , "}") == 0){
+                if(strcmp(tokens[*i].lexeme , "{") == 0) depth++;
+                if(strcmp(tokens[*i].lexeme , "}") == 0){
                     depth--;
                     if(depth == 0){
                         (*i)++;
-                        //printf("After if-else body %d : %s\n",*i , tokens[*i].value);
+                        //printf("After if-else body %d : %s\n",*i , tokens[*i].lexeme);
                         break;
                     }
                 } 
                 (*i)++;
             }
-            //printf("i is at token %d : %s\n",*i , tokens[*i].value);
+            //printf("i is at token %d : %s\n",*i , tokens[*i].lexeme);
             (*i)--;
             *start = *i;
             return 1;
@@ -145,7 +145,7 @@ static int parse_if_statement(int *i , int *start){
 }
 
 static int is_while_statement(int index){
-    if(tokens[index].tokentype == KEYWORD && strcmp(tokens[index].value , "while") == 0){
+    if(tokens[index].tokentype == TOKEN_KEYWORD && strcmp(tokens[index].lexeme , "while") == 0){
         //printf("while included.\n");
         return 1;
     }
@@ -153,22 +153,22 @@ static int is_while_statement(int index){
     return 0;
 }
 
-static int parse_while(int *i , int *start){
+static int parse_while(int *i , int *start , TACProgram *program){
     //printf("checking the while statement.\n");
     if(is_while_statement(*i)){
         //printf("while statement found at token %d\n",*i);
-        Generate_while_tac(tokens , *i);
+        Generate_while_tac(tokens , *i , program);
 
         //printf("while body ends at token %d\n",*i);
 
-        while(*i<token_count && strcmp(tokens[*i].value , "{") != 0){
+        while(*i<token_count && strcmp(tokens[*i].lexeme , "{") != 0){
             (*i)++;
         }
 
         int depth1 = 0;
         while(*i<token_count){
-            if(strcmp(tokens[*i].value , "{") == 0) depth1++;
-            if(strcmp(tokens[*i].value , "}") == 0){
+            if(strcmp(tokens[*i].lexeme , "{") == 0) depth1++;
+            if(strcmp(tokens[*i].lexeme , "}") == 0){
                 depth1--;
                 if(depth1 == 0){
                     (*i)++;
@@ -177,7 +177,7 @@ static int parse_while(int *i , int *start){
             }
             (*i)++;
         }
-        //printf("After while body %d : %s\n",*i , tokens[*i].value);
+        //printf("After while body %d : %s\n",*i , tokens[*i].lexeme);
         *start = *i;
         return 1;
     }
@@ -186,7 +186,7 @@ static int parse_while(int *i , int *start){
 }
 
 static int is_for_statement(int index){
-    if(tokens[index].tokentype == KEYWORD && strcmp(tokens[index].value , "for") == 0){
+    if(tokens[index].tokentype == TOKEN_KEYWORD && strcmp(tokens[index].lexeme , "for") == 0){
         //printf("included.\n");
         return 1;
     }
@@ -194,19 +194,19 @@ static int is_for_statement(int index){
     return 0;
 }
 
-static int parse_for(int *i , int *start){
+static int parse_for(int *i , int *start , TACProgram *program){
     if(is_for_statement(*i)){
         //printf("for statement found at token %d\n",*i);
-        Generate_for_TAC(tokens , *i);
+        Generate_for_TAC(tokens , *i , program);
 
-        while(*i<token_count && strcmp(tokens[*i].value , "{") != 0){
+        while(*i<token_count && strcmp(tokens[*i].lexeme , "{") != 0){
             (*i)++;
         }
 
         int depth3 = 0;
         while(*i<token_count){
-            if(strcmp(tokens[*i].value , "{") == 0) depth3++;
-            if(strcmp(tokens[*i].value , "}") == 0){
+            if(strcmp(tokens[*i].lexeme , "{") == 0) depth3++;
+            if(strcmp(tokens[*i].lexeme , "}") == 0){
                 depth3--;
                 if(depth3 == 0){
                     (*i)++;
@@ -223,49 +223,49 @@ static int parse_for(int *i , int *start){
     return 0;
 }
 
-static void parse_return(int *start , int *i){
-    char* ret_val = tokens[*start+1].value;
-    //printf("RETURN VALUE: %s\n",tokens[start+1].value);
-    emit_RETURN(ret_val);
+static void parse_return(int *start , int *i , TACProgram *program){
+    char* ret_val = tokens[*start+1].lexeme;
+    //printf("RETURN VALUE: %s\n",tokens[start+1].lexeme);
+    emit_RETURN(program , ret_val);
     *start = *i+1;
 }
 
 static void parse_declaration_(int *start , int *assign_pos , char **name){
-    *name = tokens[*start+1].value;
-    if(strcmp(tokens[*start+2].value , "=") == 0){
+    *name = tokens[*start+1].lexeme;
+    if(strcmp(tokens[*start+2].lexeme , "=") == 0){
         *assign_pos = *start + 2;
     }
 }
 
-static int parse_statement(int *i , int *start){
-    if(strcmp(tokens[*i].value , ";")==0){
-            if(tokens[*start].tokentype == KEYWORD && strcmp(tokens[*start].value , "return") == 0){
-                parse_return(start , i);
+static int parse_statement(int *i , int *start , TACProgram *program , Semantic_ctxt *context){
+    if(strcmp(tokens[*i].lexeme , ";")==0){
+            if(tokens[*start].tokentype == TOKEN_KEYWORD && strcmp(tokens[*start].lexeme , "return") == 0){
+                parse_return(start , i , program);
                 return 1;
             }
-            //printf("DEBUG: start = %d , value = %s , tokentype = %d\n",start , tokens[start].value , tokens[start].tokentype);
-            if(tokens[*start].tokentype == KEYWORD){
-                char* type = tokens[*start].value;
+            //printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",start , tokens[start].lexeme , tokens[start].tokentype);
+            if(tokens[*start].tokentype == TOKEN_KEYWORD){
+                char* type = tokens[*start].lexeme;
                 char* name = NULL;
                 int assign_pos = -1;
                 int *pos_assign = &assign_pos;
 
                 int size = 0;
 
-                if(strcmp(tokens[*start+1].value , "*") == 0){
-                    name =  tokens[*start + 2].value;
+                if(strcmp(tokens[*start+1].lexeme , "*") == 0){
+                    name =  tokens[*start + 2].lexeme;
                     //printf("pointer declaration detected for %s of type %s\n",name , type);
                     
-                    if(strcmp(tokens[*start + 3].value , "=") == 0){
+                    if(strcmp(tokens[*start + 3].lexeme , "=") == 0){
                         //printf("declaration with initialization detected for %s of type %s\n",name , type);
                         *pos_assign = *start + 3;
                         //printf("assign position  = %d\n", assign_pos);
                     }
                 }
 
-                else if(strcmp(tokens[*start + 2].value , "[") == 0){
-                    name = tokens[*start+1].value;
-                    size = atoi(tokens[*start+3].value);
+                else if(strcmp(tokens[*start + 2].lexeme , "[") == 0){
+                    name = tokens[*start+1].lexeme;
+                    size = atoi(tokens[*start+3].lexeme);
                 }
                 else{
                     parse_declaration_(start , pos_assign , &name);
@@ -273,10 +273,10 @@ static int parse_statement(int *i , int *start){
 
                 //printf("assign position  = %d\n", assign_pos);
 
-                //add_symbol(name , type  , Current_Scope , 0 , 0);
-                //printf("the tokens of type %s is %s.\n",tokens[start].value , tokens[start+1].value);
-                //printf("add symbol %s of type %s of %s function.\n",name , type , Current_Scope);
-                add_symbol(name , type , Current_Scope , 0 , size);
+                //add_symbol(name , type  , context->current_scope , 0 , 0);
+                //printf("the tokens of type %s is %s.\n",tokens[start].lexeme , tokens[start+1].lexeme);
+                //printf("add symbol %s of type %s of %s function.\n",name , type , context->current_scope);
+                add_symbol(name , type , context->current_scope , 0 , size);
                 //printf("symbols added.\n");
 
                 
@@ -284,9 +284,9 @@ static int parse_statement(int *i , int *start){
                     //printf("declaration with initialization detected for %s of type %s\n",name , type);
                     //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
                     NODE* decl_AST = Build_AST(tokens , assign_pos-1 , (*i)-1);
-                    Check_Undeclared(decl_AST , Current_Scope);
-                    Type_check(decl_AST , Current_Scope);
-                    Generate_TAC(decl_AST);
+                    Check_Undeclared(decl_AST , context->current_scope);
+                    Type_check(decl_AST , context->current_scope);
+                    Generate_TAC(decl_AST , program);
 
                     free_tree(decl_AST);
                 }
@@ -304,10 +304,10 @@ static int parse_statement(int *i , int *start){
             //printf("Syntax tree for statement %d.\n", i);
             //print(root);
 
-            Check_Undeclared(root , Current_Scope);
-            Type_check(root , Current_Scope);
+            Check_Undeclared(root , context->current_scope);
+            Type_check(root , context->current_scope);
             //printf("\ntac generation.\n");
-            Generate_TAC(root);
+            Generate_TAC(root , program);
 
             //BUILD_TAC_TEXT(result.TAC_buffer);
 
@@ -321,41 +321,41 @@ static int parse_statement(int *i , int *start){
         }
 }
 
-static void parse_program(){
+static void parse_program(Semantic_ctxt *context , TACProgram *program){
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
         
-        if(strcmp(Current_Scope , "global") != 0 && strcmp(tokens[i].value , "}") == 0){
-            strcpy(Current_Scope , "global");
-            //printf("%s\n",Current_Scope);
+        if(strcmp(context->current_scope , "global") != 0 && strcmp(tokens[i].lexeme , "}") == 0){
+            strcpy(context->current_scope , "global");
+            //printf("%s\n",context->current_scope);
             start = i + 1;
             continue;
         }
 
-        if(parse_function(&i , &start)){
+        if(parse_function(&i , &start , context , program)){
             //printf("parsing function .\n");
             continue;
         }
 
-        if(parse_if_statement(&i , &start)){
+        if(parse_if_statement(&i , &start , program)){
             //printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
         //printf("while detection\n");
 
-        if(parse_while(&i , &start)){
+        if(parse_while(&i , &start , program)){
             //printf("parsing while statement.\n");
             continue;
         }
-        //printf("for detection : token=%s , type =  %d\n", tokens[i].value, tokens[i].tokentype);
+        //printf("for detection : token=%s , type =  %d\n", tokens[i].lexeme, tokens[i].tokentype);
 
-        if(parse_for(&i , &start)){
+        if(parse_for(&i , &start , program)){
             //printf("parsing for statement.\n");
             continue;
         }
 
-        if(parse_statement(&i , &start)){
+        if(parse_statement(&i , &start , program , context)){
             //printf("parsing statement.\n");
             continue;
         }
@@ -364,7 +364,7 @@ static void parse_program(){
 
 
 
-int compile_file(const char *file_name){
+int compile_file(const char *file_name , Semantic_ctxt *context , TACProgram *program , const SymbolTable *table , REGISTER *registers , VM *vm){
     char lines[MAX_LINES][MAX_LINE_LEN];
     const char* exp[MAX_LINES];
     int lines_count;
@@ -373,29 +373,29 @@ int compile_file(const char *file_name){
         return 1;
     }
 
-    parse_program();
+    parse_program(context , program);
 
-    print_sym();
+    print_sym(table);
     
 
     //printf("\nBefore optimization :\n");
     //print_TAC();
 
-    constant_fold();
-    Const_propagate();
-    dead_code();
+    constant_fold(program);
+    Const_propagate(program);
+    dead_code(program);
 
     //printf("\nAfter optimization :\n");
     //BUILD_TAC_TEXT(result.TAC_buffer);
 
-    Generate_code();
+    Generate_code(program , registers);
 
     //printf("\n----VM EXECUTION----\n");
 
-    BUILD_LABEL_TABLE();
-    run_vm();
+    BUILD_LABEL_TABLE(vm);
+    run_vm(vm);
 
-    print_vm_memory();
+    print_vm_memory(vm);
 
     //printf("program ended\n");
 
