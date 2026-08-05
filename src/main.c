@@ -3,12 +3,16 @@
 
 int main(int argc, char* argv[]){
 
+    COMPILER *compiler = calloc(1 , sizeof(COMPILER));
+
     if(argc < 2){
         printf("Usage: %s <input_file>\n", argv[0]);
         return 1;
     }
 
-    return compile_file(argv[1]);
+    int status = compile_file(argv[1] , compiler);
 
-    return 0;
+    free(compiler);
+
+    return status;
 }

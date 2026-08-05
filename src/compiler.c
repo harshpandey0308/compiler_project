@@ -66,7 +66,7 @@ static int is_func_def(int index){
     return 1;
 }
 
-static int parse_function(int *i , int *start , Semantic_ctxt *context , TACProgram *program){
+static int parse_function(int *i , int *start , COMPILER *compiler){
     if(!is_func_def(*i)){
         return 0;
     }
@@ -76,9 +76,9 @@ static int parse_function(int *i , int *start , Semantic_ctxt *context , TACProg
 
     add_symbol(func_name , ret_type  , "global" , 0 , 0);
 
-    strcpy(context->current_scope , func_name);
+    strcpy(compiler->context.current_scope , func_name);
 
-    emit_FUNC_BEG(program , func_name );
+    emit_FUNC_BEG(&compiler->vm.program , func_name );
 
     while(*i<token_count && strcmp(tokens[*i].lexeme , "(") != 0){
         (*i)++;
@@ -90,7 +90,7 @@ static int parse_function(int *i , int *start , Semantic_ctxt *context , TACProg
         char *param_type = tokens[param_end].lexeme;
         char *param_name = tokens[param_end+1].lexeme;
         //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , context->current_scope);
-        add_symbol(param_name , param_type , context->current_scope , 1 , 0);
+        add_symbol(param_name , param_type , &compiler->context.current_scope , 1 , 0);
         param_end += 2;
         if(strcmp(tokens[param_end].lexeme , ",") == 0){
             param_end++;
@@ -113,11 +113,11 @@ static int is_if_statement(int index){
     return 0;
 }
 
-static int parse_if_statement(int *i , int *start , TACProgram *program){
+static int parse_if_statement(int *i , int *start , COMPILER *compiler){
     //printf("checking if statement and lexeme of i = %d.\n",*i);
     if(is_if_statement(*i)){
             //printf("if statement found at token %d\n",*i);
-            Generate_if_tac(tokens , *i , program);
+            Generate_if_tac(tokens , *i , &compiler->vm.program);
 
             while(*i<token_count && !(tokens[*i].tokentype == TOKEN_KEYWORD && strcmp(tokens[*i].lexeme , "else") == 0)){
                 (*i)++;
@@ -153,11 +153,11 @@ static int is_while_statement(int index){
     return 0;
 }
 
-static int parse_while(int *i , int *start , TACProgram *program){
+static int parse_while(int *i , int *start , COMPILER *compiler){
     //printf("checking the while statement.\n");
     if(is_while_statement(*i)){
         //printf("while statement found at token %d\n",*i);
-        Generate_while_tac(tokens , *i , program);
+        Generate_while_tac(tokens , *i , &compiler->vm.program);
 
         //printf("while body ends at token %d\n",*i);
 
@@ -194,10 +194,10 @@ static int is_for_statement(int index){
     return 0;
 }
 
-static int parse_for(int *i , int *start , TACProgram *program){
+static int parse_for(int *i , int *start , COMPILER *compiler){
     if(is_for_statement(*i)){
         //printf("for statement found at token %d\n",*i);
-        Generate_for_TAC(tokens , *i , program);
+        Generate_for_TAC(tokens , *i , &compiler->vm.program);
 
         while(*i<token_count && strcmp(tokens[*i].lexeme , "{") != 0){
             (*i)++;
@@ -223,10 +223,10 @@ static int parse_for(int *i , int *start , TACProgram *program){
     return 0;
 }
 
-static void parse_return(int *start , int *i , TACProgram *program){
+static void parse_return(int *start , int *i ,COMPILER *compiler){
     char* ret_val = tokens[*start+1].lexeme;
     //printf("RETURN VALUE: %s\n",tokens[start+1].lexeme);
-    emit_RETURN(program , ret_val);
+    emit_RETURN(&compiler->vm.program , ret_val);
     *start = *i+1;
 }
 
@@ -237,10 +237,10 @@ static void parse_declaration_(int *start , int *assign_pos , char **name){
     }
 }
 
-static int parse_statement(int *i , int *start , TACProgram *program , Semantic_ctxt *context){
+static int parse_statement(int *i , int *start , COMPILER *compiler){
     if(strcmp(tokens[*i].lexeme , ";")==0){
             if(tokens[*start].tokentype == TOKEN_KEYWORD && strcmp(tokens[*start].lexeme , "return") == 0){
-                parse_return(start , i , program);
+                parse_return(start , i , compiler);
                 return 1;
             }
             //printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",start , tokens[start].lexeme , tokens[start].tokentype);
@@ -276,7 +276,7 @@ static int parse_statement(int *i , int *start , TACProgram *program , Semantic_
                 //add_symbol(name , type  , context->current_scope , 0 , 0);
                 //printf("the tokens of type %s is %s.\n",tokens[start].lexeme , tokens[start+1].lexeme);
                 //printf("add symbol %s of type %s of %s function.\n",name , type , context->current_scope);
-                add_symbol(name , type , context->current_scope , 0 , size);
+                add_symbol(name , type , compiler->context.current_scope , 0 , size);
                 //printf("symbols added.\n");
 
                 
@@ -284,9 +284,9 @@ static int parse_statement(int *i , int *start , TACProgram *program , Semantic_
                     //printf("declaration with initialization detected for %s of type %s\n",name , type);
                     //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
                     NODE* decl_AST = Build_AST(tokens , assign_pos-1 , (*i)-1);
-                    Check_Undeclared(decl_AST , context->current_scope);
-                    Type_check(decl_AST , context->current_scope);
-                    Generate_TAC(decl_AST , program);
+                    Check_Undeclared(decl_AST , compiler->context.current_scope);
+                    Type_check(decl_AST , compiler->context.current_scope);
+                    Generate_TAC(decl_AST , &compiler->vm.program);
 
                     free_tree(decl_AST);
                 }
@@ -304,10 +304,10 @@ static int parse_statement(int *i , int *start , TACProgram *program , Semantic_
             //printf("Syntax tree for statement %d.\n", i);
             //print(root);
 
-            Check_Undeclared(root , context->current_scope);
-            Type_check(root , context->current_scope);
+            Check_Undeclared(root , compiler->context.current_scope);
+            Type_check(root , compiler->context.current_scope);
             //printf("\ntac generation.\n");
-            Generate_TAC(root , program);
+            Generate_TAC(root , &compiler->vm.program);
 
             //BUILD_TAC_TEXT(result.TAC_buffer);
 
@@ -321,41 +321,41 @@ static int parse_statement(int *i , int *start , TACProgram *program , Semantic_
         }
 }
 
-static void parse_program(Semantic_ctxt *context , TACProgram *program){
+static void parse_program(COMPILER *compiler){
     int start = 0;
     for(int i=0 ; i<token_count ; i++){
         
-        if(strcmp(context->current_scope , "global") != 0 && strcmp(tokens[i].lexeme , "}") == 0){
-            strcpy(context->current_scope , "global");
+        if(strcmp(compiler->context.current_scope , "global") != 0 && strcmp(tokens[i].lexeme , "}") == 0){
+            strcpy(compiler->context.current_scope , "global");
             //printf("%s\n",context->current_scope);
             start = i + 1;
             continue;
         }
 
-        if(parse_function(&i , &start , context , program)){
+        if(parse_function(&i , &start , compiler)){
             //printf("parsing function .\n");
             continue;
         }
 
-        if(parse_if_statement(&i , &start , program)){
+        if(parse_if_statement(&i , &start , compiler)){
             //printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
         //printf("while detection\n");
 
-        if(parse_while(&i , &start , program)){
+        if(parse_while(&i , &start , compiler)){
             //printf("parsing while statement.\n");
             continue;
         }
         //printf("for detection : token=%s , type =  %d\n", tokens[i].lexeme, tokens[i].tokentype);
 
-        if(parse_for(&i , &start , program)){
+        if(parse_for(&i , &start , compiler)){
             //printf("parsing for statement.\n");
             continue;
         }
 
-        if(parse_statement(&i , &start , program , context)){
+        if(parse_statement(&i , &start , compiler)){
             //printf("parsing statement.\n");
             continue;
         }
@@ -364,7 +364,13 @@ static void parse_program(Semantic_ctxt *context , TACProgram *program){
 
 
 
-int compile_file(const char *file_name , Semantic_ctxt *context , TACProgram *program , const SymbolTable *table , REGISTER *registers , VM *vm){
+int compile_file(const char *file_name , COMPILER *compiler){
+    strcpy(compiler->context.current_scope , "global");
+
+    for(int i=0 ; i<REG_COUNT ; i++){
+        compiler->registers.reg_free[i] = 1;
+    }
+
     char lines[MAX_LINES][MAX_LINE_LEN];
     const char* exp[MAX_LINES];
     int lines_count;
@@ -373,29 +379,29 @@ int compile_file(const char *file_name , Semantic_ctxt *context , TACProgram *pr
         return 1;
     }
 
-    parse_program(context , program);
+    parse_program(compiler);
 
-    print_sym(table);
+    print_sym(compiler->context.symbols.table);
     
 
     //printf("\nBefore optimization :\n");
     //print_TAC();
 
-    constant_fold(program);
-    Const_propagate(program);
-    dead_code(program);
+    constant_fold(&compiler->vm.program);
+    Const_propagate(&compiler->vm.program);
+    dead_code(&compiler->vm.program);
 
     //printf("\nAfter optimization :\n");
     //BUILD_TAC_TEXT(result.TAC_buffer);
 
-    Generate_code(program , registers);
+    Generate_code(&compiler->vm.program , &compiler->registers);
 
     //printf("\n----VM EXECUTION----\n");
 
-    BUILD_LABEL_TABLE(vm);
-    run_vm(vm);
+    BUILD_LABEL_TABLE(&compiler->vm);
+    run_vm(&compiler->vm);
 
-    print_vm_memory(vm);
+    print_vm_memory(&compiler->vm);
 
     //printf("program ended\n");
 
