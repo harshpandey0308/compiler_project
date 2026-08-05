@@ -283,7 +283,7 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
                 if(assign_pos != -1){
                     //printf("declaration with initialization detected for %s of type %s\n",name , type);
                     //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
-                    NODE* decl_AST = Build_AST(tokens , assign_pos-1 , (*i)-1);
+                    NODE* decl_AST = build_AST(tokens , assign_pos-1 , (*i)-1);
                     Check_Undeclared(decl_AST , compiler->context.current_scope);
                     Type_check(decl_AST , compiler->context.current_scope);
                     Generate_TAC(decl_AST , &compiler->vm.program);
@@ -300,7 +300,7 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
             }
 
             //printf("Generating TAC for statement from token %d to %d.\n", start, i);
-            root = Build_AST(tokens , *start , *i-1);
+            root = build_AST(tokens , *start , *i-1);
             //printf("Syntax tree for statement %d.\n", i);
             //print(root);
 
