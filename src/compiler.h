@@ -1,8 +1,13 @@
-#include"compiler_result.h"
-#include"preprocessor.h"
-
 #ifndef COMPILER_H
 #define COMPILER_H
+
+#include"compiler_result.h"
+#include"preprocessor.h"
+#include"semantic.h"
+#include"TACcode.h"
+#include"ASMCODE.h"
+#include"VM.h"
+
 
 extern CompilerResult result;
 
