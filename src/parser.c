@@ -157,7 +157,7 @@ NODE* build_AST(const TOKEN tokens[] , int start , int end){
             //left_node->left = left_l_node;
             //printf("creating right node");
             
-            deref_node->right = (start + 3 <= end )? Build_AST(tokens , start+3 , end) : NULL;
+            deref_node->right = (start + 3 <= end )? build_AST(tokens , start+3 , end) : NULL;
             //printf("dereference node = %s\n",deref_node->lexeme);
             return deref_node;
         }
