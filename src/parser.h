@@ -41,9 +41,9 @@ NODE* create_node(const char *lexeme , AST_NODE_TYPE type);
 
 void print_AST(NODE* root);
 
-int find_main_operator(const TOKEN tokens[] , int start , int end);
+int find_main_operator(const TokenEntry *token_table , int start , int end);
 
-NODE* build_AST(const TOKEN tokens[] , int start , int end);
+NODE* build_AST(const TokenEntry *token_table , int start , int end);
 
 
 

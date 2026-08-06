@@ -527,14 +527,14 @@ void run_vm(VM *vm){
     }
 }
 
-char *find_type(char *name , VM *vm){
+DataType find_type(char *name , VM *vm){
     //printf("the name is : %s\n",name);
     for(int i=0 ; i<vm->symbol.sym_count ; i++){
         if(strcmp(vm->symbol.table[i].sym , name) == 0){
             return vm->symbol.table[i].type;
         }
     }
-    return "UNKNOWN";
+    return TYPE_VOID;
 }
 void print_vm_memory(VM *vm){
     printf("\n-----VM_MEMORY_STATE-----\n");
@@ -546,18 +546,18 @@ void print_vm_memory(VM *vm){
             continue;
         }
 
-        char *type = find_type(vm->memory.data[i].name , vm);
+        DataType type = find_type(vm->memory.data[i].name , vm);
 
-        if(strcmp(type , "int") == 0){
+        if(type == TYPE_INT){
             printf("%15s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value);
         }
-        else if(strcmp(type , "float") == 0){
+        else if(type == TYPE_FLOAT){
             printf("%15s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
         }
-        else if(strcmp(type , "char") == 0){
+        else if(type == TYPE_CHAR){
             printf("%15s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
         }
-        else if(strcmp(type , "UNKNOWN") == 0){
+        else if(type == TYPE_VOID){
             printf("THE VALUE IS UNKNOWN\n");
         }
     }

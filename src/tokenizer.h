@@ -15,18 +15,18 @@ typedef enum TokenType{
     TOKEN_COMPARATOR
 }TokenType;
 
-
-
-typedef struct Token{
+typedef struct TOKEN{
     char lexeme[MAX_TOKEN_SIZE];
     TokenType tokentype;
 }TOKEN;
 
-extern TOKEN tokens[MAX_TOKENS];
-extern int token_count;
+typedef struct{
+    TOKEN tokens[MAX_TOKENS];
+    int token_count;
+}TokenEntry;
 
-void print_tokens(TOKEN tokens[MAX_TOKENS] , int token_count);
+void print_tokens(TokenEntry *token_table);
 
-int lexer(const char* source[] , const int* n);
+int lexer(const char* source[] , const int* n , TokenEntry *token_table);
 
 #endif

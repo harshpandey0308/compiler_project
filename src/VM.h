@@ -64,7 +64,7 @@ void handle_scanf(int arg_count , VM *vm);
 
 void run_vm(VM *vm);
 
-char *find_type(char *name , VM *vm);
+DataType find_type(char *name , VM *vm);
 
 void print_vm_memory(VM *vm);
 
