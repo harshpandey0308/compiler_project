@@ -369,9 +369,9 @@ void Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *progra
     NODE* up_ast = build_AST(token_table , up_stt , up_end - 1);
     Generate_TAC(up_ast , program);
 
-    printf("FOR: init_end=%d cond_stt=%d cond_end=%d up_stt=%d\n",init_end, cond_stt, cond_end, up_stt);
-    printf("\n");
-    printf("UPDATE token_table->tokens: %s %s %s %s\n",token_table->tokens[up_stt].lexeme, token_table->tokens[up_stt+1].lexeme,token_table->tokens[up_stt+2].lexeme, token_table->tokens[up_stt+3].lexeme);
+    //printf("FOR: init_end=%d cond_stt=%d cond_end=%d up_stt=%d\n",init_end, cond_stt, cond_end, up_stt);
+    //printf("\n");
+    //printf("UPDATE token_table->tokens: %s %s %s %s\n",token_table->tokens[up_stt].lexeme, token_table->tokens[up_stt+1].lexeme,token_table->tokens[up_stt+2].lexeme, token_table->tokens[up_stt+3].lexeme);
 
     free_tree(up_ast);
 

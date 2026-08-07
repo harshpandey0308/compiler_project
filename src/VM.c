@@ -8,23 +8,27 @@ const char  reg_name[4][5] = {"R0" , "R1" , "R2" , "R3"};
 
 
 void BUILD_LABEL_TABLE(VM *vm){
+    vm->label_table.label_count = 0;
     //printf("label table is building..\n");
     for(int i=0 ; i<vm->program.tac_count ; i++){
         //printf("CHECKING LABEL TYPE..\n");
         if(vm->program.code[i].type == TAC_LABEL || vm->program.code[i].type == TAC_FUNC_BEGIN){
             //printf("found the label.\n");
-            strcpy(vm->label_table.data[i].label , vm->program.code[i].label);
-            vm->label_table.data[i].index = i;
+            int pos = vm->label_table.label_count;
+            strcpy(vm->label_table.data[pos].label , vm->program.code[i].label);
+            vm->label_table.data[pos].index = i;
             vm->label_table.label_count++;
             //printf("printing the table.\n");
-            //printf("ADDED : label = %s and index = %d with label type : %d\n",program->code[i].label , i , program->code[i].type);
+            //printf("ADDED : label = %s and index = %d with label type : %d\n",vm->program.code[i].label , i , vm->program.code[i].type);
         }
     }
     //printf("the total label found : %d\n",vm->label_table.label_count);
 }
 
 int find_label(char *target , VM *vm){
+    //printf("the target is : %s\n",target);
     for(int i=0 ; i<vm->label_table.label_count ; i++){
+        //printf("label in the table index %d is %s.\n",i,vm->label_table.data[i].label);
         if(strcmp(vm->label_table.data[i].label , target) == 0){
             return vm->label_table.data[i].index;
         }
@@ -44,7 +48,7 @@ float get_name(char *val , VM *vm){
     }
     
     else if(strcmp(val , "RETVAL") == 0){
-        //printf("the return value is %f\n", RET_VAL);
+        //printf("the return value is %f\n", vm->RET_VAL);
         return vm->RET_VAL;
     }
 
@@ -62,7 +66,7 @@ float get_name(char *val , VM *vm){
         if(i<vm->memory.memory_count){
             return vm->memory.data[i].value;
         }
-        printf("The variable is %s\n",val);
+        //printf("The variable is %s\n",val);
         //printf("Variable '%s' not found in the memory.\n",val);
         return 0.0f;
     }
@@ -156,9 +160,9 @@ void handle_printf(int arg_count , VM *vm){
     //strcpy(vm_stack[vm_stack->top].data , ret_value);
     //vm_stack[vm_stack->top].is_label = 1;
     //vm_stack->top++;
-
+    //printf("returning to %s\n",ret_value);
     vm->PC = find_label(ret_value , vm);
-
+    //printf("new PC = %d.\n", vm->PC);
 }
 
 void handle_scanf(int arg_count ,VM *vm){
@@ -217,6 +221,7 @@ void handle_scanf(int arg_count ,VM *vm){
 }
 
 void run_vm(VM *vm){
+    printf("sym count =  %d.\n",vm->symbol.sym_count);
     vm->PC = find_label("main" , vm);
     printf("TAC_COUNT:%d\n",vm->program.tac_count);
     while(vm->PC < vm->program.tac_count && vm->vm_stack.top >= 0){
@@ -224,7 +229,7 @@ void run_vm(VM *vm){
         //printf("instr.type = %d\n",instr.type);
         switch (instr.type){
             case TAC_ASSIGN:{
-                printf("PC in TAC ASSIGN = %d.\n",vm->PC);
+                //printf("PC in TAC ASSIGN = %d.\n",vm->PC);
                 //printf("instr.result = %s , instr.op1 = %s , instr.opr = %s , instr.op2 = %s.\n",instr.result , instr.op1 ,instr.opr , instr.op2);
                 //printf("TAC_ASSIGN: %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
                 if(instr.is_deref_write == 1){
@@ -308,7 +313,7 @@ void run_vm(VM *vm){
             }
             
             case TAC_IF_GOTO:{
-                printf("vm->PC value at TAC IF GOTO:%d\n",vm->PC);
+                //printf("vm->PC value at TAC IF GOTO:%d\n",vm->PC);
                 //printf("instr.op1 = %s , instr.op2 = %s\n",instr.op1 , instr.op2);
                 float val1;
                 float val2;
@@ -352,7 +357,7 @@ void run_vm(VM *vm){
             }
 
             case TAC_GOTO:{
-                printf("PC IN TAC_GOTO = %d.\n",vm->PC);
+                //printf("PC IN TAC_GOTO = %d.\n",vm->PC);
                 int ind = find_label(instr.label , vm);
                 //printf("TAC_GOTO: %d\n",ind);
                 vm->PC = ind;
@@ -360,7 +365,7 @@ void run_vm(VM *vm){
             }
 
             case PARAM:{
-                printf("PC IN PARAM = %d.\n",vm->PC);
+                //printf("PC IN PARAM = %d.\n",vm->PC);
                 float op1_value = get_name(instr.op1 , vm);
                 //printf("vm_stack->top AT PARAM : %d\n", vm_stack->top);
                 sprintf(vm->vm_stack.data[vm->vm_stack.top].data , "%f" , op1_value);
@@ -372,7 +377,7 @@ void run_vm(VM *vm){
             }
             
             case FUNC_CALL:{
-                printf("PC AT FUNCTION CALL = %d.\n",vm->PC);
+                //printf("PC AT FUNCTION CALL = %d.\n",vm->PC);
                 char *func_name = instr.op1;
                 //printf("func name = %s\n",func_name);
                 int param_count = 0;
@@ -419,8 +424,9 @@ void run_vm(VM *vm){
                 //printf("AFTER POP ARGS : vm_stack->top = %d\n",vm_stack->top);
 
                 int param_index = 0 ;
-                
+                printf("sym count = %d.\n",vm->symbol.sym_count);
                 for(int j=0 ; j<vm->symbol.sym_count ; j++){
+                    printf("i = %d.\n",vm->symbol.sym_count);
                     if(vm->symbol.table[j].is_param == 1 && strcmp(vm->symbol.table[j].scope , func_name) == 0){
                         set_name(vm->symbol.table[j].sym , args[param_index] , vm);
                         param_index++;
@@ -440,7 +446,7 @@ void run_vm(VM *vm){
             }
 
             case TAC_PARAM_STRING:{
-                printf("PC AT PARAM STRING = %d.\n",vm->PC);
+                //printf("PC AT PARAM STRING = %d.\n",vm->PC);
                 strcpy(vm->vm_stack.data[vm->vm_stack.top].data , instr.op1);
                 vm->vm_stack.data[vm->vm_stack.top].is_label = 0;
                 vm->vm_stack.top++;
@@ -448,7 +454,7 @@ void run_vm(VM *vm){
             }
 
             case TAC_PARAM_ADDR:{
-                printf("PC AT PARAM ADDR = %d.\n",vm->PC);
+                //printf("PC AT PARAM ADDR = %d.\n",vm->PC);
                 int addr = -1;
                 for(int i=0 ; i<vm->memory.memory_count ; i++){
                     if(strcmp(vm->memory.data[i].name , instr.op1) == 0){
@@ -471,7 +477,7 @@ void run_vm(VM *vm){
             }
 
             case RETURN:{
-                printf("PC AT RETURN = %d.\n",vm->PC);
+                //printf("PC AT RETURN = %d.\n",vm->PC);
                 float value1 = get_name(instr.op1 , vm);
                 //printf("RETURN VALUE = %f and vm_stack->top = %d\n",value1 , vm_stack->top);
                 //printf("STACK top = %s\n",vm_stack[vm_stack->top-1].data);
@@ -494,7 +500,7 @@ void run_vm(VM *vm){
                 break;
 
             case TAC_PUSH:{
-                printf("PC AT PUSH = %d.\n",vm->PC);
+                //printf("PC AT PUSH = %d.\n",vm->PC);
                 strcpy(vm->vm_stack.data[vm->vm_stack.top].data , instr.op1);
 
                 if(instr.op1[0] == 'L' && isdigit(instr.op1[1])){
@@ -509,7 +515,7 @@ void run_vm(VM *vm){
             }
 
             case TAC_POP:{
-                printf("PC AT POP = %d\n",vm->PC);
+                //printf("PC AT POP = %d\n",vm->PC);
                 vm->vm_stack.top--;
                 float pop_val = get_name(vm->vm_stack.data[vm->vm_stack.top].data , vm);
                 set_name(instr.result , pop_val , vm);
@@ -517,7 +523,7 @@ void run_vm(VM *vm){
             }
 
             case TAC_JMP_DYNAMIC:{
-                printf("PC AT JUMP DYNAMIC  = %d.\n",vm->PC);
+                //printf("PC AT JUMP DYNAMIC  = %d.\n",vm->PC);
                 vm->vm_stack.top--;
                 char value[50];
                 strcpy(value , vm->vm_stack.data[vm->vm_stack.top].data);
@@ -530,7 +536,7 @@ void run_vm(VM *vm){
                 break;
         }
         vm->PC++;
-        printf("stack top = %d\n",vm->vm_stack.top);
+        //printf("stack top = %d\n",vm->vm_stack.top);
         //printf("vm->PC:%d\n",vm->PC);
         if(vm->PC<0){
             break;
@@ -540,7 +546,9 @@ void run_vm(VM *vm){
 
 DataType find_type(char *name , VM *vm){
     //printf("the name is : %s\n",name);
+    //printf("sym count = %d.\n",vm->symbol.sym_count);
     for(int i=0 ; i<vm->symbol.sym_count ; i++){
+        //printf("symbol = %s.\n",vm->symbol.table[i].sym);
         if(strcmp(vm->symbol.table[i].sym , name) == 0){
             return vm->symbol.table[i].type;
         }

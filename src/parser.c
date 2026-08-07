@@ -8,7 +8,7 @@
 #define ARRAY_SIZE 50
 
 NODE* create_node(const char *lexeme , AST_NODE_TYPE type){
-    printf("node creation : '%s'.\n",lexeme);
+    //printf("node creation : '%s'.\n",lexeme);
     NODE* new = (NODE*)malloc(sizeof(NODE));
 
     if(new == NULL){
@@ -95,9 +95,9 @@ int find_operator(const TokenEntry *token_table , int start , int end){
 }
 
 NODE* build_AST(const TokenEntry *token_table , int start , int end){
-    printf("Building AST for token_table->tokens from %d to %d.\n",start , end);
-    printf("\n");
-    printf("the token_table->tokens are %s , %s\n",token_table->tokens[start].lexeme , token_table->tokens[end].lexeme);
+    //printf("Building AST for token_table->tokens from %d to %d.\n",start , end);
+    //printf("\n");
+    //printf("the token_table->tokens are %s , %s\n",token_table->tokens[start].lexeme , token_table->tokens[end].lexeme);
     if(start == end){
         if(token_table->tokens[start].tokentype == TOKEN_CHARACTER){
             NODE* char_node = create_node(token_table->tokens[start].lexeme , AST_CHARACTER);
@@ -177,7 +177,7 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     }
 
     if(token_table->tokens[start].tokentype == TOKEN_FUNCTION){
-        printf("the token is funtion.\n");
+        //printf("the token is funtion.\n");
         NODE* call_node = create_node(token_table->tokens[start].lexeme , AST_FUNCTION_CALL);
         if(call_node == NULL){
             return NULL;
@@ -185,15 +185,15 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
         call_node->ARG_count = 0;
         
         int arg_pos = start+2;
-        printf("arg_pos = %d and tokens[%d].lexeme = %s\n",arg_pos , arg_pos , token_table->tokens[arg_pos].lexeme);
+        //printf("arg_pos = %d and tokens[%d].lexeme = %s\n",arg_pos , arg_pos , token_table->tokens[arg_pos].lexeme);
 
         while(strcmp(token_table->tokens[arg_pos].lexeme , ")") != 0){
             int arg_end = arg_pos;
-            printf("token_table->tokens[%d].lexeme = %s\n",arg_end , token_table->tokens[arg_end].lexeme);
+            //printf("token_table->tokens[%d].lexeme = %s\n",arg_end , token_table->tokens[arg_end].lexeme);
             if(token_table->tokens[arg_end].tokentype == TOKEN_STRING){
                 NODE *arg_node = create_node(token_table->tokens[arg_end].lexeme , AST_STRING);
                 call_node->ARG[call_node->ARG_count++] = arg_node;
-                printf("ARG[%d] = %s\n",arg_end , arg_node->lexeme);
+                //printf("ARG[%d] = %s\n",arg_end , arg_node->lexeme);
                 arg_end++;
             }
             else{
@@ -214,7 +214,7 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
                 break;
             }
         }
-        printf("BUILDING CALL NODE FOR %s\n",token_table->tokens[start].lexeme);
+        //printf("BUILDING CALL NODE FOR %s\n",token_table->tokens[start].lexeme);
 
         //printf("total argument found : %d\n",call_node->ARG_count);
 

@@ -276,7 +276,7 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
                 parse_return(start , i , compiler);
                 return 1;
             }
-            printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",*start , compiler->token_table->tokens[*start].lexeme , compiler->token_table->tokens[*start].tokentype);
+            //printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",*start , compiler->token_table->tokens[*start].lexeme , compiler->token_table->tokens[*start].tokentype);
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD){
                 //printf("checking whether the token is keyword or not.\n");
                 DataType type;
@@ -355,7 +355,7 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 
             Check_Undeclared(root , &compiler->context);
             Type_check(root , &compiler->context);
-            printf("\ntac generation.\n");
+            //printf("\ntac generation.\n");
             Generate_TAC(root , &compiler->vm.program);
 
             //BUILD_TAC_TEXT(result.TAC_buffer);
@@ -371,44 +371,44 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 }
 
 static void parse_program(COMPILER *compiler){
-    printf("parse program starts.\n");
+    //printf("parse program starts.\n");
     int start = 0;
     for(int i=0 ; i<compiler->token_table->token_count ; i++){
         
         if(strcmp(compiler->context.current_scope , "global") != 0 && strcmp(compiler->token_table->tokens[i].lexeme , "}") == 0){
             strcpy(compiler->context.current_scope , "global");
-            printf("%s\n",compiler->context.current_scope);
+            //printf("%s\n",compiler->context.current_scope);
             start = i + 1;
             continue;
         }
 
         if(parse_function(&i , &start , compiler)){
-            printf("parsing function .\n");
+            //printf("parsing function .\n");
             continue;
         }
         //printf("parsing if .\n");
 
         if(parse_if_statement(&i , &start , compiler)){
-            printf("parsing if statement and i = %d.\n",i);
+            //printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
         //printf("while detection\n");
 
         if(parse_while(&i , &start , compiler)){
-            printf("parsing while statement.\n");
+            //printf("parsing while statement.\n");
             continue;
         }
         //printf("for detection : token=%s , type =  %d\n", compiler->token_table->tokens[i].lexeme, compiler->token_table->tokens[i].tokentype);
 
         if(parse_for(&i , &start , compiler)){
-            printf("parsing for statement.\n");
+            //printf("parsing for statement.\n");
             continue;
         }
 
         //printf("parsing statements  .. \n");
         if(parse_statement(&i , &start , compiler)){
-            printf("parsing statement.\n");
+            //printf("parsing statement.\n");
             continue;
         }
     }
@@ -417,7 +417,7 @@ static void parse_program(COMPILER *compiler){
 
 
 int compile_file(const char *file_name , COMPILER *compiler){
-    printf("entering the compiler.\n");
+    //printf("entering the compiler.\n");
     strcpy(compiler->context.current_scope , "global");
 
     for(int i=0 ; i<REG_COUNT ; i++){
@@ -432,7 +432,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
         return 1;
     }
 
-    printf("parsing started.\n");
+    //printf("parsing started.\n");
     parse_program(compiler);
 
     print_sym(&compiler->context.symbols);
@@ -451,6 +451,8 @@ int compile_file(const char *file_name , COMPILER *compiler){
     Generate_code(&compiler->vm.program , &compiler->registers);
 
     //printf("\n----VM EXECUTION----\n");
+
+    compiler->vm.symbol = compiler->context.symbols;
 
     BUILD_LABEL_TABLE(&compiler->vm);
     run_vm(&compiler->vm);

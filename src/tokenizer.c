@@ -147,7 +147,7 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
                 if(source[i][j] == '='){
                     buffer[1] = source[i][j++];
                     buffer[2] = '\0';
-                    printf("buffer = %s\n",buffer);
+                    //printf("buffer = %s\n",buffer);
                 }
 
                 else{
