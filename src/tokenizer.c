@@ -19,13 +19,11 @@ void print_tokens(TokenEntry *token_table){
 
 
 int lexer(const char* source[] , const int* n , TokenEntry *token_table){
-
-
     
     printf("Lexical analysis started.\n");
 
     for(int i=0 ; i<*n ; i++){
-        printf("lexical analysis......\n");
+        //printf("lexical analysis......\n");
         int j = 0;
 
         while(source[i][j] != '\0'){
@@ -44,19 +42,19 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
                     (j)++;
                     (k)++;
                 }
-                printf("identifier checked\n");
+                //printf("identifier checked\n");
                 buffer[k] = '\0';
 
-                printf("the source is : %s\n",buffer);
-                printf("token count = %d.\n",token_table->token_count);
+                //printf("the source is : %s\n",buffer);
+                //printf("token count = %d.\n",token_table->token_count);
 
                 strcpy(token_table->tokens[token_table->token_count].lexeme , buffer);
-                printf("the lexeme of buffer is copied into tokens .\n");
+                //printf("the lexeme of buffer is copied into tokens .\n");
                 int peek = j;
 
                 while(source[i][peek] == ' ') peek++;
 
-                printf("the lexeme of peek is %d and source is %c.\n",peek , source[i][peek]);
+                //printf("the lexeme of peek is %d and source is %c.\n",peek , source[i][peek]);
 
 
                 if(source[i][peek] == '(' && (strcmp(buffer , "if") != 0 && strcmp(buffer , "while") != 0 && strcmp(buffer , "for") != 0)){
@@ -111,8 +109,8 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
                 buffer[k] = '\0';
                 j++;
 
-                printf("string token found : %s\n",buffer);
-                printf("NEXT char after string is %c\n",source[i][j]);
+                //printf("string token found : %s\n",buffer);
+                //printf("NEXT char after string is %c\n",source[i][j]);
 
                 strcpy(token_table->tokens[token_table->token_count].lexeme , buffer);
                 token_table->tokens[token_table->token_count].tokentype = TOKEN_STRING;
@@ -144,7 +142,7 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
             else if(source[i][j] == '=' || source[i][j] == '<' || source[i][j] == '>' || source[i][j] == '!'){
                 buffer[0] = source[i][j++];
                 //printf("buffer : %c\n",buffer[0]);
-                printf("tokens = %c\n", source[i][j]);
+                //printf("tokens = %c\n", source[i][j]);
 
                 if(source[i][j] == '='){
                     buffer[1] = source[i][j++];
@@ -171,7 +169,7 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
                 buffer[0] = source[i][j++];
                 buffer[1] = '\0';
                 strcpy(token_table->tokens[token_table->token_count].lexeme , buffer);
-                printf("Delimiter found : %s\n",buffer);
+                //printf("Delimiter found : %s\n",buffer);
                 token_table->tokens[token_table->token_count].tokentype = TOKEN_SPECIAL_SYMBOL;
                 token_table->token_count ++;
             }

@@ -45,6 +45,8 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
     fclose(file);
 
+    printf("file closed.\n");
+
     return 1;
 
 }
@@ -268,13 +270,15 @@ static void parse_declaration_(int *start , int *assign_pos , char **name , COMP
 }
 
 static int parse_statement(int *i , int *start , COMPILER *compiler){
+    //printf("parsing statement check...\n");
     if(strcmp(compiler->token_table->tokens[*i].lexeme , ";")==0){
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[*start].lexeme , "return") == 0){
                 parse_return(start , i , compiler);
                 return 1;
             }
-            //printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",start , compiler->token_table->tokens[start].lexeme , compiler->token_table->tokens[start].tokentype);
+            printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",*start , compiler->token_table->tokens[*start].lexeme , compiler->token_table->tokens[*start].tokentype);
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD){
+                //printf("checking whether the token is keyword or not.\n");
                 DataType type;
                 if(strcmp(compiler->token_table->tokens[*start].lexeme , "int") == 0){
                     type = TYPE_INT;
@@ -299,7 +303,7 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 
                 if(strcmp(compiler->token_table->tokens[*start+1].lexeme , "*") == 0){
                     name =  compiler->token_table->tokens[*start + 2].lexeme;
-                    //printf("pointer declaration detected for %s of type %s\n",name , type);
+                    //printf("pointer declaration detected for %s of type %d\n",name , type);
                     
                     if(strcmp(compiler->token_table->tokens[*start + 3].lexeme , "=") == 0){
                         //printf("declaration with initialization detected for %s of type %s\n",name , type);
@@ -345,13 +349,13 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
             }
 
             //printf("Generating TAC for statement from token %d to %d.\n", start, i);
-            root = build_AST(compiler->token_table , *start , *i-1);
+            root = build_AST(compiler->token_table , *start , (*i)-1);
             //printf("Syntax tree for statement %d.\n", i);
             //print(root);
 
             Check_Undeclared(root , &compiler->context);
             Type_check(root , &compiler->context);
-            //printf("\ntac generation.\n");
+            printf("\ntac generation.\n");
             Generate_TAC(root , &compiler->vm.program);
 
             //BUILD_TAC_TEXT(result.TAC_buffer);
@@ -367,41 +371,44 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 }
 
 static void parse_program(COMPILER *compiler){
+    printf("parse program starts.\n");
     int start = 0;
     for(int i=0 ; i<compiler->token_table->token_count ; i++){
         
         if(strcmp(compiler->context.current_scope , "global") != 0 && strcmp(compiler->token_table->tokens[i].lexeme , "}") == 0){
             strcpy(compiler->context.current_scope , "global");
-            //printf("%s\n",context->current_scope);
+            printf("%s\n",compiler->context.current_scope);
             start = i + 1;
             continue;
         }
 
         if(parse_function(&i , &start , compiler)){
-            //printf("parsing function .\n");
+            printf("parsing function .\n");
             continue;
         }
+        //printf("parsing if .\n");
 
         if(parse_if_statement(&i , &start , compiler)){
-            //printf("parsing if statement and i = %d.\n",i);
+            printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
         //printf("while detection\n");
 
         if(parse_while(&i , &start , compiler)){
-            //printf("parsing while statement.\n");
+            printf("parsing while statement.\n");
             continue;
         }
         //printf("for detection : token=%s , type =  %d\n", compiler->token_table->tokens[i].lexeme, compiler->token_table->tokens[i].tokentype);
 
         if(parse_for(&i , &start , compiler)){
-            //printf("parsing for statement.\n");
+            printf("parsing for statement.\n");
             continue;
         }
 
+        //printf("parsing statements  .. \n");
         if(parse_statement(&i , &start , compiler)){
-            //printf("parsing statement.\n");
+            printf("parsing statement.\n");
             continue;
         }
     }
@@ -425,6 +432,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
         return 1;
     }
 
+    printf("parsing started.\n");
     parse_program(compiler);
 
     print_sym(&compiler->context.symbols);
@@ -446,6 +454,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
 
     BUILD_LABEL_TABLE(&compiler->vm);
     run_vm(&compiler->vm);
+    printf("printing virtual machine computation.\n");
 
     print_vm_memory(&compiler->vm);
 

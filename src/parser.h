@@ -26,7 +26,7 @@ typedef struct NODE{
     struct NODE *left;
     struct NODE *right;
     struct NODE *next;
-    struct NODE* ARG[MAX_ARGUMENT];
+    struct NODE *ARG[MAX_ARGUMENT];
     int ARG_count;
     AST_NODE_TYPE type;
 }NODE;
