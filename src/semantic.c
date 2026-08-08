@@ -5,6 +5,7 @@
 #include"parser.h"
 #include"tokenizer.h"
 #include"semantic.h"
+#include"compiler_result.h"
 
 static char *datatype[] = {"INT" , "FLOAT" , "DOUBLE" , "CHAR" , "VOID"};
 
@@ -260,12 +261,27 @@ void parse_declaration(const char* line , Semantic_ctxt *context){
     add_symbol(context , name , type , 0 , 0);
 }
 
-void print_sym(const SymbolTable *table){
-    printf("\n----SYMBOL TABLE----\n");
-    printf("%-15s %-10s %-15s %-10s %15s %10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
+void append_symbol(char *buffer , char *line){
+    strcat(buffer , line);
+}
+
+void BUILD_SYMBOL_TEXT(const SymbolTable *table , char *buffer){
+    buffer[0] = '\0';
+    char line[256];
+    sprintf(line , "\n----SYMBOL TABLE----\n");
+    append_symbol(buffer , line);
+
+    sprintf(line , "%-15s %-10s %-15s %-10s %15s %10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
+    append_symbol(buffer , line);
+
     for(int i=0 ; i<table->sym_count ; i++){
-        printf("%-15s %-10s %-15s %-10s %15s %10d\n",table->table[i].sym , datatype[table->table[i].type] , table->table[i].is_initialized?"YES":"NO" , table->table[i].scope , table->table[i].is_param? "YES":"NO" , table->table[i].size);
+        sprintf(line , "%-15s %-10s %-15s %-10s %15s %10d\n",table->table[i].sym , datatype[table->table[i].type] , table->table[i].is_initialized?"YES":"NO" , table->table[i].scope , table->table[i].is_param? "YES":"NO" , table->table[i].size);
+        append_symbol(buffer , line);
     }
+}
+
+const char *Symbol_Text(char *buffer){
+    return buffer;
 }
 
 void free_tree(NODE* root){

@@ -62,7 +62,9 @@ DataType stringtotype(const char type[20]);
 
 void parse_declaration(const char* line , Semantic_ctxt *context);
 
-void print_sym(const SymbolTable *table);
+void BUILD_SYMBOL_TEXT(const SymbolTable *table , char *buffer);
+
+const char *Symbol_Text(char *buffer);
 
 void free_tree(NODE* root);
 

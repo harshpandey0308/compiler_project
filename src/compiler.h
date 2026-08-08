@@ -8,14 +8,12 @@
 #include"ASMCODE.h"
 #include"VM.h"
 
-
-extern CompilerResult result;
-
 typedef struct{
     TokenEntry *token_table;
     VM vm;
     Semantic_ctxt context;
     REGISTER registers;
+    CompilerResult result;
 }COMPILER;
 
 static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE_LEN] , const char* exp[MAX_LINES] , int *lines_count , COMPILER *compiler);

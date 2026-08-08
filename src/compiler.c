@@ -11,8 +11,8 @@
 #include"VM.h"
 #include"compiler.h"
 
+
 NODE* root;
-CompilerResult result;
 
 static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE_LEN] , const char* exp[MAX_LINES] , int *lines_count , COMPILER *compiler){
     FILE *file;
@@ -435,7 +435,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
     //printf("parsing started.\n");
     parse_program(compiler);
 
-    print_sym(&compiler->context.symbols);
+    BUILD_SYMBOL_TEXT(&compiler->context.symbols , compiler->result.SYM_BUFFER);
     
 
     //printf("\nBefore optimization :\n");
@@ -446,7 +446,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
     dead_code(&compiler->vm.program);
 
     //printf("\nAfter optimization :\n");
-    //BUILD_TAC_TEXT(result.TAC_buffer);
+    BUILD_TAC_TEXT(compiler->result.TAC_buffer , &compiler->vm.program );
 
     Generate_code(&compiler->vm.program , &compiler->registers);
 
@@ -458,7 +458,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
     run_vm(&compiler->vm);
     printf("printing virtual machine computation.\n");
 
-    print_vm_memory(&compiler->vm);
+    BUILD_VM_TEXT(&compiler->vm , compiler->result.VM_buffer);
 
     //printf("program ended\n");
 

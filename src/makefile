@@ -2,11 +2,11 @@
 CC =  C:/raylib/w64devkit/bin/gcc.exe
 all : pc compiler_gui
 
-RAYLIB_INC = -IC:/raylib/raylib/src	\
-				-IC:/raylib/raylib/examples/core	\
-				-I.
+RAYLIB_INC =    -IC:/raylib/raylib/src	\
+			    -IC:/raylib/raylib/examples/core	\
+			    -I.
 
-RAYLIB_LIB = -LC:/raylib/raylib/src	\
+RAYLIB_LIB =    -LC:/raylib/raylib/src	\
 				-lraylib	\
 				-lopengl32	\
 				-lgdi32	\

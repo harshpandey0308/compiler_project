@@ -98,6 +98,7 @@ void BUILD_TAC_TEXT(char *buffer ,const TACProgram *program){
     char line[256];
 
     sprintf(line , "\n-----------TAC CODE-----------\n");
+    append_TAC(buffer , line);
     //printf("TAC is :\n");
     for(int i=0 ; i<program->tac_count ; i++){
         //printf("checking dead code\n");

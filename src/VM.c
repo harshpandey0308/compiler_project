@@ -221,9 +221,9 @@ void handle_scanf(int arg_count ,VM *vm){
 }
 
 void run_vm(VM *vm){
-    printf("sym count =  %d.\n",vm->symbol.sym_count);
+    //printf("sym count =  %d.\n",vm->symbol.sym_count);
     vm->PC = find_label("main" , vm);
-    printf("TAC_COUNT:%d\n",vm->program.tac_count);
+    //printf("TAC_COUNT:%d\n",vm->program.tac_count);
     while(vm->PC < vm->program.tac_count && vm->vm_stack.top >= 0){
         TAC instr = vm->program.code[vm->PC];
         //printf("instr.type = %d\n",instr.type);
@@ -417,7 +417,7 @@ void run_vm(VM *vm){
                     vm->vm_stack.top--;
                     args[i] = atof(vm->vm_stack.data[vm->vm_stack.top].data);
                     if(vm->vm_stack.top<0){
-                        printf("VALUE OF vm_stack->top IS %d\n",vm->vm_stack.top);
+                        //printf("VALUE OF vm_stack->top IS %d\n",vm->vm_stack.top);
                         break;
                     }
                 }
@@ -426,7 +426,7 @@ void run_vm(VM *vm){
                 int param_index = 0 ;
                 printf("sym count = %d.\n",vm->symbol.sym_count);
                 for(int j=0 ; j<vm->symbol.sym_count ; j++){
-                    printf("i = %d.\n",vm->symbol.sym_count);
+                    //printf("i = %d.\n",vm->symbol.sym_count);
                     if(vm->symbol.table[j].is_param == 1 && strcmp(vm->symbol.table[j].scope , func_name) == 0){
                         set_name(vm->symbol.table[j].sym , args[param_index] , vm);
                         param_index++;
@@ -532,7 +532,7 @@ void run_vm(VM *vm){
             }
 
             default:
-                printf("Unknown Instruction type %d at vm->PC = %d.\n",instr.type , vm->PC);
+                //printf("Unknown Instruction type %d at vm->PC = %d.\n",instr.type , vm->PC);
                 break;
         }
         vm->PC++;
@@ -555,8 +555,18 @@ DataType find_type(char *name , VM *vm){
     }
     return TYPE_VOID;
 }
-void print_vm_memory(VM *vm){
-    printf("\n-----VM_MEMORY_STATE-----\n");
+
+void append_vm(char *buffer , char *line){
+    strcat(buffer , line);
+}
+
+void BUILD_VM_TEXT(VM *vm , char *buffer){
+    buffer[0] = '\0';
+    char line[200];
+
+    sprintf(line , "\n-----VM_MEMORY_STATE-----\n");
+    append_vm(buffer , line);
+
     for(int i=0 ; i<vm->memory.memory_count ; i++){
         if(vm->memory.data[i].name[0] == 't' && isdigit(vm->memory.data[i].name[1])){
             continue;
@@ -568,17 +578,27 @@ void print_vm_memory(VM *vm){
         DataType type = find_type(vm->memory.data[i].name , vm);
 
         if(type == TYPE_INT){
-            printf("%15s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value);
+            sprintf(line , "%15s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value);
+            append_vm(buffer , line);
         }
         else if(type == TYPE_FLOAT){
-            printf("%15s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
+            sprintf(line , "%15s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
+            append_vm(buffer , line);
         }
         else if(type == TYPE_CHAR){
-            printf("%15s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
+            sprintf(line , "%15s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
+            append_vm(buffer , line);
         }
         else if(type == TYPE_VOID){
-            printf("THE VALUE IS UNKNOWN\n");
+            sprintf(line , "THE VALUE IS UNKNOWN\n");
+            append_vm(buffer , line);
         }
     }
-    printf("RET_VAL = %f\n",vm->RET_VAL);
+    sprintf(line , "RET_VAL = %f\n",vm->RET_VAL);
+    append_vm(buffer , line);
+
+}
+
+const char *VM_TEXT(char *buffer){
+    return buffer;
 }

@@ -1,8 +1,9 @@
 #include "raylib.h"
-#include"compiler.h"
+#include"../compiler.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include"raygui.h"
+
 
 const int screen_width = 1500;
 const int screen_height = 900;
@@ -21,6 +22,8 @@ typedef enum{
 }view_mode;
 
 int main(){
+    COMPILER compiler = {0};
+
     InitWindow(screen_width , screen_height , "COMPILER IDE");
 
     SetTargetFPS(70);
@@ -43,7 +46,7 @@ int main(){
     Rectangle save_bt = {3*button_width , header_height-20 , button_width , button_height};
     Rectangle AST_bt = {2*button_width , header_height-20 , button_width , button_height};
 
-    view_mode current_view;
+    view_mode current_view = VIEW_VM;
 
     while(!WindowShouldClose()){
         BeginDrawing();
@@ -60,6 +63,8 @@ int main(){
 
         if(GuiButton(run_button, "RUN")){
             printf("PROGRAM RUN.\n");
+            compile_file("test1.c" , &compiler);
+            current_view = VIEW_VM;
         }
 
         if(GuiButton(AST_bt , "AST")){
@@ -103,11 +108,11 @@ int main(){
                 break;
             
             case VIEW_TAC:
-                DrawText(result.TAC_buffer , left_width+1 , header_height+1 , 30 , green);
+                DrawText(compiler.result.TAC_buffer , left_width+1 , header_height+1 , 30 , green);
                 break;
 
             case VIEW_VM:
-                DrawText("VM output" , left_width+1 , header_height+1 , 30 , green);
+                DrawText(compiler.result.VM_buffer , left_width+1 , header_height+1 , 30 , green);
                 break;
         }
 
@@ -115,4 +120,6 @@ int main(){
     }
 
     CloseWindow();
+
+    return 0;
 }

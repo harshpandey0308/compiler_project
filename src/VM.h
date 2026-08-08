@@ -35,14 +35,14 @@ typedef struct{
 typedef struct{
     LABEL_ENTRY data[MAX_LABEL_SIZE];
     int label_count;
-}LABEL;
+}LABELS;
 
 
 typedef struct{
     TACProgram program;
     VMSTACK vm_stack;
     VM_MEMORY memory;
-    LABEL label_table;
+    LABELS label_table;
     SymbolTable symbol;
 
     float RET_VAL;
@@ -66,6 +66,10 @@ void run_vm(VM *vm);
 
 DataType find_type(char *name , VM *vm);
 
-void print_vm_memory(VM *vm);
+void append_vm(char *buffer , char *line);
+
+void BUILD_VM_TEXT(VM *vm , char *buffer);
+
+const char *VM_TEXT(char *buffer);
 
 #endif
