@@ -268,10 +268,13 @@ void append_symbol(char *buffer , char *line){
 void BUILD_SYMBOL_TEXT(const SymbolTable *table , char *buffer){
     buffer[0] = '\0';
     char line[256];
-    sprintf(line , "\n----SYMBOL TABLE----\n");
+    sprintf(line , "%7s","\n----SYMBOL TABLE----\n");
+    append_symbol(buffer , line);
+    sprintf(line , "\n");
     append_symbol(buffer , line);
 
     sprintf(line , "%-15s %-10s %-15s %-10s %15s %10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
+
     append_symbol(buffer , line);
 
     for(int i=0 ; i<table->sym_count ; i++){

@@ -41,7 +41,13 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
     const int *n = lines_count;
 
+    printf("[GUI TEST] BEFORE LEXER.\n");
+    fflush(stdout);
+
     lexer(exp , n , compiler->token_table);
+
+    printf("[GUI TEST] AFTER LEXER.\n");
+    fflush(stdout);
 
     fclose(file);
 
