@@ -6,7 +6,8 @@
 
 #define FONT_SIZE 20
 #define LINE_HEIGHT 25
-#define SCROLL SPEED 40
+#define SCROLL_SPEED_X 40.0f
+#define SCROLL_SPEED_Y 40.0f
 
 
 const int screen_width = 1600;
@@ -25,22 +26,135 @@ typedef enum{
     VIEW_SYMBOL
 }view_mode;
 
-void DrawScrollableTextPanel(const char *text , Rectangle panel , float *scroll){
+static int GetTextWidth(const char *text , int font_size){
+    int max_width = 0;
+
+    const char* start = text;
+
+    while(*start != '\0'){
+        int length = 0;
+
+        const char *end = strchr(text , '\n');
+
+        if(end){
+            length = (int)(end - start);
+        }
+        else{
+            length = strlen(start);
+        }
+
+        char line[2048];
+
+        if(length >= sizeof(line)){
+            length = sizeof(line) - 1;
+        }
+
+        memcpy(line , start , length);
+        line[length] = '\0';
+
+        int width  = MeasureText(line , font_size);
+
+        if(width > max_width){
+            max_width = width;
+        }
+
+        if(!end){
+            break;
+        }
+
+        start = end+1;
+    }
+
+    return max_width;
+}
+
+void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scroll , float *Y_scroll){
     if(text == NULL || text[0] == '\0'){
         return;
     }
 
-    float mouse_wheel = GetMouseWheelMove();
+    int line_count = 0;
+    int max_line_width = 0;
+
+    const char *line_start = text;
+
+    while(*line_start != '\0'){
+        const char *line_end = strchr(line_start , '\n');
+
+        size_t line_length;
+
+        if(line_end != NULL){
+            line_length = (int)(line_end - line_start);
+        }
+        else{
+            line_length = (int)strlen(line_start);
+        }
+
+        if(line_length > max_line_width){
+            max_line_width = line_length;
+        }
+
+        line_count++;
+
+        if(line_end == NULL){
+            break;
+        }
+
+        line_start = line_end + 1;
+    }
+
+    float content_height = line_count*LINE_HEIGHT;
+
+    float content_width = GetTextWidth(text , FONT_SIZE);
+
+    float max_scroll_x = content_width - panel.width;
+
+    float max_scroll_y = content_height - panel.height; 
+
+    
+
+    if(max_scroll_x < 0){
+        max_scroll_x = 0;
+    }
+
+    if(max_scroll_y < 0){
+        max_scroll_y = 0;
+    }
 
     if(CheckCollisionPointRec(GetMousePosition() , panel)){
-        *scroll -= (mouse_wheel)*(SCROLL_SPEED);
+
+        float wheel = GetMouseWheelMove();
+
+        if(IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)){
+            *X_scroll -= wheel*SCROLL_SPEED_X;
+        }
+        else{
+            *Y_scroll -= wheel*SCROLL_SPEED_Y;
+        }
+
     }
 
-    if(*scroll < 0){
-        *scroll = 0;
+    if(*X_scroll < 0){
+        *X_scroll = 0;
     }
 
-    int line_count = 0;
+    if(*X_scroll > max_scroll_x){
+        *X_scroll = max_scroll_x;
+    }
+
+    if(*Y_scroll < 0){
+        *Y_scroll = 0;
+    }
+
+    if(*Y_scroll > max_scroll_y){
+        *Y_scroll = max_scroll_y;
+    }
+
+    BeginScissorMode((int)panel.x , (int)panel.y , (int)panel.width , (int)panel.height);
+
+    line_start = text;
+
+    float y = panel.y - *Y_scroll;
 
     for(const char *ch = text ; *ch != '\0' ; ch++){
         if(*ch == '\n'){
@@ -52,47 +166,31 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *scroll)
         line_count++;
     }
 
-    float content_height = line_count*LINE_HEIGHT;
-
-    float max_scroll = content_height - panel.height;
-
-    if(max_scroll < 0){
-        max_scroll = 0;
-    }
-
-    if(*scroll > max_scroll){
-        *scroll = max_scroll;
-    }
-
-    BeginScissorMode((int)panel.x , (int)panel.y , (int)panel.width , (int)panel.height);
-
-    float y = panel.y - *scroll;
-
-    const char *line_start = text;
-
+    
     while(*line_start != '\0'){
         const char *line_end = strchr(line_start , '\n');
 
         size_t line_length;
 
         if(line_end != NULL){
-            line_length = line_end - line_start;
+            line_length = (int)(line_end - line_start);
         }
         else{
-            line_length = strlen(line_start);
+            line_length = (int)strlen(line_start);
         }
 
-        char line[1024];
+        char line[2048];
 
         if(line_length >= sizeof(line)){
             line_length = sizeof(line) - 1;
         }
 
         memcpy(line , line_start , line_length);
+
         line[line_length] = '\0';
 
-        if(y + LINE_HEIGHT >= panel.y && y < panel.y + panel.height){
-            DrawText(line , panel.x + 10 , y , FONT_SIZE , RAYWHITE);
+        if(y + LINE_HEIGHT >= panel.y && y <= panel.y + panel.height){
+            DrawText(line , (int)(panel.x + 10 - *X_scroll) , (int)y , FONT_SIZE , RAYWHITE);
         }
 
         y += LINE_HEIGHT;
@@ -109,6 +207,18 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *scroll)
 
 int main(){
     COMPILER compiler = {0};
+
+    float TAC_xscroll = 0;
+    float TAC_yscroll = 0;
+
+    float ASM_xscroll = 0;
+    float ASM_yscroll = 0;
+
+    float VM_xscroll = 0;
+    float VM_yscroll = 0;
+
+    float symbol_xscroll = 0;
+    float symbol_yscroll = 0;
 
     compiler.token_table = malloc(sizeof(TokenEntry));
     compiler.token_table->token_count = 0;
@@ -134,6 +244,7 @@ int main(){
     Rectangle exit_bt = {4*button_width , header_height-20 , button_width , button_height};
     Rectangle save_bt = {3*button_width , header_height-20 , button_width , button_height};
     Rectangle AST_bt = {2*button_width , header_height-20 , button_width , button_height};
+    Rectangle TAC_button = {5*button_width , header_height - 20 , button_width , button_height};
 
     view_mode current_view = VIEW_VM;
 
@@ -161,6 +272,10 @@ int main(){
             //printf("AST.\n");
         }
 
+        if(GuiButton(TAC_button , "VIEW TAC")){
+            current_view = VIEW_TAC;
+        }
+
         if(GuiButton(save_bt , "SAVE")){
             printf("SAVE.\n");
         }
@@ -177,11 +292,11 @@ int main(){
 
         DrawRectangle(left_width+1 , header_height+1 , right_width , panel_height , black);
 
-        DrawRectangleLines(left_width+1 , header_height+1 , right_width , panel_height , GRAY);
+        DrawRectangleLines(left_width+1 , header_height+1 , right_width , panel_height , DARKGRAY);
 
-        DrawRectangle(0 , 801 , screen_width , status_height , GRAY);
+        DrawRectangle(0 , 820 , screen_width , status_height , GRAY);
 
-        DrawRectangleLines(0 , 801 , screen_width , status_height , BROWN);
+        DrawRectangleLines(0 , 820 , screen_width , status_height , BROWN);
 
         switch(current_view){
             case VIEW_AST:
@@ -193,11 +308,20 @@ int main(){
                 break;
 
             case VIEW_SYMBOL:
-                DrawText(compiler.result.SYM_BUFFER , left_width+1 , header_height+1 , 15 , green);
+                DrawText("SYMBOL TABLE" , left_width+10 , header_height+10 , 25 , green);
+
+                Rectangle Symbol_Panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
+
+                DrawScrollableTextPanel(compiler.result.SYM_BUFFER , Symbol_Panel , &symbol_xscroll , &symbol_yscroll);
                 break;
             
             case VIEW_TAC:
-                DrawText(compiler.result.TAC_buffer , left_width+1 , header_height+1 , 20 , green);
+                DrawText("TAC OUTPUT" , left_width+10 , header_height+10 , 25 , green);
+
+                Rectangle TAC_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
+
+                DrawScrollableTextPanel(compiler.result.TAC_buffer , TAC_panel , &TAC_xscroll , &TAC_yscroll);
+
                 break;
 
             case VIEW_VM:
