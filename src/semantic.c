@@ -273,12 +273,12 @@ void BUILD_SYMBOL_TEXT(const SymbolTable *table , char *buffer){
     sprintf(line , "\n");
     append_symbol(buffer , line);
 
-    sprintf(line , "%-15s %-10s %-15s %-10s %-15s %-10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
+    sprintf(line , "%-20s %-10s %-15s %-15s %-10s %-10s\n","NAME","TYPE","INITIALIZED","SCOPE","IS_PARAM" , "SIZE");
 
     append_symbol(buffer , line);
 
     for(int i=0 ; i<table->sym_count ; i++){
-        sprintf(line , "%-15s %-10s %-15s %-10s %-15s %-10d\n",table->table[i].sym , datatype[table->table[i].type] , table->table[i].is_initialized?"YES":"NO" , table->table[i].scope , table->table[i].is_param? "YES":"NO" , table->table[i].size);
+        sprintf(line , "%-20s %-10s %-15s %-15s %-10s %-10d\n",table->table[i].sym , datatype[table->table[i].type] , table->table[i].is_initialized?"YES":"NO" , table->table[i].scope , table->table[i].is_param? "YES":"NO" , table->table[i].size);
         append_symbol(buffer , line);
     }
 }

@@ -33,6 +33,6 @@ void free_reg(int index , REGISTER *registers);
 
 int find_reg(const char* temp , const REGISTER *registers);
 
-void Generate_code(TACProgram *program , REGISTER *registers);
+void Generate_code(TACProgram *program , REGISTER *registers , char *buffer);
 
 #endif // ASMCODE_H

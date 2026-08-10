@@ -47,8 +47,17 @@ int find_reg(const char* temp , const REGISTER *registers){
     return -1;
 }
 
-void Generate_code(TACProgram *program , REGISTER *registers){
-    printf("\n-----------ASSEMBLY CODE--------------\n");
+void append_ASM(char *buffer , const char *line){
+    strcat(buffer , line);
+}
+
+void Generate_code(TACProgram *program , REGISTER *registers , char *buffer){
+    
+    buffer[0] = '\0';
+
+    char line[256];
+    sprintf(line , "\n-----------ASSEMBLY CODE--------------\n");
+    append_ASM(buffer , line);
 
     for(int i=0 ; i<program->tac_count ; i++){
         if(program->code[i].is_dead) continue;
@@ -70,22 +79,27 @@ void Generate_code(TACProgram *program , REGISTER *registers){
                 int reg = find_reg(op1 , registers);
                 if(reg != -1 && isalpha(program->code[i].op1[0])){
                     //printf("if.\n");
-                    printf("MOV %s, %s\n", result , regs_name[reg]);
+                    sprintf(line , "MOV %s, %s\n", result , regs_name[reg]);
+                    append_ASM(buffer , line);
                     free_reg(reg , registers);
                 }
                 else if(program->code[i].is_addr == 1 && strcmp(program->code[i].opr , "&") == 0){
                     //printf("else if for addr.\n");
-                    printf("MOV %s , &%s\n",result , op1);
+                    sprintf(line , "MOV %s , &%s\n",result , op1);
+                    append_ASM(buffer , line);
                     free_reg(reg , registers);
                 }
                 else if(program->code[i].is_deref_write == 1 && strcmp(program->code[i].opr , "*") == 0){
                     //printf("else if\n");
-                    printf("MOV *%s , ",result);
-                    printf("%s\n",op1);
+                    sprintf(line , "MOV *%s , ",result);
+                    append_ASM(buffer , line);
+                    sprintf(line , "%s\n",op1);
+                    append_ASM(buffer , line);
                 }
                 else{
                     //printf("else\n");
-                    printf("MOV %s, %s\n",result , op1);
+                    sprintf(line , "MOV %s, %s\n",result , op1);
+                    append_ASM(buffer , line);
                 }
                 continue;
             }
@@ -104,10 +118,12 @@ void Generate_code(TACProgram *program , REGISTER *registers){
             int op1_reg = find_reg(op1 , registers);
 
             if(op1_reg != -1){
-                printf("MOV %s, %s\n",regs_name[reg] , regs_name[op1_reg]);
+                sprintf(line , "MOV %s, %s\n",regs_name[reg] , regs_name[op1_reg]);
+                append_ASM(buffer , line);
                 free_reg(op1_reg , registers);
             }else{
-                printf("MOV %s, %s\n",regs_name[reg] , op1);
+                sprintf(line , "MOV %s, %s\n",regs_name[reg] , op1);
+                append_ASM(buffer , line);
             }
 
             char instr[MAX_INSTRUCTION_LENGTH];
@@ -121,55 +137,71 @@ void Generate_code(TACProgram *program , REGISTER *registers){
             int op2_reg = find_reg(op2 , registers);
 
             if(op2_reg != -1){
-                printf("%s %s, %s\n",instr , regs_name[reg] , regs_name[op2_reg]);
+                sprintf(line , "%s %s, %s\n",instr , regs_name[reg] , regs_name[op2_reg]);
+                append_ASM(buffer , line);
                 free_reg(op2_reg , registers);
             }else{
-                printf("%s %s, %s\n",instr , regs_name[reg] , op2);
+                sprintf(line , "%s %s, %s\n",instr , regs_name[reg] , op2);
+                append_ASM(buffer , line);
             }
 
             break;
             }
             case TAC_IF_GOTO:
-                printf("CMP %s , %s\n" , program->code[i].op1 , program->code[i].op2);
+                sprintf(line , "CMP %s , %s\n" , program->code[i].op1 , program->code[i].op2);
+                append_ASM(buffer , line);
 
                 if(strcmp(program->code[i].opr , "<") == 0){
-                    printf("JL %s \n", program->code[i].label);
+                    sprintf(line , "JL %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 else if(strcmp(program->code[i].opr , ">") == 0){
-                    printf("JG %s \n", program->code[i].label);
+                    sprintf(line , "JG %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 else if(strcmp(program->code[i].opr , "==") == 0){
-                    printf("JE %s \n", program->code[i].label);
+                    sprintf(line , "JE %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 else if(strcmp(program->code[i].opr , "!=") == 0){
-                    printf("JNE %s \n", program->code[i].label);
+                    sprintf(line , "JNE %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 else if(strcmp(program->code[i].opr , "<=") == 0){
-                    printf("JLE %s \n", program->code[i].label);
+                    sprintf(line , "JLE %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 else if(strcmp(program->code[i].opr , ">=") == 0){
-                    printf("JGE %s \n", program->code[i].label);
+                    sprintf(line , "JGE %s \n", program->code[i].label);
+                    append_ASM(buffer , line);
                 }
                 break;
             case TAC_GOTO:
-                printf("JMP %s \n",program->code[i].label);
+                sprintf(line , "JMP %s \n",program->code[i].label);
+                append_ASM(buffer , line);
                 break;
             case TAC_LABEL:
-                printf("%s:\n", program->code[i].label);
+                sprintf(line , "%s:\n", program->code[i].label);
+                append_ASM(buffer , line);
                 break;
 
             case PARAM:
-                printf("PUSH %s\n",program->code[i].op1);
+                sprintf(line , "PUSH %s\n",program->code[i].op1);
+                append_ASM(buffer , line);
                 break;
 
             case FUNC_CALL:
-                printf("CALL %s\n",program->code[i].op1);
-                printf("MOV RETVAL , R0\n");
+                sprintf(line , "CALL %s\n",program->code[i].op1);
+                append_ASM(buffer  ,line);
+                sprintf(line , "MOV RETVAL , R0\n");
+                append_ASM(buffer , line);
                 break;
 
             case RETURN:
-                printf("MOV R0 , %s\n",program->code[i].op1);
-                printf("RET\n");
+                sprintf(line , "MOV R0 , %s\n",program->code[i].op1);
+                append_ASM(buffer , line);
+                sprintf(line , "RET\n");
+                append_ASM(buffer , line);
                 break;
         }
     }

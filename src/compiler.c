@@ -24,6 +24,14 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
         return 0;
     }
 
+    char buffer[1024];
+
+    compiler->result.source_buffer[0] = '\0';
+
+    while(fgets(buffer , sizeof(buffer) , file)){
+        strcat(compiler->result.source_buffer , buffer);
+    }
+
     *lines_count = preprocesses(file_name, lines);
 
     if(*lines_count == 0) return 0;
@@ -454,7 +462,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
     //printf("\nAfter optimization :\n");
     BUILD_TAC_TEXT(compiler->result.TAC_buffer , &compiler->vm.program );
 
-    Generate_code(&compiler->vm.program , &compiler->registers);
+    Generate_code(&compiler->vm.program , &compiler->registers , compiler->result.ASM_buffer);
 
     //printf("\n----VM EXECUTION----\n");
 

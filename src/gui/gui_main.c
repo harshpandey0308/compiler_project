@@ -28,7 +28,8 @@ typedef enum{
     VIEW_TAC,
     VIEW_OUTPUT,
     VIEW_VM,
-    VIEW_SYMBOL
+    VIEW_SYMBOL,
+    VIEW_ASM
 }view_mode;
 
 void DrawSourceCodePanel(const char *source , Rectangle panel , float *x_scroll , float *y_scroll){
@@ -67,7 +68,7 @@ void DrawSourceCodePanel(const char *source , Rectangle panel , float *x_scroll 
         int width = MeasureText(line , SOURCE_FONT_SIZE);
 
         if(width > max_line_width){
-            width = max_line_width;
+            max_line_width = width;
         }
         
         line_count++;
@@ -133,7 +134,7 @@ void DrawSourceCodePanel(const char *source , Rectangle panel , float *x_scroll 
     while(*line_start != '\0'){
         int line_length = 0;
 
-        char *line_end = strchr(line_start , '\n');
+        const char *line_end = strchr(line_start , '\n');
 
         if(line_end != NULL){
             line_length = (int)(line_end - line_start);
@@ -142,8 +143,40 @@ void DrawSourceCodePanel(const char *source , Rectangle panel , float *x_scroll 
             line_length = (int)strlen(line_start);
         }
 
-        
+        char line[2048];
+
+        if(line_length >= (int)sizeof(line)){
+            line_length = sizeof(line) - 1;
+        }
+
+        memcpy(line , line_start , line_length);
+
+        line[line_length] = '\0';
+
+        if(y + SOURCE_LINE_HEIGHT >= panel.y && y <= panel.y + panel.height){
+
+            char number[32];
+
+            sprintf(number , "%d" , line_number);
+
+            DrawText(number , (int)(panel.x + SOURCE_PADDING - *x_scroll) , (int)y , SOURCE_FONT_SIZE , LIGHTGRAY);
+
+            DrawText(line , (int)(panel.x + LINE_NUMBER_WIDTH + SOURCE_PADDING - *x_scroll) , (int)y , SOURCE_FONT_SIZE , WHITE);
+
+        }
+
+        y += SOURCE_LINE_HEIGHT;
+        line_number++;
+
+        if(line_end == NULL){
+            break;
+        }
+
+        line_start = line_end + 1;
+
     }
+
+    EndScissorMode();
 }
 
 static int GetTextWidth(const char *text , int font_size){
@@ -326,6 +359,9 @@ int main(){
     float symbol_xscroll = 0;
     float symbol_yscroll = 0;
 
+    float source_x_scroll = 0;
+    float source_y_scroll = 0;
+
     compiler.token_table = malloc(sizeof(TokenEntry));
     compiler.token_table->token_count = 0;
 
@@ -349,10 +385,13 @@ int main(){
     Rectangle open_bt = {0 , header_height-20 , button_width , button_height};
     Rectangle VM_bt = {6*button_width , header_height-20 , button_width , button_height};
     Rectangle save_bt = {2*button_width , header_height-20 , button_width , button_height};
-    Rectangle AST_bt = {3*button_width , header_height-20 , button_width , button_height};
+    Rectangle output_bt = {3*button_width , header_height-20 , button_width , button_height};
     Rectangle TAC_button = {5*button_width , header_height - 20 , button_width , button_height};
     Rectangle Symbol_button = {4*button_width , header_height - 20 , button_width , button_height};
-    Rectangle exit_button = {7*button_width , header_height - 20 , button_width , button_height};
+    Rectangle Asm_button = {7*button_width , header_height - 20 , button_width , button_height};
+    Rectangle exit_button = {8*button_width , header_height - 20 , button_width , button_height};
+
+    Rectangle source_panel = {0 , header_height+1 , left_width , panel_height};
 
 
     view_mode current_view = VIEW_VM;
@@ -376,8 +415,8 @@ int main(){
             current_view = VIEW_VM;
         }
 
-        if(GuiButton(AST_bt , "AST")){
-            current_view = VIEW_AST;
+        if(GuiButton(output_bt , "OUTPUT")){
+            current_view = VIEW_OUTPUT;
             //printf("AST.\n");
         }
 
@@ -393,6 +432,10 @@ int main(){
             current_view = VIEW_VM;
         }
 
+        if(GuiButton(Asm_button , "ASSEMBLY")){
+            current_view = VIEW_ASM;
+        }
+
         if(GuiButton(save_bt , "SAVE")){
             printf("SAVE.\n");
         }
@@ -403,22 +446,21 @@ int main(){
 
         DrawText("COMPILER IDE" , 550 , 30 , 60 , text_color);
 
-        DrawRectangle(0 , header_height+1 , left_width , panel_height , GRAY);
+        DrawRectangle(0 , header_height+1 , left_width , panel_height , DARKGRAY);
 
         DrawRectangleLines(0 , header_height+1 , left_width , panel_height , green);
 
         DrawRectangle(left_width+1 , header_height+1 , right_width , panel_height , black);
 
-        DrawRectangleLines(left_width+1 , header_height+1 , right_width , panel_height , DARKGRAY);
+        DrawRectangleLines(left_width+1 , header_height+1 , right_width , panel_height , BLACK);
 
         DrawRectangle(0 , 820 , screen_width , status_height , GRAY);
 
         DrawRectangleLines(0 , 820 , screen_width , status_height , BROWN);
 
+        DrawSourceCodePanel(compiler.result.source_buffer , source_panel , &source_x_scroll , &source_y_scroll);
+
         switch(current_view){
-            case VIEW_AST:
-                DrawText("AST_OUTPUT" , left_width+1 , header_height+1 , 30 , green);
-                break;
 
             case VIEW_OUTPUT:
                 DrawText("OUTPUT" , left_width+1 , header_height+1 , 30 , green);
@@ -452,6 +494,15 @@ int main(){
                 Rectangle VM_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
 
                 DrawScrollableTextPanel(compiler.result.VM_buffer , VM_panel , &VM_xscroll , &VM_yscroll);
+
+                break;
+
+            case VIEW_ASM:
+                DrawText("ASSEMBLY conversion" , left_width+10 , header_height+10 , 25 , green);
+
+                Rectangle asm_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
+
+                DrawScrollableTextPanel(compiler.result.ASM_buffer , asm_panel , &ASM_xscroll , &ASM_yscroll);
 
                 break;
         }
