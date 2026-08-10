@@ -9,6 +9,11 @@
 #define SCROLL_SPEED_X 40.0f
 #define SCROLL_SPEED_Y 40.0f
 
+#define SOURCE_FONT_SIZE 20
+#define SOURCE_LINE_HEIGHT 25
+#define LINE_NUMBER_WIDTH 60
+#define SOURCE_PADDING 10
+
 
 const int screen_width = 1600;
 const int screen_height = 900;
@@ -26,6 +31,121 @@ typedef enum{
     VIEW_SYMBOL
 }view_mode;
 
+void DrawSourceCodePanel(const char *source , Rectangle panel , float *x_scroll , float *y_scroll){
+    if(source == NULL || source[0] == '\0'){
+        return ;
+    }
+
+    int line_count = 0;
+    int max_line_width = 0;
+
+    const char *line_start = source;
+
+    while(*line_start != '\0'){
+
+        int line_length = 0;
+
+        const char *line_end = strchr(line_start , '\n');
+
+        if(line_end != NULL){
+            line_length = (int)(line_end - line_start);
+        }
+        else{
+            line_length = (int)strlen(line_start);
+        }
+
+        char line[2048];
+
+        if(line_length >= sizeof(line)){
+            line_length = sizeof(line) - 1;
+        }
+        
+        memcpy(line , line_start , line_length);
+
+        line[line_length] = '\0';
+
+        int width = MeasureText(line , SOURCE_FONT_SIZE);
+
+        if(width > max_line_width){
+            width = max_line_width;
+        }
+        
+        line_count++;
+
+        if(line_end == NULL){
+            break;
+        }
+
+        line_start = line_end + 1;
+    }
+
+    float content_height = line_count*SOURCE_LINE_HEIGHT;
+
+    float content_width = LINE_NUMBER_WIDTH + SOURCE_PADDING + max_line_width + SOURCE_PADDING;
+
+    float max_scroll_x = content_width - panel.width;
+
+    float max_scroll_y = content_height - panel.height;
+
+    if(max_scroll_x < 0){
+        max_scroll_x = 0;
+    }
+
+    if(max_scroll_y < 0){
+        max_scroll_y = 0;
+    }
+
+    if(CheckCollisionPointRec(GetMousePosition(), panel)){
+        float wheel = GetMouseWheelMove();
+
+        if(IsKeyDown(KEY_LEFT_SHIFT) || IsKeyDown(KEY_RIGHT_SHIFT)){
+            *x_scroll -= wheel*SCROLL_SPEED_X;
+        }
+        else{
+            *y_scroll -= wheel*SCROLL_SPEED_Y;
+        }
+    }
+
+    if(*x_scroll > max_scroll_x){
+        *x_scroll = max_scroll_x;
+    }
+
+    if(*x_scroll < 0){
+        *x_scroll = 0;
+    }
+
+    if(*y_scroll > max_scroll_y){
+        *y_scroll = max_scroll_y;
+    }
+
+    if(*y_scroll < 0){
+        *y_scroll = 0;
+    }
+
+    BeginScissorMode(panel.x , panel.y , panel.width , panel.height);
+
+    line_start = source;
+
+    float y = panel.y - *y_scroll;
+
+    int line_number = 1;
+
+    while(*line_start != '\0'){
+        int line_length = 0;
+
+        char *line_end = strchr(line_start , '\n');
+
+        if(line_end != NULL){
+            line_length = (int)(line_end - line_start);
+        }
+        else{
+            line_length = (int)strlen(line_start);
+        }
+
+        
+    }
+}
+
 static int GetTextWidth(const char *text , int font_size){
     int max_width = 0;
 
@@ -34,7 +154,7 @@ static int GetTextWidth(const char *text , int font_size){
     while(*start != '\0'){
         int length = 0;
 
-        const char *end = strchr(text , '\n');
+        const char *end = strchr(start , '\n');
 
         if(end){
             length = (int)(end - start);
@@ -74,7 +194,6 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scrol
     }
 
     int line_count = 0;
-    int max_line_width = 0;
 
     const char *line_start = text;
 
@@ -90,9 +209,6 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scrol
             line_length = (int)strlen(line_start);
         }
 
-        if(line_length > max_line_width){
-            max_line_width = line_length;
-        }
 
         line_count++;
 
@@ -155,16 +271,6 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scrol
     line_start = text;
 
     float y = panel.y - *Y_scroll;
-
-    for(const char *ch = text ; *ch != '\0' ; ch++){
-        if(*ch == '\n'){
-            line_count++;
-        }
-    }
-
-    if(text[0] == '\0'){
-        line_count++;
-    }
 
     
     while(*line_start != '\0'){
@@ -239,12 +345,15 @@ int main(){
     int button_width = 70;
     int button_height = 30;
 
-    Rectangle run_button = {0 , header_height-20 , button_width , button_height};
-    Rectangle open_bt = {button_width , header_height-20 , button_width , button_height};
-    Rectangle exit_bt = {4*button_width , header_height-20 , button_width , button_height};
-    Rectangle save_bt = {3*button_width , header_height-20 , button_width , button_height};
-    Rectangle AST_bt = {2*button_width , header_height-20 , button_width , button_height};
+    Rectangle run_button = {button_width , header_height-20 , button_width , button_height};
+    Rectangle open_bt = {0 , header_height-20 , button_width , button_height};
+    Rectangle VM_bt = {6*button_width , header_height-20 , button_width , button_height};
+    Rectangle save_bt = {2*button_width , header_height-20 , button_width , button_height};
+    Rectangle AST_bt = {3*button_width , header_height-20 , button_width , button_height};
     Rectangle TAC_button = {5*button_width , header_height - 20 , button_width , button_height};
+    Rectangle Symbol_button = {4*button_width , header_height - 20 , button_width , button_height};
+    Rectangle exit_button = {7*button_width , header_height - 20 , button_width , button_height};
+
 
     view_mode current_view = VIEW_VM;
 
@@ -264,7 +373,7 @@ int main(){
         if(GuiButton(run_button, "RUN")){
             printf("PROGRAM RUN.\n");
             compile_file("test1.c" , &compiler);
-            current_view = VIEW_SYMBOL;
+            current_view = VIEW_VM;
         }
 
         if(GuiButton(AST_bt , "AST")){
@@ -276,11 +385,19 @@ int main(){
             current_view = VIEW_TAC;
         }
 
+        if(GuiButton(Symbol_button , "SYMBOL TABLE")){
+            current_view = VIEW_SYMBOL;
+        }
+
+        if(GuiButton(VM_bt , "VM")){
+            current_view = VIEW_VM;
+        }
+
         if(GuiButton(save_bt , "SAVE")){
             printf("SAVE.\n");
         }
 
-        if(GuiButton(exit_bt , "EXIT")){
+        if(GuiButton(exit_button , "EXIT")){
             printf("EXIT.\n");
         }
 
@@ -305,6 +422,11 @@ int main(){
 
             case VIEW_OUTPUT:
                 DrawText("OUTPUT" , left_width+1 , header_height+1 , 30 , green);
+
+                Rectangle output_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
+
+                DrawScrollableTextPanel(compiler.result.VM_buffer , output_panel , &VM_xscroll , &VM_yscroll);
+
                 break;
 
             case VIEW_SYMBOL:
@@ -325,7 +447,12 @@ int main(){
                 break;
 
             case VIEW_VM:
-                DrawText(compiler.result.VM_buffer , left_width+1 , header_height+1 , 20 , WHITE);
+                DrawText("VIRTUAL MACHINE EXECUTION" , left_width+1 , header_height+1 , 30 , WHITE);
+
+                Rectangle VM_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
+
+                DrawScrollableTextPanel(compiler.result.VM_buffer , VM_panel , &VM_xscroll , &VM_yscroll);
+
                 break;
         }
 
