@@ -63,7 +63,7 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
                 else if(strcmp(buffer , "int") == 0 || strcmp(buffer , "char") == 0 || 
                     strcmp(buffer , "float") == 0 || strcmp(buffer , "double") == 0 || 
                     strcmp(buffer , "if") == 0 || strcmp(buffer , "else") == 0 ||
-                    strcmp(buffer , "while") == 0 || strcmp(buffer , "for") == 0 || strcmp(buffer , "return") == 0){
+                    strcmp(buffer , "while") == 0 || strcmp(buffer , "for") == 0 || strcmp(buffer , "return") == 0 || strcmp(buffer , "void") == 0){
                         token_table->tokens[token_table->token_count].tokentype = TOKEN_KEYWORD;
                         //printf("the token = %s of token type = %d\n",tokens[token_count].lexeme , tokens[token_count].tokentype);
                 }
@@ -93,7 +93,15 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
             else if(source[i][j] == '+' || source[i][j] == '-' || source[i][j] == '*' || 
                     source[i][j] == '/' || source[i][j] == '%' || source[i][j] == '&'){
                 buffer[0] = source[i][j++];
-                buffer[1] = '\0';
+
+                if(source[i][j] == '+' || source[i][j] == '-'){
+                    buffer[1] = source[i][j++];
+                    buffer[2] = '\0';
+                }
+                else{
+                    buffer[1] = '\0';
+                }
+                
                 strcpy(token_table->tokens[token_table->token_count].lexeme , buffer);
                 token_table->tokens[token_table->token_count].tokentype = TOKEN_OPERATOR;
                 token_table->token_count++;

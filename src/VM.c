@@ -553,7 +553,7 @@ DataType find_type(char *name , VM *vm){
             return vm->symbol.table[i].type;
         }
     }
-    return TYPE_VOID;
+    return UNKNOWN_TYPE;
 }
 
 void append_vm(char *buffer , char *line){
@@ -578,20 +578,23 @@ void BUILD_VM_TEXT(VM *vm , char *buffer){
         DataType type = find_type(vm->memory.data[i].name , vm);
 
         if(type == TYPE_INT){
-            sprintf(line , "%15s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value);
+            sprintf(line , "%3s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value);
             append_vm(buffer , line);
         }
         else if(type == TYPE_FLOAT){
-            sprintf(line , "%15s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
+            sprintf(line , "%3s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
             append_vm(buffer , line);
         }
         else if(type == TYPE_CHAR){
-            sprintf(line , "%15s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
+            sprintf(line , "%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
             append_vm(buffer , line);
         }
         else if(type == TYPE_VOID){
-            sprintf(line , "THE VALUE IS UNKNOWN\n");
+            sprintf(line , "%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value);
             append_vm(buffer , line);
+        }
+        else{
+            sprintf(line , "error , unknown type.\n");
         }
     }
     sprintf(line , "RET_VAL = %f\n",vm->RET_VAL);

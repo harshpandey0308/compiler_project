@@ -15,7 +15,8 @@ typedef enum{
     TYPE_FLOAT,
     TYPE_DOUBLE,
     TYPE_CHAR,
-    TYPE_VOID
+    TYPE_VOID,
+    UNKNOWN_TYPE
 }DataType;
 typedef struct SYMBOL{
     char sym[SYMBOL_SIZE];

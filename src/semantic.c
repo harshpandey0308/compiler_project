@@ -242,7 +242,7 @@ DataType stringtotype(const char type[20]){
     else if(strcmp(type , "double") == 0){
         return TYPE_DOUBLE;
     }
-    else{
+    else if(strcmp(type , "void") == 0){
         return TYPE_VOID;
     }
 }

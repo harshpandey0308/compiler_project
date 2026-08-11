@@ -176,6 +176,12 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
         
     }
 
+    if(strcmp(token_table->tokens[start+1].lexeme , "++") == 0){
+        NODE *root = create_node(token_table->tokens[start+1].lexeme , AST_INCREMENT);
+        root->right = build_AST(token_table , start , start);
+        return root;
+    }
+
     if(token_table->tokens[start].tokentype == TOKEN_FUNCTION){
         //printf("the token is funtion.\n");
         NODE* call_node = create_node(token_table->tokens[start].lexeme , AST_FUNCTION_CALL);

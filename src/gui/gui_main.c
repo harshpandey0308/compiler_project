@@ -349,6 +349,26 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scrol
     EndScissorMode();
 }
 
+static int LoadSourceFile(const char *filename , COMPILER *compiler){
+    FILE *file = fopen(filename  , "r");
+
+    if(file == NULL){
+        return 0;
+    }
+
+    compiler->result.source_buffer[0] = '\0';
+
+    char buffer[1064];
+
+    while(fgets(buffer , sizeof(buffer) , file)){
+        strcat(compiler->result.source_buffer , buffer);
+    }
+
+    fclose(file);
+
+    return 1;
+}
+
 
 
 int main(){
@@ -417,13 +437,17 @@ int main(){
         if(GuiButton(open_bt , "OPEN")){
             if(OpenCFile(selected_file , sizeof(selected_file))){
                 printf("selected file .\n");
+
+                if(!LoadSourceFile(selected_file , &compiler)){
+                    printf("ERROR - Couldnot load source file.\n");
+                }
             }
             printf("OPEN\n");
         }
 
         if(GuiButton(run_button, "RUN")){
             printf("PROGRAM RUN.\n");
-            compile_file("test1.c" , &compiler);
+            compile_file(selected_file , &compiler);
             current_view = VIEW_VM;
         }
 

@@ -17,6 +17,7 @@ typedef enum{
     AST_IF,
     AST_WHILE,
     AST_FOR,
+    AST_INCREMENT,
     AST_RETURN,
     AST_BLOCK
 }AST_NODE_TYPE;
