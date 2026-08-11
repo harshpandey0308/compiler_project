@@ -1,6 +1,6 @@
 # MINI-COMPILER PROJECT
 
-      This repository explores the concepts used behind the compiler , it explores how compiler works , ehat steps it follows to convert the human readable code into the machine level code. 
+      This repository explores the concepts used behind the compiler , it explores how compiler works , what steps it follows to convert the human readable code into the machine level code. 
 
       INTRODUCTION : The compiler is a software which is used to convert the human readable code into the machine understandable instructions. Every programming language needs a compiler to tell the machine what task is to perform. The compiler performs multiple steps to translate the program.
 
@@ -11,5 +11,9 @@
       4. STRING ➡️ Sequence of characters which are enclosed in a double qoutes are strings. The string ends with the NULL character('\0').
       5. Special Symbol ➡️ special symbols includes {} , [] , () , semicolon(;) , comma(,) , preprocessor(#).
       6. OPERATORS ➡️ Operators includes + , - , * , / , % , < , > , = , == , <= , >= , && , || , bitwise & , bitwise | , increment (++) , decrement(--).
+   
+      After tokens analysis , the source code go through the parser , where the instructions are parsed and represented using Abstract Syntax Tree. The parser parse the tokens from token table and build a node for each token , then the nodes are joined together making an instruction, for each instruction there is an anstract syntax tree.
+
+      The root node of each tree passed then passed for the semantic analysis.
       
       
