@@ -1,8 +1,13 @@
+
 #include "raylib.h"
 #include"../compiler.h"
 
 #define RAYGUI_IMPLEMENTATION
 #include"raygui.h"
+
+#include"Filedialog.h"
+
+#define MAX_FILE_PATH 4096
 
 #define FONT_SIZE 20
 #define LINE_HEIGHT 25
@@ -344,8 +349,12 @@ void DrawScrollableTextPanel(const char *text , Rectangle panel , float *X_scrol
     EndScissorMode();
 }
 
+
+
 int main(){
     COMPILER compiler = {0};
+
+    char selected_file[MAX_FILE_PATH] = {0};
 
     float TAC_xscroll = 0;
     float TAC_yscroll = 0;
@@ -406,6 +415,9 @@ int main(){
         DrawRectangleLines(0 , 0 , screen_width , header_height , black);
 
         if(GuiButton(open_bt , "OPEN")){
+            if(OpenCFile(selected_file , sizeof(selected_file))){
+                printf("selected file .\n");
+            }
             printf("OPEN\n");
         }
 

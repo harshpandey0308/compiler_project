@@ -10,7 +10,8 @@ RAYLIB_LIB =    -LC:/raylib/raylib/src	\
 				-lraylib	\
 				-lopengl32	\
 				-lgdi32	\
-				-lwinmm
+				-lwinmm \
+				-lcomdlg32
 
 COMPILER_OBJS = \
 tokenizer.o	\
@@ -59,13 +60,16 @@ pc:	main.o $(COMPILER_OBJS)
 #output : main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o compiler.o  
 #	gcc main.o tokenizer.o parser.o semantic.o TACcode.o optimizer.o ASMCODE.o preprocessor.o VM.o compiler.o -o pc
 
-compiler_gui : gui_main.o	$(COMPILER_OBJS)
-	$(CC) gui_main.o $(COMPILER_OBJS)	\
+compiler_gui : gui_main.o filedialog.o $(COMPILER_OBJS)
+	$(CC) gui_main.o  filedialog.o $(COMPILER_OBJS)	\
 		-o compiler_gui	\
 		$(RAYLIB_LIB)
 
-gui_main.o : gui/gui_main.c
+gui_main.o : gui/gui_main.c gui/filedialog.h
 	$(CC) -c gui/gui_main.c $(RAYLIB_INC)
+
+filedialog.o : gui/filedialog.C gui/filedialog.h
+	$(CC) -c gui/filedialog.c $(RAYLIB_INC) -o filedialog.o
 
 clean:
 	-del /Q *.o pc.exe compiler_gui.exe
