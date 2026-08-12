@@ -70,11 +70,11 @@ void emit_param_string(TACProgram *program , char *str);
 
 void emit_param_addr(TACProgram *program , char *value);
 
-void Generate_if_tac(TokenEntry *token_table, int if_pos , TACProgram *program);
+int Generate_if_tac(TokenEntry *token_table, int if_pos , TACProgram *program);
 
-void Generate_while_tac(TokenEntry *token_table , int while_pos , TACProgram *program);
+int Generate_while_tac(TokenEntry *token_table , int while_pos , TACProgram *program);
 
-void Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program);
+int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program);
 
 char* Generate_TAC(NODE* node , TACProgram *program);
 
