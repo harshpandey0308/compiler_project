@@ -3,7 +3,7 @@
 
 #pragma once
 
-typedef struct compiler_result{
+typedef struct CompilerResult{
     char output_buffer[50000];
     char SYM_BUFFER[50000];
     char TAC_buffer[50000];

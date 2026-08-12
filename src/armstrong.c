@@ -3,7 +3,7 @@
 void main()
 {
     int temp,sum,num,rem;
-    for(num=1; num<=1000 ; num = num+1)
+    for(num=1; num<=100 ; num = num+1)
     {
         temp=num;
         sum=0;

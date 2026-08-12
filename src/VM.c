@@ -3,6 +3,7 @@
 #include"TACcode.h"
 #include"semantic.h"
 #include"VM.h"
+#include"compiler.h"
 
 const char  reg_name[4][5] = {"R0" , "R1" , "R2" , "R3"};
 
@@ -99,7 +100,13 @@ void set_by_index(int addr , float value , VM *vm){
     }
 }
 
-void handle_printf(int arg_count , VM *vm){
+void append_output(char *buffer , char *line){
+    strcat(buffer , line);
+}
+
+void handle_printf(int arg_count , VM *vm , char *buffer){
+    char line[256];
+
     char ret_value[50];
     vm->vm_stack.top--;
     strcpy(ret_value ,vm->vm_stack.data[vm->vm_stack.top].data);
@@ -115,45 +122,53 @@ void handle_printf(int arg_count , VM *vm){
     
     //printf("c\n");
     char *fmt = arg_arr[0];
-    //printf("DEBUG fmt='%s'\n", fmt);
+    printf("DEBUG fmt='%s'\n", fmt);
     //printf("DEBUG arg_arr[1]='%s'\n", arg_arr[1]);
     int arg_indx = 1;
     for(int i=0 ; fmt[i] != '\0' ; i++){
+        printf("DEBUG arg_arr[%d]='%s'\n",i , arg_arr[i]);
         //printf("%d\n",i);
         if(fmt[i] == '%'){
             i++;
             if(fmt[i] == 'd'){
                 int arg = (int)atof(arg_arr[arg_indx++]);
-                printf("%d",arg);
+                sprintf(line, "%d",arg);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 'f'){
                 float arg1 = atof(arg_arr[arg_indx++]);
-                printf("%f",arg1);
+                sprintf(line , "%f",arg1);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 'c'){
                 //printf("value is %f.\n",arg_arr[arg_indx]);
                 //printf("index = %d\n", arg_indx);
                 char arg2 = (char)atof(arg_arr[arg_indx++]);
-                printf("%c",arg2);
+                sprintf(line , "%c",arg2);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 's'){
                 char arg3[10];
                 strcpy(arg3 , arg_arr[arg_indx++]);
-                printf("%s",arg3);
+                sprintf(line , "%s",arg3);
+                append_output(buffer , line);
             }
         }
         else if(fmt[i] == '\\'){
             i++;
             if(fmt[i] == 'n'){
-                printf("\n");
+                sprintf(line , "\n");
+                append_output(buffer , line);
             }
             else if(fmt[i] == 't'){
-                printf("\t");
+                sprintf(line , "\t");
+                append_output(buffer , line);
             }
         }
         else{
             //printf("ab\n");
-            printf("%c",fmt[i]);
+            sprintf(line , "%c",fmt[i]);
+            append_output(buffer , line);
         }
     }
 
@@ -220,9 +235,12 @@ void handle_scanf(int arg_count ,VM *vm){
     //printf("After scanf, vm_stack->top=%d\n", vm_stack->top);
 }
 
-void run_vm(VM *vm){
+void run_vm(VM *vm , CompilerResult *result){
+    printf("run irtual machine...\n");
     //printf("sym count =  %d.\n",vm->symbol.sym_count);
     vm->PC = find_label("main" , vm);
+
+    result->output_buffer[0] = '\0';
     //printf("TAC_COUNT:%d\n",vm->program.tac_count);
     while(vm->PC < vm->program.tac_count && vm->vm_stack.top >= 0){
         TAC instr = vm->program.code[vm->PC];
@@ -230,7 +248,7 @@ void run_vm(VM *vm){
         switch (instr.type){
             case TAC_ASSIGN:{
                 //printf("PC in TAC ASSIGN = %d.\n",vm->PC);
-                //printf("instr.result = %s , instr.op1 = %s , instr.opr = %s , instr.op2 = %s.\n",instr.result , instr.op1 ,instr.opr , instr.op2);
+                //printf("[ASSIGN] : instr.result = %s , instr.op1 = %s , instr.opr = %s , instr.op2 = %s.\n",instr.result , instr.op1 ,instr.opr , instr.op2);
                 //printf("TAC_ASSIGN: %s = %s %s %s\n",instr.result , instr.op1 , instr.opr , instr.op2);
                 if(instr.is_deref_write == 1){
                     //printf("dereference write operation detected for %s = %s %s \n",instr.result , instr.op1 , instr.opr);
@@ -315,6 +333,7 @@ void run_vm(VM *vm){
             case TAC_IF_GOTO:{
                 //printf("vm->PC value at TAC IF GOTO:%d\n",vm->PC);
                 //printf("instr.op1 = %s , instr.op2 = %s\n",instr.op1 , instr.op2);
+                //printf("[IF] %s %s %s -> cond=%d, PC=%d, target=%s\n",instr.op1,instr.opr,instr.op2,instr.,vm->PC,instr.label);
                 float val1;
                 float val2;
                 float ptr_val1;
@@ -377,15 +396,18 @@ void run_vm(VM *vm){
             }
             
             case FUNC_CALL:{
-                //printf("PC AT FUNCTION CALL = %d.\n",vm->PC);
+                printf("PC AT FUNCTION CALL = %d.\n",vm->PC);
                 char *func_name = instr.op1;
-                //printf("func name = %s\n",func_name);
+                printf("func name = %s\n",func_name);
                 int param_count = 0;
 
                 int arg_count = atoi(instr.op2);
 
                 if(strcmp(func_name , "printf") == 0){
-                    handle_printf(arg_count , vm);
+                    printf("\n [DEBUG] printf call detected..\n");
+                    printf("[DEBUG] , arg count = %d.\n", arg_count);
+                    handle_printf(arg_count , vm , result->output_buffer);
+                    printf("[DEBUG] , output buffer = [%s].\n", result->output_buffer);
                     continue;
                 }
 
@@ -600,6 +622,10 @@ void BUILD_VM_TEXT(VM *vm , char *buffer){
     sprintf(line , "RET_VAL = %f\n",vm->RET_VAL);
     append_vm(buffer , line);
 
+}
+
+const char *output_text(char *buffer){
+    return buffer;
 }
 
 const char *VM_TEXT(char *buffer){

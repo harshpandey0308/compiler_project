@@ -1,6 +1,8 @@
 #ifndef VM_H
 #define  VM_H
 
+#include"compiler_result.h"
+
 #define MAX_VALUE_LENGTH 50
 #define MAX_NAME_LENGTH 50
 #define MAX_LABEL_LENGTH 50
@@ -58,17 +60,21 @@ float get_name(char *val , VM *vm);
 
 void set_name(char *name , float value , VM *vm);
 
-void handling_printf(int arg_count , VM *vm);
+void append_output(char *buffer , char *line);
+
+void handling_printf(int arg_count , VM *vm , char *bufer);
 
 void handle_scanf(int arg_count , VM *vm);
 
-void run_vm(VM *vm);
+void run_vm(VM *vm , CompilerResult *result);
 
 DataType find_type(char *name , VM *vm);
 
 void append_vm(char *buffer , char *line);
 
 void BUILD_VM_TEXT(VM *vm , char *buffer);
+
+const char *output_text(char *buffer);
 
 const char *VM_TEXT(char *buffer);
 

@@ -229,11 +229,12 @@ void Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program)
 }
 
 void Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *program ){
-//printf("while tac generation starts\n");
+    printf("while tac generation starts\n");
 
     char* l3 = new_label();
     char* l4 = new_label();
 
+    printf("while position = %d.\n",while_pos);
     int cond_start = while_pos + 2;
     int cond_end = cond_start;
 
@@ -241,6 +242,8 @@ void Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *p
         cond_end++;
     }
     cond_end--;
+
+    printf("[DEBUG] : OP1 : %s , OP2 : %s , OP3 : %s.\n",token_table->tokens[cond_start].lexeme , token_table->tokens[cond_start].lexeme , token_table[cond_start].tokens);
 
     char* op1 = token_table->tokens[cond_start].lexeme;
     char* opr = token_table->tokens[cond_start + 1].lexeme;

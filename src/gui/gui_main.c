@@ -376,6 +376,9 @@ int main(){
 
     char selected_file[MAX_FILE_PATH] = {0};
 
+    float output_xscroll = 0;
+    float output_yscroll = 0;
+
     float TAC_xscroll = 0;
     float TAC_yscroll = 0;
 
@@ -448,7 +451,7 @@ int main(){
         if(GuiButton(run_button, "RUN")){
             printf("PROGRAM RUN.\n");
             compile_file(selected_file , &compiler);
-            current_view = VIEW_VM;
+            current_view = VIEW_OUTPUT;
         }
 
         if(GuiButton(output_bt , "OUTPUT")){
@@ -499,11 +502,11 @@ int main(){
         switch(current_view){
 
             case VIEW_OUTPUT:
-                DrawText("OUTPUT" , left_width+1 , header_height+1 , 30 , green);
+                DrawText("OUTPUT" , left_width+1 , header_height+1 , 25 , green);
 
                 Rectangle output_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
 
-                DrawScrollableTextPanel(compiler.result.VM_buffer , output_panel , &VM_xscroll , &VM_yscroll);
+                DrawScrollableTextPanel(compiler.result.output_buffer , output_panel , &output_xscroll , &output_yscroll);
 
                 break;
 
@@ -525,7 +528,7 @@ int main(){
                 break;
 
             case VIEW_VM:
-                DrawText("VIRTUAL MACHINE EXECUTION" , left_width+1 , header_height+1 , 30 , WHITE);
+                DrawText("VIRTUAL MACHINE EXECUTION" , left_width+1 , header_height+1 , 25 , GREEN);
 
                 Rectangle VM_panel = {left_width + 1 , header_height + 45 , right_width , panel_height - 45};
 
