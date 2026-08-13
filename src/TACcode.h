@@ -78,6 +78,8 @@ int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program
 
 char* Generate_TAC(NODE* node , TACProgram *program);
 
+void print_TAC(TACProgram *program);
+
 //void print_TAC();
 
 #endif // TACCODE_H

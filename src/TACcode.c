@@ -168,6 +168,8 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
     //printf("emitting if goto\n");
     emit_IF_GOTO(program , op1 , opr , op2 , l1);
     //printf("goto emitted\n");
+
+
     int else_pos = if_pos;
 
     
@@ -183,6 +185,9 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
     int else_start = else_pos + 2;
 
     int else_body_end = else_start;
+
+    int if_depth = 0;
+
     while(strcmp(token_table->tokens[else_body_end].lexeme , "}") != 0){
         else_body_end++;
     }
@@ -190,12 +195,6 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
     int k = else_start;
 
     while(k < token_table->token_count && strcmp(token_table->tokens[k].lexeme , "}") != 0){
-        //if(strcmp(token_table->tokens[j].lexeme , ";") == 0){
-            //NODE* body_ast = build_AST(token_table , stmt_stt , j - 1);
-            //Generate_TAC(body_ast , program);
-            //free_tree(body_ast);
-            //stmt_stt = j + 1;
-        //}
         if(strcmp(token_table->tokens[k].lexeme , "while") == 0){
             k = Generate_while_tac(token_table , k , program);
         }
@@ -219,17 +218,6 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
         
     }
 
-    
-    //printf("%d %s\n",else_start , token_table->tokens[else_start].lexeme);
-    //printf("else_end = %d , lexeme at %d = %s\n",else_end , else_end , token_table->tokens[else_end].lexeme);
-
-    //printf("build ast\n");
-    //printf("token_table->tokens at else start = %s\n",token_table->tokens[else_start].lexeme);
-    //NODE* else_ast = build_AST(token_table , else_start , else_end);
-    //printf("generate tac for else\n");
-    //Generate_TAC(else_ast , program);
-    //printf("else tac generated\n");
-    //free_tree(else_ast);
 
     emit_GOTO(program , l2);
 
@@ -251,12 +239,6 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
     int j = if_start;
 
     while(j < token_table->token_count && strcmp(token_table->tokens[j].lexeme , "}") != 0){
-        //if(strcmp(token_table->tokens[j].lexeme , ";") == 0){
-            //NODE* body_ast = build_AST(token_table , stmt_stt , j - 1);
-            //Generate_TAC(body_ast , program);
-            //free_tree(body_ast);
-            //stmt_stt = j + 1;
-        //}
         if(strcmp(token_table->tokens[j].lexeme , "while") == 0){
             j = Generate_while_tac(token_table , j , program);
         }
@@ -281,19 +263,6 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
     }
 
 
-    //int if_end = if_start;
-    
-    //while(strcmp(token_table->tokens[if_end].lexeme , ";") != 0){
-        //if_end++;
-    //}
-    //if_end--;
-
-    //printf("if ends at %d\n",if_end);
-    //NODE* if_ast = build_AST(token_table , if_start , if_end);
-    //printf("generate tac for if");
-    //Generate_TAC(if_ast , program);
-    //free_tree(if_ast);
-
     emit_LABEL(program , l2); 
 
     free(l1);
@@ -309,12 +278,12 @@ int Generate_if_tac(TokenEntry *token_table , int if_pos , TACProgram *program){
 }
 
 int Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *program ){
-    printf("while tac generation starts\n");
+    //printf("while tac generation starts\n");
 
     char* l3 = new_label();
     char* l4 = new_label();
 
-    printf("while position = %d.\n",while_pos);
+    //printf("while position = %d.\n",while_pos);
     int cond_start = while_pos + 2;
     int cond_end = cond_start;
 
@@ -323,16 +292,19 @@ int Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *pr
     }
     cond_end--;
 
-    printf("[DEBUG] : OP1 : %s , OP2 : %s , OP3 : %s.\n",token_table->tokens[cond_start].lexeme , token_table->tokens[cond_start].lexeme , token_table[cond_start].tokens);
-
+    //printf("[DEBUG] : OP1 : %s , OP2 : %s , OP3 : %s.\n",token_table->tokens[cond_start].lexeme , token_table->tokens[cond_start].lexeme , token_table->tokens[cond_start].lexeme);
+    //printf("assigning these to op variables.\n");
     char* op1 = token_table->tokens[cond_start].lexeme;
     char* opr = token_table->tokens[cond_start + 1].lexeme;
     char* op2 = token_table->tokens[cond_start + 2].lexeme;
 
     emit_LABEL(program , l3);
+    //printf("LABEL  =  l3.\n");
 
     char* inver_opr = invert_condition(opr);
     emit_IF_GOTO(program , op1 , inver_opr , op2 , l4);
+
+    //printf("ifgoto label emitted.\n");
 
     int body_start = while_pos;
 
@@ -351,6 +323,8 @@ int Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *pr
 
     int stmt_start = body_start;
     int j = body_start;
+
+    //printf("chacking nested statements.\n");
 
     while(j<token_table->token_count && strcmp(token_table->tokens[j].lexeme , "}") != 0){
         //printf("token at %d is %s\n",j , token_table->tokens[j].lexeme);
@@ -384,20 +358,21 @@ int Generate_while_tac( TokenEntry *token_table , int while_pos , TACProgram *pr
 }
 
 int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program){
+    //printf("for statement started.\n");
     char* L5 = new_label();
     char* L6 = new_label();
 
     int init_start = for_pos + 2;
     int init_end = init_start;
-
+    //printf("a\n");
     while(strcmp(token_table->tokens[init_end].lexeme , ";") != 0){
         init_end++;
     }
-
+    //printf("b.\n");
     if(token_table->tokens[init_start].tokentype == TOKEN_KEYWORD){
         init_start = init_start + 1;
     }
-
+    //printf("c\n");
     NODE* init_ast = build_AST(token_table , init_start , init_end - 1);
     Generate_TAC(init_ast , program);
     free_tree(init_ast);
@@ -434,6 +409,7 @@ int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program
 
     int stmt_stt = body_begins;
     int j = body_begins;
+    //printf("checkng nested statements.\n");
 
     while(j < token_table->token_count && strcmp(token_table->tokens[j].lexeme , "}") != 0){
         //if(strcmp(token_table->tokens[j].lexeme , ";") == 0){
@@ -442,28 +418,38 @@ int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program
             //free_tree(body_ast);
             //stmt_stt = j + 1;
         //}
+        //printf("ENTERED WHILE LOOP.\n");
         if(strcmp(token_table->tokens[j].lexeme , "while") == 0){
+            //printf("the nested statement is while loop.\n");
             j = Generate_while_tac(token_table , j , program);
         }
         else if(strcmp(token_table->tokens[j].lexeme , "if") == 0){
+            //printf("the nested statement is if statement.\n");
             j = Generate_if_tac(token_table , j , program);
         }
         else if(strcmp(token_table->tokens[j].lexeme , "for") == 0){
+            //printf("the nested statement is for statement.\n");
             j = Generate_for_TAC(token_table , j , program);
         }
         else{
             int nested_stt_end = j;
+            //printf("normal statement.\n");
             while(strcmp(token_table->tokens[nested_stt_end].lexeme , ";") != 0){
+                //printf("findinf length of the block.\n");
                 nested_stt_end++;
             }
+            //printf("building roots .\n");
             NODE *nested_root = build_AST(token_table , j , nested_stt_end-1);
             Generate_TAC(nested_root , program);
             free_tree(nested_root);
 
             j = nested_stt_end;
         }
-        
+        //printf("J inside loop = %d.\n",j);
+        j++;
     }
+
+    //printf("J = %d.\n",j);
 
     int body_end = j++;
 
@@ -490,6 +476,8 @@ int Generate_for_TAC(TokenEntry *token_table , int for_pos , TACProgram *program
 
     free(L5);
     free(L6);
+
+    //printf("for stataement end.\n");
 
     return (body_end+1);
 
@@ -630,6 +618,13 @@ char* Generate_TAC(NODE* node , TACProgram *program){
     free(right_result);
 
     return temp;
+}
+
+void print_TAC(TACProgram *program){
+    printf("===========TAC PRINT===========\n");
+    for(int i=0 ; i<program->tac_count ; i++){
+        printf("TAC : OP1 = %s , OP2 = %s , OPR = %s , RESULT = %s , LABEL = %s.\n",program->code[i].op1 , program->code[i].op2 , program->code[i].opr , program->code[i].result , program->code[i].label);
+    }
 }
 
 

@@ -191,22 +191,22 @@ static int parse_if_statement(int *i , int *start , COMPILER *compiler){
 }
 
 static int is_while_statement(int index , COMPILER *compiler){
-    printf("index = %d.\n",index);
+    //printf("index = %d.\n",index);
     if(compiler->token_table->tokens[index].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[index].lexeme , "while") == 0){
         printf("while included.\n");
         return 1;
     }
-    printf("while not included.\n");
+    //printf("while not included.\n");
     return 0;
 }
 
 static int parse_while(int *i , int *start , COMPILER *compiler){
     printf("checking the while statement.\n");
     if(is_while_statement(*i , compiler)){
-        printf("while statement found at token %d\n",*i);
+        //printf("while statement found at token %d\n",*i);
         Generate_while_tac(compiler->token_table , *i , &compiler->vm.program);
 
-        printf("while body ends at token %d\n",*i);
+        //printf("while body ends at token %d\n",*i);
 
         while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "{") != 0){
             (*i)++;
@@ -246,11 +246,13 @@ static int parse_for(int *i , int *start , COMPILER *compiler){
         //printf("for statement found at token %d\n",*i);
         Generate_for_TAC(compiler->token_table , *i , &compiler->vm.program);
 
+        //printf("A.\n");
+
         while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "{") != 0){
-            printf("i = %d and lexeme = %s.\n",*i , compiler->token_table->tokens[*i].lexeme);
+            //printf("i = %d and lexeme = %s.\n",*i , compiler->token_table->tokens[*i].lexeme);
             (*i)++;
         }
-        printf("i after while = %d.\n",*i);
+        //printf("i after while = %d.\n",*i);
 
 
         int depth3 = 0;
@@ -389,9 +391,9 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 }
 
 static void parse_program(COMPILER *compiler){
-    printf("parse program starts.\n");
+    //printf("parse program starts.\n");
     int start = 0;
-    printf("token count = %d.\n", compiler->token_table->token_count);
+    //printf("token count = %d.\n", compiler->token_table->token_count);
     for(int i=0 ; i<compiler->token_table->token_count ; i++){
         
         if(strcmp(compiler->context.current_scope , "global") != 0 && strcmp(compiler->token_table->tokens[i].lexeme , "}") == 0){
@@ -402,41 +404,41 @@ static void parse_program(COMPILER *compiler){
         }
 
         if(parse_function(&i , &start , compiler)){
-            printf("parsing function .\n");
+            //printf("parsing function .\n");
             continue;
         }
         //printf("parsing if .\n");
 
         if(parse_if_statement(&i , &start , compiler)){
-            printf("parsing if statement and i = %d.\n",i);
+            //printf("parsing if statement and i = %d.\n",i);
             continue;
         }
 
-        printf("while detection\n");
+        //printf("while detection\n");
 
-        printf("i before while : %d.\n",i);
+        //printf("i before while : %d.\n",i);
 
         if(parse_while(&i , &start , compiler)){
-            printf("parsing while statement.\n");
+            //printf("parsing while statement.\n");
             continue;
         }
 
-        printf("i before for loop = %d.\n", i);
+        //printf("i before for loop = %d.\n", i);
         //printf("for detection : token=%s , type =  %d\n", compiler->token_table->tokens[i].lexeme, compiler->token_table->tokens[i].tokentype);
 
         if(parse_for(&i , &start , compiler)){
-            printf("parsing for statement.\n");
-            printf("i  after parsing for statement : %d.\n", i);
+            //printf("parsing for statement.\n");
+            //printf("i  after parsing for statement : %d.\n", i);
             continue;
         }
         
         //printf("parsing statements  .. \n");
         if(parse_statement(&i , &start , compiler)){
-            printf("parsing statement.\n");
+            //printf("parsing statement.\n");
             continue;
         }
 
-        printf("i at the end of the loop = %d.\n", i);
+        //printf("i at the end of the loop = %d.\n", i);
     }
 }
 
@@ -471,8 +473,11 @@ int compile_file(const char *file_name , COMPILER *compiler){
     Const_propagate(&compiler->vm.program);
     dead_code(&compiler->vm.program);
 
-    //printf("\nAfter optimization :\n");
+    printf("\nAfter optimization :\n");
     BUILD_TAC_TEXT(compiler->result.TAC_buffer , &compiler->vm.program );
+
+    printf("printing tac");
+    print_TAC(&compiler->vm.program);
 
     Generate_code(&compiler->vm.program , &compiler->registers , compiler->result.ASM_buffer);
 

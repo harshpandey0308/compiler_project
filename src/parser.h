@@ -32,6 +32,13 @@ typedef struct NODE{
     AST_NODE_TYPE type;
 }NODE;
 
+typedef struct FOR_NODE{
+    NODE *init_node;
+    NODE *cond_node;
+    NODE *update_node;
+    NODE *body_node;
+}FOR_NODE;
+
 typedef struct BLOCK{
     struct NODE *head;
     struct NODE *tail;

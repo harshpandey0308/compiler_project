@@ -121,6 +121,46 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
         }
     }
 
+    if(strcmp(token_table->tokens[start].lexeme , "if") == 0 || strcmp(token_table->tokens[start].lexeme , "else") == 0){
+        if(strcmp(token_table->tokens[start].lexeme , "if") == 0){
+            NODE *root = create_node(token_table->tokens[start].lexeme , AST_IF);
+
+            int condition_start = start + 2;
+            int condition_end = start;
+            int depth = 1;
+            while(condition_end < token_table->token_count && strcmp(token_table->tokens[condition_end].lexeme , ")") == 0){
+                condition_end++;
+            }
+            NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
+
+            root->left = cond_node;
+            
+            int body_begin = condition_end+2;
+            int body_end = body_begin;
+
+            while(body_end < token_table->token_count && depth != 0){
+                if(strcmp(token_table->tokens[body_end].lexeme , "{") == 0){
+                    depth++;
+                }
+                else if(strcmp(token_table->tokens[body_end].lexeme , "}") == 0){
+                    depth--;
+                }
+                body_end++;
+            }
+
+            printf("the body_end is = %d.\n",body_end);
+            
+            int k = body_begin;
+            while(k < token_table->token_count && k < body_end-1){
+                if(strcmp(token_table->tokens[k].lexeme , "while") == 0){
+                    int loop_start = k;
+                }
+            }
+        }
+        
+    }
+
+
     if(token_table->tokens[start].tokentype ==TOKEN_IDENTIFIER && (strcmp(token_table->tokens[start+1].lexeme , "[") == 0)){
         //printf("the token_table->tokens are %s at %d , %s at %d , %s at %d.\n",token_table->tokens[start].lexeme , start , token_table->tokens[start+1].lexeme , start+1 , token_table->tokens[start+2].lexeme , start+2);
         char arr_name[ARRAY_SIZE];
@@ -271,4 +311,89 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     root->right = build_AST(token_table , pos+1 , end);
 
     return root;
+}
+
+NODE *parse_cond(TokenEntry *token_table , int *start);
+
+
+NODE *parse_loop(TokenEntry *token_table , int *start){
+    if(strcmp(token_table->tokens[*start].lexeme , "while") == 0){
+        NODE *root = create_node(token_table->tokens[*start].lexeme , AST_WHILE);
+
+        int condition_start = (*start)+2;
+        int condition_end = condition_start;
+
+        while(strcmp(token_table->tokens[condition_end].lexeme , ")") != 0){
+            condition_end++;
+        }
+
+        NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
+
+        root->left = cond_node;
+
+        int body_start = condition_end + 2;
+        int body_end = body_start;
+
+        int depth = 1;
+
+        while(body_end < token_table->token_count && depth != 0){
+            if(strcmp(token_table->tokens[body_end].lexeme , "{") == 0){
+                depth++;
+            }
+            else if(strcmp(token_table->tokens[body_end].lexeme , "}") == 0){
+                depth--;
+            }
+
+            body_end++;
+        }
+
+        int *k = &body_start;
+
+        NODE *body_node = NULL;
+
+        while(*k < token_table->token_count && *k < body_end-1){
+            if(strcmp(token_table->tokens[*k].lexeme , "while") == 0){
+                body_node = parse_loop(token_table , &k);
+            }
+            else if(strcmp(token_table->tokens[*k].lexeme , "for") == 0){
+                body_node = parse_loop(token_table , &k);
+            }
+            else if(strcmp(token_table->tokens[*k].lexeme , "if") == 0){
+                body_node = parse_cond(token_table , &k);
+            }
+            else{
+                body_node = build_AST(token_table , *k , body_end);
+            }
+        }
+
+        root->right = body_node;
+
+        return root;
+    }
+
+    else if(strcmp(token_table->tokens[*start].lexeme , "for") == 0){
+        FOR_NODE *for_node = malloc(sizeof(FOR_NODE));
+        NODE * root = create_node(token_table->tokens[*start].lexeme , AST_FOR);
+
+        int header_start = *start+2;
+        int header_end = header_start;
+
+        while(header_end < token_table->token_count &&  strcmp(token_table->tokens[header_end].lexeme , ")") == 0){
+            header_end++;
+        }
+
+        int init_start = header_start;
+
+        int init_end = init_start;
+
+        while(init_end < token_table->token_count && strcmp(token_table->tokens[init_end].lexeme , ";") != 0){
+            init_end++;
+        }
+
+        for_node->init_node = build_AST(token_table , init_start , init_end-1);
+
+        int cond_start = init_end+1;
+
+    }
+
 }
