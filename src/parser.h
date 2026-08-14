@@ -22,6 +22,7 @@ typedef enum{
     AST_BLOCK
 }AST_NODE_TYPE;
 
+
 typedef struct NODE{
     char lexeme[LEXEME_SIZE];
     struct NODE *left;
@@ -30,6 +31,7 @@ typedef struct NODE{
     struct NODE *ARG[MAX_ARGUMENT];
     int ARG_count;
     AST_NODE_TYPE type;
+
 }NODE;
 
 typedef struct FOR_NODE{
@@ -39,10 +41,10 @@ typedef struct FOR_NODE{
     NODE *body_node;
 }FOR_NODE;
 
-typedef struct BLOCK{
-    struct NODE *head;
-    struct NODE *tail;
-}BLOCK;
+typedef struct BODY{
+    NODE *head;
+    NODE *tail;
+}BODY;
 
 
 NODE* create_node(const char *lexeme , AST_NODE_TYPE type);
