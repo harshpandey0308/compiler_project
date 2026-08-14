@@ -15,6 +15,8 @@ typedef enum{
     AST_NUMBER,
     AST_ADDRESS_OF,
     AST_IF,
+    AST_ELSE,
+    AST_ELSEIF,
     AST_WHILE,
     AST_FOR,
     AST_INCREMENT,
