@@ -24,24 +24,25 @@ typedef enum{
     AST_BLOCK
 }AST_NODE_TYPE;
 
-
+typedef struct NODE NODE;
+typedef struct FOR_NODE{
+    struct NODE *init_node;
+    struct NODE *cond_node;
+    struct NODE *update_node;
+}FOR_NODE;
 typedef struct NODE{
     char lexeme[LEXEME_SIZE];
     struct NODE *left;
     struct NODE *right;
     struct NODE *next;
+    FOR_NODE *for_node;
     struct NODE *ARG[MAX_ARGUMENT];
     int ARG_count;
     AST_NODE_TYPE type;
 
 }NODE;
 
-typedef struct FOR_NODE{
-    NODE *init_node;
-    NODE *cond_node;
-    NODE *update_node;
-    NODE *body_node;
-}FOR_NODE;
+
 
 typedef struct BODY{
     NODE *head;

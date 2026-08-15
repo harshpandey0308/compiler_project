@@ -23,6 +23,7 @@ NODE* create_node(const char *lexeme , AST_NODE_TYPE type){
     //printf("left = null.\n");
     new->right = NULL;
     //printf("right = null.\n");
+    new->next = NULL;
     new->type = type;
     //printf("type = %d\n",type);
     new->ARG_count = 0;
@@ -95,6 +96,10 @@ int find_operator(const TokenEntry *token_table , int start , int end){
 }
 
 NODE* build_AST(const TokenEntry *token_table , int start , int end){
+
+    if(start > end){
+        return NULL;
+    }
     //printf("Building AST for token_table->tokens from %d to %d.\n",start , end);
     //printf("\n");
     //printf("the token_table->tokens are %s , %s\n",token_table->tokens[start].lexeme , token_table->tokens[end].lexeme);
@@ -122,8 +127,13 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     }
 
     if(strcmp(token_table->tokens[start].lexeme , "if") == 0 || strcmp(token_table->tokens[start].lexeme , "else") == 0){
-        
-        
+        NODE *cond_statement_node = parse_cond(token_table , &start);
+        return cond_statement_node;
+    }
+
+    if(strcmp(token_table->tokens[start].lexeme , "while") == 0 || strcmp(token_table->tokens[start].lexeme , "for") == 0){
+        NODE *loop_root = parse_loop(token_table , &start);
+        return loop_root;
     }
 
 
@@ -243,7 +253,7 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     }
     else{
         int depth = 0;
-        for(int i=start ; i<=end ; ){
+        for(int i=start ; i<=end ; i++){
             if(strcmp(token_table->tokens[i].lexeme , "(")==0){
             depth++;
             }
@@ -291,7 +301,14 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
         int condition_start = *(start) + 2;
         int condition_end = *(start);
         
-        while(condition_end < token_table->token_count && strcmp(token_table->tokens[condition_end].lexeme , ")") != 0){
+        int if_cond_depth = 1;
+        while(condition_end < token_table->token_count && if_cond_depth != 0){
+            if(strcmp(token_table->tokens[condition_end].lexeme , "(") == 0){
+                if_cond_depth++;
+            }
+            else if(strcmp(token_table->tokens[condition_end].lexeme , ")") == 0){
+                if_cond_depth--;
+            }
             condition_end++;
         }
         NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
@@ -323,6 +340,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_loop(token_table , k);
@@ -334,6 +352,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_loop(token_table , k);
@@ -345,6 +364,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_cond(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_cond(token_table , k);
@@ -360,10 +380,10 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = build_AST(token_table , *k , end-1);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = build_AST(token_table , *k , end-1);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -376,9 +396,9 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
 
         return root;
     }
-    else if(strcmp(token_table->tokens[*start].lexeme , "else") == 0){
+    else if(strcmp(token_table->tokens[*start].lexeme , "else") == 0 && strcmp(token_table->tokens[*start+1].lexeme , "(") == 0){
         
-        NODE *root = create_node(token_table , AST_ELSE);
+        NODE *root = create_node(token_table->tokens[*start].lexeme , AST_ELSE);
 
         int body_start = *start + 2;
         int body_end = body_start;
@@ -403,10 +423,10 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_loop(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -415,10 +435,10 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_loop(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -427,10 +447,10 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_cond(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_cond(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -444,13 +464,15 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = build_AST(token_table , *k , end-1);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = build_AST(token_table , *k , end-1);
                     body_node->tail->next = temp;
                     body_node->tail = temp;
-                    *k = end+1;
+                    
                 }
+                *k = end+1;
             }
         }
 
@@ -461,15 +483,23 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
         return root;
     }
 
-    else if(strcmp(token_table->tokens[*start].lexeme , "else ") == 0 && strcmp(token_table->tokens[*start+1].lexeme , "if") == 0){
+    else if(strcmp(token_table->tokens[*start].lexeme , "else") == 0 && strcmp(token_table->tokens[*start+1].lexeme , "if") == 0){
         NODE *root = create_node(token_table->tokens[*start].lexeme , AST_ELSEIF);
 
         int condition_start = *(start) + 3;
         int condition_end = *(start);
-        int depth = 1;
-        while(condition_end < token_table->token_count && strcmp(token_table->tokens[condition_end].lexeme , ")") != 0){
+        
+        int conditional_depth = 1;
+        while(condition_end < token_table->token_count && conditional_depth != 0){
+            if(strcmp(token_table->tokens[condition_end].lexeme , "(") == 0){
+                conditional_depth++;
+            }
+            else if(strcmp(token_table->tokens[condition_end].lexeme , ")") == 0){
+                conditional_depth--;
+            }
             condition_end++;
         }
+
         NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
 
         root->left = cond_node;
@@ -477,6 +507,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
         int body_begin = condition_end+2;
         int body_end = body_begin;
 
+        int depth = 1;
         while(body_end < token_table->token_count && depth != 0){
             if(strcmp(token_table->tokens[body_end].lexeme , "{") == 0){
                 depth++;
@@ -497,6 +528,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_loop(token_table , k);
@@ -508,6 +540,8 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_loop(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
+
                 }
                 else{
                     temp = parse_loop(token_table , k);
@@ -519,6 +553,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = parse_cond(token_table , k);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = parse_cond(token_table , k);
@@ -534,14 +569,14 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 if(body_node->head == NULL){
                     body_node->head = build_AST(token_table , *k , end-1);
                     body_node->tail = body_node->head;
+                    body_node->tail->next = NULL;
                 }
                 else{
                     temp = build_AST(token_table , *k , end-1);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
-                    *k = end+1;
                 }
+                *k = end+1;
             }
         }
         root->right = body_node;
@@ -550,7 +585,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
 
         return root;
     }
-    RETURN NULL;
+    return NULL;
 }
 
 
@@ -566,7 +601,14 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
         int condition_start = (*start)+2;
         int condition_end = condition_start;
 
-        while(strcmp(token_table->tokens[condition_end].lexeme , ")") != 0){
+        int cond_depth = 1;
+        while(condition_end < token_table->token_count && cond_depth != 0){
+            if(strcmp(token_table->tokens[condition_end].lexeme , "(") == 0){
+                cond_depth++;
+            }
+            else if(strcmp(token_table->tokens[condition_end].lexeme , ")") == 0){
+                cond_depth--;
+            }
             condition_end++;
         }
 
@@ -602,7 +644,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp = parse_loop(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -614,7 +655,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp  = parse_loop(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -626,7 +666,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp = parse_cond(token_table , k);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -642,7 +681,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                     *k = end+1;
                 }
                 else{
-                    NODE *temp = build_AST(token_table , *k , end-1);
+                    temp = build_AST(token_table , *k , end-1);
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                     *k = end+1;
@@ -661,12 +700,24 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
 
     else if(strcmp(token_table->tokens[*start].lexeme , "for") == 0){
         FOR_NODE *for_node = malloc(sizeof(FOR_NODE));
+
+        for_node->cond_node = NULL;
+        for_node->init_node = NULL;
+        for_node->update_node = NULL;
+        
         NODE * root = create_node(token_table->tokens[*start].lexeme , AST_FOR);
 
         int header_start = *start+2;
         int header_end = header_start;
 
-        while(header_end < token_table->token_count &&  strcmp(token_table->tokens[header_end].lexeme , ")") != 0){
+        int header_depth = 1;
+        while(header_end < token_table->token_count &&  header_depth != 0){
+            if(strcmp(token_table->tokens[header_end].lexeme , "(") == 0){
+                header_depth++;
+            }
+            else if(strcmp(token_table->tokens[header_end].lexeme , ")") == 0){
+                header_depth--;
+            }
             header_end++;
         }
 
@@ -724,7 +775,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp = parse_loop(token_table , j);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -736,7 +786,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp  = parse_loop(token_table , j);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -748,7 +797,6 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                 }
                 else{
                     temp = parse_cond(token_table , j);
-                    temp->next = NULL;
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
@@ -764,7 +812,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
                     *j = end+1;
                 }
                 else{
-                    NODE *temp = build_AST(token_table , *j , end-1);
+                    temp = build_AST(token_table , *j , end-1);
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                     *j = end+1;
@@ -775,7 +823,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
         
 
         *start = body_end;
-
+        root->for_node = for_node;
         root->right = body_node;
 
         return root;
