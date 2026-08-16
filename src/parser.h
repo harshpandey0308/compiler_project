@@ -35,9 +35,14 @@ typedef struct NODE{
     struct NODE *left;
     struct NODE *right;
     struct NODE *next;
+
     FOR_NODE *for_node;
+    NODE *cond;
+    BODY *body;
+
     struct NODE *ARG[MAX_ARGUMENT];
     int ARG_count;
+    
     AST_NODE_TYPE type;
 
 }NODE;
@@ -58,7 +63,9 @@ int find_main_operator(const TokenEntry *token_table , int start , int end);
 
 NODE* build_AST(const TokenEntry *token_table , int start , int end);
 
+NODE *parse_cond(TokenEntry *token_table , int *start);
 
+NODE *parse_loop(TokenEntry *token_table , int *start);
 
 //NODE* parser(const char* exp[] , const int* n);
 

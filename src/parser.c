@@ -313,7 +313,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
         }
         NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
 
-        root->left = cond_node;
+        root->cond = cond_node;
         
         int body_begin = condition_end+2;
         int body_end = body_begin;
@@ -390,7 +390,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
             }
         }
         
-        root->right = body_node;
+        root->body = body_node;
 
         *start = body_end;
 
@@ -476,7 +476,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
             }
         }
 
-        root->right = body_node;
+        root->body = body_node;
 
         *start = body_end;
 
@@ -502,7 +502,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
 
         NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
 
-        root->left = cond_node;
+        root->cond = cond_node;
         
         int body_begin = condition_end+2;
         int body_end = body_begin;
@@ -579,7 +579,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
                 *k = end+1;
             }
         }
-        root->right = body_node;
+        root->body = body_node;
 
         *start = body_end;
 
@@ -614,7 +614,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
 
         NODE *cond_node = build_AST(token_table , condition_start , condition_end-1);
 
-        root->left = cond_node;
+        root->cond = cond_node;
 
         int body_start = condition_end + 2;
         int body_end = body_start;
@@ -693,7 +693,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
 
         *start = body_end;
 
-        root->right = body_node;
+        root->body = body_node;
 
         return root;
     }
@@ -824,7 +824,7 @@ NODE *parse_loop(TokenEntry *token_table , int *start){
 
         *start = body_end;
         root->for_node = for_node;
-        root->right = body_node;
+        root->body = body_node;
 
         return root;
     }

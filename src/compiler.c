@@ -392,6 +392,13 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 
 static void parse_program(COMPILER *compiler){
     //printf("parse program starts.\n");
+    BODY *body = malloc(sizeof(BODY));
+
+    body->head = NULL;
+    body->tail = NULL;
+
+    NODE *node = NULL;
+
     int start = 0;
     //printf("token count = %d.\n", compiler->token_table->token_count);
     for(int i=0 ; i<compiler->token_table->token_count ; i++){
@@ -403,43 +410,34 @@ static void parse_program(COMPILER *compiler){
             continue;
         }
 
-        if(parse_function(&i , &start , compiler)){
-            //printf("parsing function .\n");
-            continue;
+        if(strcmp(compiler->token_table->tokens[i].lexeme , "if") == 0){
+            node = parse_cond(compiler->token_table , &i);
         }
-        //printf("parsing if .\n");
-
-        if(parse_if_statement(&i , &start , compiler)){
-            //printf("parsing if statement and i = %d.\n",i);
-            continue;
+        else if(strcmp(compiler->token_table->tokens[i].lexeme , "while") == 0){
+            node = parse_loop(compiler->token_table , &i);
         }
-
-        //printf("while detection\n");
-
-        //printf("i before while : %d.\n",i);
-
-        if(parse_while(&i , &start , compiler)){
-            //printf("parsing while statement.\n");
-            continue;
+        else if(strcmp(compiler->token_table->tokens[i].lexeme , "for") == 0){
+            node = parse_loop(compiler->token_table , &i);
+        }
+        else{
+            node = parse_statement(&i , &start , compiler);
         }
 
-        //printf("i before for loop = %d.\n", i);
-        //printf("for detection : token=%s , type =  %d\n", compiler->token_table->tokens[i].lexeme, compiler->token_table->tokens[i].tokentype);
-
-        if(parse_for(&i , &start , compiler)){
-            //printf("parsing for statement.\n");
-            //printf("i  after parsing for statement : %d.\n", i);
-            continue;
-        }
-        
-        //printf("parsing statements  .. \n");
-        if(parse_statement(&i , &start , compiler)){
-            //printf("parsing statement.\n");
-            continue;
+        if(node != NULL){
+            if(body->head == NULL){
+                body->head = node;
+                body->tail = node;
+            }
+            else{
+                body->tail->next = node;
+                node->next = NULL;
+                body->tail = node;
+            }
         }
 
-        //printf("i at the end of the loop = %d.\n", i);
     }
+
+    return body->head;
 }
 
 

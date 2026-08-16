@@ -3,6 +3,7 @@
 
 #include"compiler_result.h"
 #include"preprocessor.h"
+#include"parser.h"
 #include"semantic.h"
 #include"TACcode.h"
 #include"ASMCODE.h"
