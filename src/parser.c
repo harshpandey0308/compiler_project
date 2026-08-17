@@ -743,8 +743,12 @@ NODE *parse_loop(const TokenEntry *token_table , int *start){
         while(cond_end < token_table->token_count && strcmp(token_table->tokens[cond_end].lexeme , ";") != 0){
             cond_end++;
         }
-
+        
+        printf("conditional node starts at %d and end at %d.\n",cond_start , cond_end);
         for_node->cond_node = build_AST(token_table , cond_start , cond_end-1);
+
+        printf("the conditional node = %s.\n", *(for_node->cond_node));
+        printf("node -> left = %s and node -> right = %s.\n",for_node->cond_node->left->lexeme , for_node->cond_node->right->lexeme);
 
         int update_start = cond_end+1;
         int update_end = update_start;

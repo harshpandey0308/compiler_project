@@ -358,6 +358,7 @@ NODE *parse_program(COMPILER *compiler){
         }
         else if(is_func_def(i , compiler)){
             node = parse_function(&i , &start , compiler);
+
         }
         else{
             node = parse_statement(&i , &start , compiler);
@@ -373,9 +374,12 @@ NODE *parse_program(COMPILER *compiler){
                 node->next = NULL;
                 body->tail = node;
             }
+            printf("HEAD : %s.\n",body->head->lexeme);
+            printf("tail : %s.\n",body->tail->lexeme);
         }
-
+        printf("i = %d.\n", i);
     }
+
 
     return body->head;
 }
@@ -405,6 +409,9 @@ int compile_file(const char *file_name , COMPILER *compiler){
 
     Check_Undeclared(program , &compiler->context);
     Type_check(program , &compiler->context);
+
+    printf("program  = %s.\n", program->lexeme);
+    printf("type = %d\n", program->type);
     
     Generate_TAC(program , &compiler->vm.program);
     //printf("\nBefore optimization :\n");
