@@ -25,6 +25,9 @@ NODE* create_node(const char *lexeme , AST_NODE_TYPE type){
     //printf("right = null.\n");
     new->next = NULL;
     new->type = type;
+    new->for_node = NULL;
+    new->body = NULL;
+    new->cond = NULL;
     //printf("type = %d\n",type);
     new->ARG_count = 0;
     //printf("initializing argument.\n");
@@ -289,7 +292,7 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     return root;
 }
 
-NODE *parse_cond(TokenEntry *token_table , int *start){
+NODE *parse_cond(const TokenEntry *token_table , int *start){
     BODY *body_node = malloc(sizeof(BODY));
     
     body_node->head = NULL;
@@ -332,7 +335,9 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
 
         printf("the body_end is = %d.\n",body_end);
         
-        int *k = body_begin;
+        int j = body_begin;
+        int *k = &j;
+
         NODE *temp = NULL;
 
         while(*k < token_table->token_count && *k < body_end-1){
@@ -415,7 +420,8 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
             body_end++;
         }
 
-        int *k = body_start;
+        int s = body_start;
+        int *k = &s;
         NODE *temp = NULL;
 
         while(*k < token_table->token_count && *k < body_end-1){
@@ -589,7 +595,7 @@ NODE *parse_cond(TokenEntry *token_table , int *start){
 }
 
 
-NODE *parse_loop(TokenEntry *token_table , int *start){
+NODE *parse_loop(const TokenEntry *token_table , int *start){
     BODY *body_node = malloc(sizeof(BODY));
 
     body_node->head = NULL;

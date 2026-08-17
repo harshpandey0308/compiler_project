@@ -8,6 +8,7 @@
 typedef enum{
     AST_IDENTIFIER,
     AST_OPERATOR,
+    AST_FUNCTION,
     AST_FUNCTION_CALL,
     AST_DEREFERENCE,
     AST_STRING,
@@ -30,6 +31,12 @@ typedef struct FOR_NODE{
     struct NODE *cond_node;
     struct NODE *update_node;
 }FOR_NODE;
+
+typedef struct BODY{
+    NODE *head;
+    NODE *tail;
+}BODY;
+
 typedef struct NODE{
     char lexeme[LEXEME_SIZE];
     struct NODE *left;
@@ -47,14 +54,6 @@ typedef struct NODE{
 
 }NODE;
 
-
-
-typedef struct BODY{
-    NODE *head;
-    NODE *tail;
-}BODY;
-
-
 NODE* create_node(const char *lexeme , AST_NODE_TYPE type);
 
 void print_AST(NODE* root);
@@ -63,9 +62,9 @@ int find_main_operator(const TokenEntry *token_table , int start , int end);
 
 NODE* build_AST(const TokenEntry *token_table , int start , int end);
 
-NODE *parse_cond(TokenEntry *token_table , int *start);
+NODE *parse_cond(const TokenEntry *token_table , int *start);
 
-NODE *parse_loop(TokenEntry *token_table , int *start);
+NODE *parse_loop(const TokenEntry *token_table , int *start);
 
 //NODE* parser(const char* exp[] , const int* n);
 

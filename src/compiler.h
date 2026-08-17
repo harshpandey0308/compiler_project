@@ -21,23 +21,11 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
 static int is_func_def(int index , COMPILER *compiler);
 
-static int parse_function(int *i , int *start ,COMPILER *compiler);
+NODE* parse_function(int *i , int *start ,COMPILER *compiler);
 
-static int is_if_statement(int index , COMPILER *compiler);
+NODE *parse_program(COMPILER *compiler);
 
-static int parse_if_statement(int *i , int *start ,COMPILER *compiler);
-
-static int is_while_statement(int index , COMPILER *compiler);
-
-static int parse_while(int *i , int *start ,COMPILER *compiler);
-
-static int is_for_statement(int index , COMPILER *compiler);
-
-static int parse_for(int *i , int *start , COMPILER *compiler);
-
-static void parse_program(COMPILER *compiler);
-
-static void parse_return(int *start , int *i , COMPILER *compiler);
+NODE *parse_return(int *start , int *i , COMPILER *compiler);
 
 static void parse_declaration_(int *start , int *assign_pos , char **name , COMPILER *compiler);
 

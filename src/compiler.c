@@ -82,10 +82,15 @@ static int is_func_def(int index , COMPILER *compiler){
     return 1;
 }
 
-static int parse_function(int *i , int *start , COMPILER *compiler){
+NODE *parse_function(int *i , int *start , COMPILER *compiler){
     if(!is_func_def(*i , compiler)){
-        return 0;
+        return NULL;
     }
+
+    BODY *body = malloc(sizeof(BODY));
+
+    body->head = NULL;
+    body->tail = NULL;
 
     char* func_name = compiler->token_table->tokens[*i+1].lexeme;
     DataType ret_type;
@@ -107,179 +112,133 @@ static int parse_function(int *i , int *start , COMPILER *compiler){
 
     add_symbol(&compiler->context , func_name , ret_type , 0 , 0);
 
-    strcpy(compiler->context.current_scope , func_name);
-
-    emit_FUNC_BEG(&compiler->vm.program , func_name );
-
     while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "(") != 0){
         (*i)++;
     }
     int param_start = *i + 1;
     int param_end = param_start;
 
-    while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[param_end].lexeme , ")") != 0){
+
+    NODE *root = NULL;
+
+    while(param_end<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[param_end].lexeme , ")") != 0){
         DataType param_type;
-        if(strcmp(compiler->token_table->tokens[*start].lexeme , "int") == 0){
+        if(strcmp(compiler->token_table->tokens[param_end].lexeme , "int") == 0){
             param_type = TYPE_INT;
         }
-        else if(strcmp(compiler->token_table->tokens[*start].lexeme , "char") == 0){
+        else if(strcmp(compiler->token_table->tokens[param_end].lexeme , "char") == 0){
             param_type = TYPE_CHAR;
         }
-        else if(strcmp(compiler->token_table->tokens[*start].lexeme , "float") == 0){
+        else if(strcmp(compiler->token_table->tokens[param_end].lexeme , "float") == 0){
             param_type = TYPE_FLOAT;
         }
-        else if(strcmp(compiler->token_table->tokens[*start].lexeme , "double") == 0){
+        else if(strcmp(compiler->token_table->tokens[param_end].lexeme , "double") == 0){
             param_type = TYPE_DOUBLE;
         }
         else{
             param_type = TYPE_VOID;
         }
-        char *param_name = compiler->token_table->tokens[param_end+1].lexeme;
-        //printf("Adding parameter %s of type %s  of %s function to symbol table\n", param_name, param_type , context->current_scope);
+
+        char *param_name = compiler->token_table->tokens[++param_end].lexeme;
         add_symbol(&compiler->context, param_name , param_type , 1 , 0);
-        param_end += 2;
+        param_end += 1;
+
         if(strcmp(compiler->token_table->tokens[param_end].lexeme , ",") == 0){
             param_end++;
         }
     }
+
+    root = create_node(func_name , AST_FUNCTION);
+
     *i = param_end + 1;
 
+    int body_start = param_end+2;
+    int body_end = body_start;
+
+    int depth = 1;
+    while(body_end < compiler->token_table->token_count && depth != 0){
+        if(strcmp(compiler->token_table->tokens[body_end].lexeme , "{") == 0){
+            depth++;
+        }
+        else if(strcmp(compiler->token_table->tokens[body_end].lexeme , "}") == 0){
+            depth--;
+        }
+        body_end++;
+    }
+
+    NODE *temp = NULL;
+    int k = body_start;
+    while(k < compiler->token_table->token_count && k < body_end-1){
+        if(strcmp(compiler->token_table->tokens[k].lexeme , "while") == 0){
+            if(body->head == NULL){
+                body->head = parse_loop(compiler->token_table , &k);
+                body->tail = body->head;
+            }
+            else{
+                temp = parse_loop(compiler->token_table , &k);
+                body->tail->next = temp;
+                body->tail = temp;
+            }
+        }
+        else if(strcmp(compiler->token_table->tokens[k].lexeme , "for") == 0){
+            if(body->head == NULL){
+                body->head = parse_loop(compiler->token_table , &k);
+                body->tail = body->head;
+            }
+            else{
+                temp = parse_loop(compiler->token_table , &k);
+                body->tail->next = temp;
+                body->tail = temp;
+            }
+        }
+        else if(strcmp(compiler->token_table->tokens[k].lexeme , "if") == 0){
+            if(body->head == NULL){
+                body->head = parse_cond(compiler->token_table , &k);
+                body->tail = body->head;
+            }
+            else{
+                temp = parse_cond(compiler->token_table , &k);
+                body->tail->next = temp;
+                body->tail = temp;
+            }
+        }
+        else{
+            int end = k;
+            while(end < compiler->token_table->token_count && strcmp(compiler->token_table->tokens[end].lexeme , ";") != 0){
+                end++;
+            }
+            temp = build_AST(compiler->token_table , k , end-1);
+            if(body->head == NULL){
+                body->head = temp;
+                body->tail = body->head;
+            }
+            else{
+                body->tail->next = temp;
+                body->tail = temp;
+            }
+            k = end + 1;
+        }
+    }
+
+    root->body = body;
+
+    *i = body_end;
+
+    *start = body_end;
+
+    return root;
+}
+
+
+
+
+NODE *parse_return(int *start , int *i ,COMPILER *compiler){
+    NODE *root = create_node("return" , AST_RETURN);
+
+    root->right = build_AST(compiler->token_table , *start + 1 , *i-1);
     *start = *i+1;
 
-    return 1;
-}
-
-static int is_if_statement(int index , COMPILER *compiler){
-    //printf("checking the statement include if or not.\n");
-    if(compiler->token_table->tokens[index].tokentype == TOKEN_KEYWORD && (strcmp(compiler->token_table->tokens[index].lexeme , "if") == 0)){
-        //printf("yes the statement include if keyword.\n");
-        return 1;
-    }
-    //printf("no , does not include if.\n");
-    return 0;
-}
-
-static int parse_if_statement(int *i , int *start , COMPILER *compiler){
-    //printf("checking if statement and lexeme of i = %d.\n",*i);
-    if(is_if_statement(*i , compiler)){
-            //printf("if statement found at token %d\n",*i);
-            Generate_if_tac(compiler->token_table , *i , &compiler->vm.program);
-
-            while(*i<compiler->token_table->token_count && !(compiler->token_table->tokens[*i].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[*i].lexeme , "else") == 0)){
-                (*i)++;
-            }
-
-            int depth = 0;
-            while(*i<compiler->token_table->token_count){
-                if(strcmp(compiler->token_table->tokens[*i].lexeme , "{") == 0) depth++;
-                if(strcmp(compiler->token_table->tokens[*i].lexeme , "}") == 0){
-                    depth--;
-                    if(depth == 0){
-                        (*i)++;
-                        //printf("After if-else body %d : %s\n",*i , compiler->token_table->tokens[*i].lexeme);
-                        break;
-                    }
-                } 
-                (*i)++;
-            }
-            //printf("i is at token %d : %s\n",*i , compiler->token_table->tokens[*i].lexeme);
-            (*i)--;
-            *start = *i;
-            return 1;
-    }
-    return 0;
-}
-
-static int is_while_statement(int index , COMPILER *compiler){
-    //printf("index = %d.\n",index);
-    if(compiler->token_table->tokens[index].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[index].lexeme , "while") == 0){
-        printf("while included.\n");
-        return 1;
-    }
-    //printf("while not included.\n");
-    return 0;
-}
-
-static int parse_while(int *i , int *start , COMPILER *compiler){
-    printf("checking the while statement.\n");
-    if(is_while_statement(*i , compiler)){
-        //printf("while statement found at token %d\n",*i);
-        Generate_while_tac(compiler->token_table , *i , &compiler->vm.program);
-
-        //printf("while body ends at token %d\n",*i);
-
-        while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "{") != 0){
-            (*i)++;
-        }
-
-        int depth1 = 0;
-        while(*i<compiler->token_table->token_count){
-            if(strcmp(compiler->token_table->tokens[*i].lexeme , "{") == 0) depth1++;
-            if(strcmp(compiler->token_table->tokens[*i].lexeme , "}") == 0){
-                depth1--;
-                if(depth1 == 0){
-                    (*i)++;
-                    break;
-                }
-            }
-            (*i)++;
-        }
-        //printf("After while body %d : %s\n",*i , compiler->token_table->tokens[*i].lexeme);
-        *start = *i;
-        return 1;
-    }
-
-    return 0;
-}
-
-static int is_for_statement(int index , COMPILER *compiler){
-    if(compiler->token_table->tokens[index].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[index].lexeme , "for") == 0){
-        //printf("included.\n");
-        return 1;
-    }
-    //printf("not included.\n");
-    return 0;
-}
-
-static int parse_for(int *i , int *start , COMPILER *compiler){
-    if(is_for_statement(*i , compiler)){
-        //printf("for statement found at token %d\n",*i);
-        Generate_for_TAC(compiler->token_table , *i , &compiler->vm.program);
-
-        //printf("A.\n");
-
-        while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "{") != 0){
-            //printf("i = %d and lexeme = %s.\n",*i , compiler->token_table->tokens[*i].lexeme);
-            (*i)++;
-        }
-        //printf("i after while = %d.\n",*i);
-
-
-        int depth3 = 0;
-        while(*i<compiler->token_table->token_count){
-            if(strcmp(compiler->token_table->tokens[*i].lexeme , "{") == 0) depth3++;
-            if(strcmp(compiler->token_table->tokens[*i].lexeme , "}") == 0){
-                depth3--;
-                if(depth3 == 0){
-                    (*i)++;
-                    break;
-                }
-            }
-            (*i)++;
-        }
-
-        *start = *i;
-        return 1;
-    }
-    
-    return 0;
-}
-
-static void parse_return(int *start , int *i ,COMPILER *compiler){
-    char* ret_val = compiler->token_table->tokens[*start+1].lexeme;
-    //printf("RETURN VALUE: %s\n",compiler->token_table->tokens[start+1].lexeme);
-    emit_RETURN(&compiler->vm.program , ret_val);
-    *start = *i+1;
+    return root;
 }
 
 static void parse_declaration_(int *start , int *assign_pos , char **name , COMPILER *compiler){
@@ -289,14 +248,13 @@ static void parse_declaration_(int *start , int *assign_pos , char **name , COMP
     }
 }
 
-static int parse_statement(int *i , int *start , COMPILER *compiler){
-    //printf("parsing statement check...\n");
+NODE *parse_statement(int *i , int *start , COMPILER *compiler){
     if(strcmp(compiler->token_table->tokens[*i].lexeme , ";")==0){
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[*start].lexeme , "return") == 0){
-                parse_return(start , i , compiler);
-                return 1;
+                NODE *ret_node = parse_return(start , i , compiler);
+                return ret_node;
             }
-            //printf("DEBUG: start = %d , lexeme = %s , tokentype = %d\n",*start , compiler->token_table->tokens[*start].lexeme , compiler->token_table->tokens[*start].tokentype);
+
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD){
                 //printf("checking whether the token is keyword or not.\n");
                 DataType type;
@@ -342,55 +300,34 @@ static int parse_statement(int *i , int *start , COMPILER *compiler){
 
                 //printf("assign position  = %d\n", assign_pos);
 
-                //add_symbol(name , type  , context->current_scope , 0 , 0);
-                //printf("the compiler->token_table->tokens of type %s is %s.\n",compiler->token_table->tokens[start].lexeme , compiler->token_table->tokens[start+1].lexeme);
-                //printf("add symbol %s of type %s of %s function.\n",name , type , context->current_scope);
-                add_symbol(&compiler->context , name , type , 0 , size);
-                //printf("symbols added.\n");
-
                 
-                if(assign_pos != -1){
-                    //printf("declaration with initialization detected for %s of type %s\n",name , type);
-                    //printf("assign_pos = %d , end = %d\n",assign_pos , i-1);
-                    NODE* decl_AST = build_AST(compiler->token_table , assign_pos-1 , (*i)-1);
-                    Check_Undeclared(decl_AST , &compiler->context);
-                    Type_check(decl_AST , &compiler->context);
-                    Generate_TAC(decl_AST , &compiler->vm.program);
+                add_symbol(&compiler->context , name , type , 0 , size);
 
-                    free_tree(decl_AST);
+                NODE *declare_AST = NULL;
+                if(assign_pos != -1){
+                    declare_AST = build_AST(compiler->token_table , assign_pos-1 , (*i)-1);
                 }
                 *start = *i+1;
-                return 1;
+                return declare_AST;
             }
 
             if(*start >= *i){
                 *start = *i+1;
-                return 1;
+                return NULL;
             }
 
-            //printf("Generating TAC for statement from token %d to %d.\n", start, i);
-            root = build_AST(compiler->token_table , *start , (*i)-1);
-            //printf("Syntax tree for statement %d.\n", i);
-            //print(root);
-
-            Check_Undeclared(root , &compiler->context);
-            Type_check(root , &compiler->context);
-            //printf("\ntac generation.\n");
-            Generate_TAC(root , &compiler->vm.program);
-
-            //BUILD_TAC_TEXT(result.TAC_buffer);
-
-            free_tree(root);
+            NODE *root = build_AST(compiler->token_table , *start , (*i)-1);
             *start = *i+1;
-            return 1;
+
+            return root;
         }
+
         else{
-            //printf("NO parse statement.\n");
-            return 0;
+            return NULL;
         }
 }
 
-static void parse_program(COMPILER *compiler){
+NODE *parse_program(COMPILER *compiler){
     //printf("parse program starts.\n");
     BODY *body = malloc(sizeof(BODY));
 
@@ -418,6 +355,9 @@ static void parse_program(COMPILER *compiler){
         }
         else if(strcmp(compiler->token_table->tokens[i].lexeme , "for") == 0){
             node = parse_loop(compiler->token_table , &i);
+        }
+        else if(is_func_def(i , compiler)){
+            node = parse_function(&i , &start , compiler);
         }
         else{
             node = parse_statement(&i , &start , compiler);
@@ -459,11 +399,14 @@ int compile_file(const char *file_name , COMPILER *compiler){
     }
 
     printf("parsing started.\n");
-    parse_program(compiler);
+    NODE *program = parse_program(compiler);
 
     BUILD_SYMBOL_TEXT(&compiler->context.symbols , compiler->result.SYM_BUFFER);
-    
 
+    Check_Undeclared(program , &compiler->context);
+    Type_check(program , &compiler->context);
+    
+    Generate_TAC(program , &compiler->vm.program);
     //printf("\nBefore optimization :\n");
     //print_TAC();
 
@@ -472,6 +415,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
     dead_code(&compiler->vm.program);
 
     printf("\nAfter optimization :\n");
+
     BUILD_TAC_TEXT(compiler->result.TAC_buffer , &compiler->vm.program );
 
     printf("printing tac");
