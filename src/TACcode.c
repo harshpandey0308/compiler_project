@@ -151,7 +151,7 @@ int Generate_if_tac(NODE *node , TACProgram *program){
 
     printf("opr = %s , op1 = %s , op2 = %s and invert = %s.\n",opr , op1 , op2 , invert);
     
-    //printf("emitting if goto\n");
+    printf("emitting if goto\n");
     emit_IF_GOTO(program , op1 , invert , op2 , l1);
     printf("goto emitted\n");
 

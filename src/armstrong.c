@@ -2,7 +2,10 @@
 #include<math.h>
 void main()
 {
-    int temp,sum,num,rem;
+    int temp;
+    int rem;
+    int sum;
+    int num;
     for(num=1; num<=100 ; num = num+1)
     {
         temp=num;

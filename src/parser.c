@@ -359,12 +359,15 @@ NODE *parse_cond(const TokenEntry *token_table , int *start){
         NODE *root = create_node(token_table->tokens[*start].lexeme , AST_IF);
 
         printf("the root is %s.\n",root->lexeme);
+        printf("the start is %d.\n",*start);
 
         int condition_start = *(start) + 2;
-        int condition_end = *(start);
+        int condition_end = condition_start;
         
+
         int if_cond_depth = 1;
         while(condition_end < token_table->token_count && if_cond_depth != 0){
+            printf("lexeme = %s at %d.\n",token_table->tokens[condition_end].lexeme , condition_end);
             if(strcmp(token_table->tokens[condition_end].lexeme , "(") == 0){
                 if_cond_depth++;
             }
@@ -372,7 +375,7 @@ NODE *parse_cond(const TokenEntry *token_table , int *start){
                 if_cond_depth--;
             }
             condition_end++;
-            printf("condition end = %d.\n",condition_end);
+            printf("condition depth = %d.\n",if_cond_depth);
         }
 
         printf("condition end at %d.\n",condition_end);
@@ -384,7 +387,7 @@ NODE *parse_cond(const TokenEntry *token_table , int *start){
         printf("cond node left = %s.\n",cond_node->left->lexeme);
         printf("right node = %s.\n",cond_node->right->lexeme);
         
-        int body_begin = condition_end+2;
+        int body_begin = condition_end+1;
         int body_end = body_begin;
 
         int depth = 1;
@@ -442,6 +445,22 @@ NODE *parse_cond(const TokenEntry *token_table , int *start){
                     body_node->tail->next = temp;
                     body_node->tail = temp;
                 }
+            }
+            else if(token_table->tokens[*k].tokentype == TOKEN_FUNCTION){
+                int end = *k;
+                while(end < token_table->token_count && strcmp(token_table->tokens[end].lexeme , ";") != 0){
+                    end++;
+                }
+                temp = build_AST(token_table , *k , end-1);
+                if(body_node->head == NULL){
+                    body_node->head = temp;
+                    body_node->tail = temp;
+                }
+                else{
+                    body_node->tail->next = temp;
+                    body_node->tail = temp;
+                }
+                *k = end + 1;
             }
             else{
                 int end = *k;

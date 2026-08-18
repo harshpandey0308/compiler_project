@@ -48,7 +48,7 @@ void add_symbol(Semantic_ctxt *context, const char* name , DataType type , int i
     context->symbols.table[context->symbols.sym_count].is_param = is_param;
     context->symbols.table[context->symbols.sym_count].size = size;
 
-    //printf("STORING : name = %s and is_param = %d\n", name , context->table.table[sym_count].is_param);
+    printf("STORING : name = %s and is_param = %d\n", name , context->symbols.table[context->symbols.sym_count].is_param);
     context->symbols.sym_count++;
 }
 

@@ -38,7 +38,7 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
     printf("File read : %d lines.\n", *lines_count);
 
-    //
+    //parse_declaration(lines , &compiler->context);
 
     //print_sym();
 
@@ -256,7 +256,7 @@ NODE *parse_statement(int *i , int *start , COMPILER *compiler){
             }
 
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD){
-                //printf("checking whether the token is keyword or not.\n");
+                printf("checking whether the token is keyword or not.\n");
                 DataType type;
                 if(strcmp(compiler->token_table->tokens[*start].lexeme , "int") == 0){
                     type = TYPE_INT;
@@ -300,7 +300,7 @@ NODE *parse_statement(int *i , int *start , COMPILER *compiler){
 
                 //printf("assign position  = %d\n", assign_pos);
 
-                
+                printf("adding %s of %d in symbol table.\n",name , type);
                 add_symbol(&compiler->context , name , type , 0 , size);
 
                 NODE *declare_AST = NULL;
@@ -401,11 +401,14 @@ int compile_file(const char *file_name , COMPILER *compiler){
     if(!prepare_source(file_name , lines , exp , &lines_count , compiler)){
         return 1;
     }
-
+    
+    printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
     printf("parsing started.\n");
     NODE *program = parse_program(compiler);
 
+
     BUILD_SYMBOL_TEXT(&compiler->context.symbols , compiler->result.SYM_BUFFER);
+    printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
 
     Check_Undeclared(program , &compiler->context);
     Type_check(program , &compiler->context);
@@ -414,8 +417,8 @@ int compile_file(const char *file_name , COMPILER *compiler){
     printf("type = %d\n", program->type);
     
     Generate_TAC(program , &compiler->vm.program);
-    //printf("\nBefore optimization :\n");
-    //print_TAC();
+    printf("\nBefore optimization :\n");
+    print_TAC(&compiler->vm.program);
 
     constant_fold(&compiler->vm.program);
     Const_propagate(&compiler->vm.program);
@@ -427,6 +430,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
 
     printf("printing tac");
     print_TAC(&compiler->vm.program);
+    printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
 
     Generate_code(&compiler->vm.program , &compiler->registers , compiler->result.ASM_buffer);
 
