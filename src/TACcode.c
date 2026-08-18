@@ -134,12 +134,13 @@ char* new_label(){
 }
 
 int Generate_if_tac(NODE *node , TACProgram *program){
-    //printf("generate if position %d:\n", if_pos);
+    printf("generate if position\n");
     char* l1 = new_label();
     char* l2 = new_label();
     //char* l3 = new_label();
 
-    NODE *cond_node = node->left;
+    NODE *cond_node = node->cond;
+    printf("cond node of if = %s.\n",cond_node->lexeme);
 
     char* opr = cond_node->lexeme;
     char* op1 = cond_node->left->lexeme;
@@ -147,10 +148,12 @@ int Generate_if_tac(NODE *node , TACProgram *program){
 
 
     char *invert = invert_condition(opr);
+
+    printf("opr = %s , op1 = %s , op2 = %s and invert = %s.\n",opr , op1 , op2 , invert);
     
     //printf("emitting if goto\n");
     emit_IF_GOTO(program , op1 , invert , op2 , l1);
-    //printf("goto emitted\n");
+    printf("goto emitted\n");
 
     NODE *current = node->body->head;
 
@@ -172,7 +175,8 @@ int Generate_if_tac(NODE *node , TACProgram *program){
 }
 
 int Generate_while_tac(NODE *node , TACProgram *program ){
-    //printf("while tac generation starts\n");
+    printf("the node is %s.\n",node->lexeme);
+    printf("while tac generation starts\n");
 
     char* l3 = new_label();
     char* l4 = new_label();
@@ -180,18 +184,25 @@ int Generate_while_tac(NODE *node , TACProgram *program ){
     NODE *cond = node->cond;
 
     emit_LABEL(program , l3);
+    printf("label emitted :: %s.\n",l3);
 
     char* op1 = cond->left->lexeme;
     char* opr = cond->lexeme;
     char* op2 = cond->right->lexeme;
 
+    printf("opr : %s.\n",opr);
+    printf("op1 : %s.\n",op1);
+    printf("op2 : %s.\n",op2);
+
     char* inver_opr = invert_condition(opr);
+    printf("invert operation : %s.\n",inver_opr);
 
     emit_IF_GOTO(program , op1 , inver_opr , op2 , l4);
 
     NODE *current = node->body->head;
 
     while(current != NULL){
+        printf("going into the generate tac.\n");
         Generate_TAC(current , program);
         current = current->next;
     }
@@ -199,6 +210,8 @@ int Generate_while_tac(NODE *node , TACProgram *program ){
     emit_GOTO(program , l3);
 
     emit_LABEL(program , l4);
+
+    printf("tac count at the end of the while_tac :: %d.\n",program->tac_count);
 
     free(l3);
     free(l4);
@@ -218,15 +231,16 @@ int Generate_for_TAC(NODE *node , TACProgram *program){
 
     NODE *cond = node->for_node->cond_node;
 
-    printf("FOR condition node = %p\n", (void *)cond);
+    printf("FOR condition node = %s\n", cond->lexeme);
+    printf("the cond nod address = %p\n",cond);
 
     emit_LABEL(program , L5);
 
     printf("FOR label emitted. tac_count = %d\n",program->tac_count);
 
-    char* op1 = node->left->lexeme;
+    char* op1 = cond->left->lexeme;
     char* opr = cond->lexeme;
-    char* op2 = node->right->lexeme;
+    char* op2 = cond->right->lexeme;
 
     printf("FOR condition: %s %s %s\n", op1, opr, op2);
 
@@ -276,6 +290,7 @@ void generate_TAC_func(NODE *node , TACProgram *program){
 }
 
 char* Generate_TAC(NODE* node , TACProgram *program){
+    printf("node = %s.\n",node->lexeme);
     printf("tac_count at the start = %d\n",program->tac_count);
     if(node == NULL){
         return NULL;

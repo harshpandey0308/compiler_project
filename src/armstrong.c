@@ -13,7 +13,7 @@ void main()
             sum=sum+rem*rem*rem;
             temp=temp/10;
         }
-        if(sum==num)
+        if(sum == num)
         {
             printf("%d",num);
             printf(" ");
