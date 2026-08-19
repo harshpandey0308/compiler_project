@@ -21,6 +21,8 @@ static int prepare_source(const char *file_name , char lines[MAX_LINES][MAX_LINE
 
 static int is_func_def(int index , COMPILER *compiler);
 
+NODE *parse_statement(int *i , int *start , COMPILER *compiler);
+
 NODE* parse_function(int *i , int *start ,COMPILER *compiler);
 
 NODE *parse_program(COMPILER *compiler);

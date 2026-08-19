@@ -138,43 +138,43 @@ void handle_printf(int arg_count , VM *vm , char *buffer){
             i++;
             if(fmt[i] == 'd'){
                 int arg = (int)atof(arg_arr[arg_indx++]);
-                printf("%d",arg);
-                //append_output(buffer , line);
+                sprintf(line , "%d",arg);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 'f'){
                 float arg1 = atof(arg_arr[arg_indx++]);
-                printf("%f",arg1);
-                //append_output(buffer , line);
+                sprintf(line , "%f",arg1);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 'c'){
                 //printf("value is %f.\n",arg_arr[arg_indx]);
                 //printf("index = %d\n", arg_indx);
                 char arg2 = (char)atof(arg_arr[arg_indx++]);
-                printf("%c",arg2);
-                //append_output(buffer , line);
+                sprintf(line , "%c",arg2);
+                append_output(buffer , line);
             }
             else if(fmt[i] == 's'){
                 char arg3[10];
                 strcpy(arg3 , arg_arr[arg_indx++]);
-                printf("%s",arg3);
-                //append_output(buffer , line);
+                sprintf(line , "%s",arg3);
+                append_output(buffer , line);
             }
         }
         else if(fmt[i] == '\\'){
             i++;
             if(fmt[i] == 'n'){
-                printf("\n");
-                //append_output(buffer , line);
+                sprintf(line , "\n");
+                append_output(buffer , line);
             }
             else if(fmt[i] == 't'){
-                printf("\t");
-                //append_output(buffer , line);
+                sprintf(line , "\t");
+                append_output(buffer , line);
             }
         }
         else{
             //printf("ab\n");
-            printf("%c",fmt[i]);
-            //append_output(buffer , line);
+            sprintf(line , "%c",fmt[i]);
+            append_output(buffer , line);
         }
     }
 

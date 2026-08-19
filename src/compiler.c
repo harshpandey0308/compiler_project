@@ -207,7 +207,9 @@ NODE *parse_function(int *i , int *start , COMPILER *compiler){
             while(end < compiler->token_table->token_count && strcmp(compiler->token_table->tokens[end].lexeme , ";") != 0){
                 end++;
             }
-            temp = build_AST(compiler->token_table , k , end-1);
+            *i = end;
+
+            temp = parse_statement(i , &k , compiler);
             if(body->head == NULL){
                 body->head = temp;
                 body->tail = body->head;
@@ -242,21 +244,23 @@ NODE *parse_return(int *start , int *i ,COMPILER *compiler){
 }
 
 static void parse_declaration_(int *start , int *assign_pos , char **name , COMPILER *compiler){
+    //printf("start = %d\n",*start);
+    //printf("name = %s\n",compiler->token_table->tokens[*start+1].lexeme);
     *name = compiler->token_table->tokens[*start+1].lexeme;
     if(strcmp(compiler->token_table->tokens[*start+2].lexeme , "=") == 0){
         *assign_pos = *start + 2;
     }
 }
 
-NODE *parse_statement(int *i , int *start , COMPILER *compiler){
-    if(strcmp(compiler->token_table->tokens[*i].lexeme , ";")==0){
+NODE *parse_statement(int *statement_i , int *start , COMPILER *compiler){
+    if(strcmp(compiler->token_table->tokens[*statement_i].lexeme , ";")==0){
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD && strcmp(compiler->token_table->tokens[*start].lexeme , "return") == 0){
-                NODE *ret_node = parse_return(start , i , compiler);
+                NODE *ret_node = parse_return(start , statement_i , compiler);
                 return ret_node;
             }
 
             if(compiler->token_table->tokens[*start].tokentype == TOKEN_KEYWORD){
-                printf("checking whether the token is keyword or not.\n");
+                //printf("checking whether the token is keyword or not.\n");
                 DataType type;
                 if(strcmp(compiler->token_table->tokens[*start].lexeme , "int") == 0){
                     type = TYPE_INT;
@@ -300,24 +304,26 @@ NODE *parse_statement(int *i , int *start , COMPILER *compiler){
 
                 //printf("assign position  = %d\n", assign_pos);
 
-                printf("adding %s of %d in symbol table.\n",name , type);
+                //printf("adding %s of %d in symbol table.\n",name , type);
                 add_symbol(&compiler->context , name , type , 0 , size);
+
+                //printf("symbol count after add : %d\n",compiler->context.symbols.sym_count);
 
                 NODE *declare_AST = NULL;
                 if(assign_pos != -1){
-                    declare_AST = build_AST(compiler->token_table , assign_pos-1 , (*i)-1);
+                    declare_AST = build_AST(compiler->token_table , assign_pos-1 , (*statement_i)-1);
                 }
-                *start = *i+1;
+                *start = *(statement_i)+1;
                 return declare_AST;
             }
 
-            if(*start >= *i){
-                *start = *i+1;
+            if(*start >= *statement_i){
+                *start = *(statement_i)+1;
                 return NULL;
             }
 
-            NODE *root = build_AST(compiler->token_table , *start , (*i)-1);
-            *start = *i+1;
+            NODE *root = build_AST(compiler->token_table , *start , (*statement_i)-1);
+            *start = *(statement_i)+1;
 
             return root;
         }
@@ -402,19 +408,19 @@ int compile_file(const char *file_name , COMPILER *compiler){
         return 1;
     }
     
-    printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
-    printf("parsing started.\n");
+    //printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
+    //printf("parsing started.\n");
     NODE *program = parse_program(compiler);
 
 
     BUILD_SYMBOL_TEXT(&compiler->context.symbols , compiler->result.SYM_BUFFER);
-    printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
+    //printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
 
     Check_Undeclared(program , &compiler->context);
     Type_check(program , &compiler->context);
 
-    printf("program  = %s.\n", program->lexeme);
-    printf("type = %d\n", program->type);
+    //printf("program  = %s.\n", program->lexeme);
+    //printf("type = %d\n", program->type);
     
     Generate_TAC(program , &compiler->vm.program);
     printf("\nBefore optimization :\n");

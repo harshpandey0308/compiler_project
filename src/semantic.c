@@ -281,6 +281,24 @@ void BUILD_SYMBOL_TEXT(const SymbolTable *table , char *buffer){
         sprintf(line , "%-20s %-18s %-15s %-15s %-15s %-16d\n",table->table[i].sym , datatype[table->table[i].type] , table->table[i].is_initialized?"YES":"NO" , table->table[i].scope , table->table[i].is_param? "YES":"NO" , table->table[i].size);
         append_symbol(buffer , line);
     }
+
+    printf("\n===== SYMBOL TABLE =====\n");
+
+    printf("sym_count = %d\n",table->sym_count);
+
+        for (int i = 0 ; i < table->sym_count ; i++) {
+
+            printf("[%d] name=%s | type=%d | scope=%s | initialized=%d | param=%d | size=%d\n",
+                i,
+                table->table[i].sym,
+                table->table[i].type,
+                table->table[i].scope,
+                table->table[i].is_initialized,
+                table->table[i].is_param,
+                table->table[i].size);
+        }
+
+printf("========================\n");
 }
 
 const char *Symbol_Text(char *buffer){
