@@ -189,7 +189,7 @@ int lexer(const char* source[] , const int* n , TokenEntry *token_table){
         }
     }
 
-    print_tokens(token_table);
+    //print_tokens(token_table);
 
     printf("Lexical analysis completed.\n");
 

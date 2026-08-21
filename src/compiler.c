@@ -93,6 +93,7 @@ NODE *parse_function(int *i , int *start , COMPILER *compiler){
     body->tail = NULL;
 
     char* func_name = compiler->token_table->tokens[*i+1].lexeme;
+    strcpy(compiler->context.current_scope , func_name);
     DataType ret_type;
     if(strcmp(compiler->token_table->tokens[*i].lexeme , "int") == 0){
             ret_type = TYPE_INT;
@@ -423,19 +424,19 @@ int compile_file(const char *file_name , COMPILER *compiler){
     //printf("type = %d\n", program->type);
     
     Generate_TAC(program , &compiler->vm.program);
-    printf("\nBefore optimization :\n");
-    print_TAC(&compiler->vm.program);
+    //printf("\nBefore optimization :\n");
+    //print_TAC(&compiler->vm.program);
 
-    constant_fold(&compiler->vm.program);
-    Const_propagate(&compiler->vm.program);
-    dead_code(&compiler->vm.program);
+    //constant_fold(&compiler->vm.program);
+    //Const_propagate(&compiler->vm.program);
+    //dead_code(&compiler->vm.program);
 
-    printf("\nAfter optimization :\n");
+    //printf("\nAfter optimization :\n");
 
     BUILD_TAC_TEXT(compiler->result.TAC_buffer , &compiler->vm.program );
 
-    printf("printing tac");
-    print_TAC(&compiler->vm.program);
+    //printf("printing tac");
+    //print_TAC(&compiler->vm.program);
     printf("symbol count = %d.\n",compiler->context.symbols.sym_count);
 
     Generate_code(&compiler->vm.program , &compiler->registers , compiler->result.ASM_buffer);
@@ -449,6 +450,11 @@ int compile_file(const char *file_name , COMPILER *compiler){
     printf("printing virtual machine computation.\n");
 
     BUILD_VM_TEXT(&compiler->vm , compiler->result.VM_buffer);
+
+    printf("output buffer : \n");
+
+    
+    printf("%s.\n",compiler->result.output_buffer);
 
     //printf("program ended\n");
 

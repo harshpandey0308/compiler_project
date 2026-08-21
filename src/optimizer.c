@@ -11,6 +11,7 @@ float eval_TAC(const char* op1 ,const char* op2 ,const char* opr){
     if(strcmp(opr,"-")==0)return a-b;
     if(strcmp(opr,"*")==0)return a*b;
     if(strcmp(opr,"/")==0)return a/b;
+    if(strcmp(opr , "%") == 0)return ((int)a%(int)b);
 
     return 0;
 }
@@ -99,12 +100,14 @@ void BUILD_TAC_TEXT(char *buffer ,const TACProgram *program){
 
     sprintf(line , "\n-----------TAC CODE-----------\n");
     append_TAC(buffer , line);
+    printf(line , "\n-----------TAC CODE-----------\n");
     //printf("TAC is :\n");
     for(int i=0 ; i<program->tac_count ; i++){
         //printf("checking dead code\n");
         if(program->code[i].is_dead){
             sprintf(line , "%s\n" , "DEAD CODE FOUND.");
             append_TAC(buffer , line);
+            printf("%s\n" , "DEAD CODE FOUND.");
             continue;
         }
 
@@ -116,21 +119,26 @@ void BUILD_TAC_TEXT(char *buffer ,const TACProgram *program){
                         if(program->code[i].is_deref_write == 1){
                             sprintf(line , "%s %s = %s\n" ,program->code[i].opr , program->code[i].result ,  program->code[i].op1);
                             append_TAC(buffer , line);
+                            printf("%s %s = %s\n" ,program->code[i].opr , program->code[i].result ,  program->code[i].op1);
                         }
                         else{
                             sprintf(line , "%s = %s %s\n" , program->code[i].result , program->code[i].opr , program->code[i].op1);
                             append_TAC(buffer , line);
+                            printf("%s = %s %s\n" , program->code[i].result , program->code[i].opr , program->code[i].op1);
                         }
                         
                     }
                     else{
                         sprintf(line , "%s = %s \n" , program->code[i].result , program->code[i].op1);
                         append_TAC(buffer , line);
+                        printf("%s = %s \n" , program->code[i].result , program->code[i].op1);
                     }
                 }
                 else{
                     sprintf(line , "%s = %s %s %s\n" , program->code[i].result , program->code[i].op1 , program->code[i].opr , program->code[i].op2);
                     append_TAC(buffer , line);
+                    printf("%s = %s %s %s\n" , program->code[i].result , program->code[i].op1 , program->code[i].opr , program->code[i].op2);
+                    
                 }
                 break;
 
@@ -138,61 +146,73 @@ void BUILD_TAC_TEXT(char *buffer ,const TACProgram *program){
                 //printf("%s , %s , %s , %s\n",program->code[i].op1 , program->code[i].op2 , program->code[i].opr);
                 sprintf(line , "IF %s %s %s GOTO %s \n" , program->code[i].op1 , program->code[i].opr , program->code[i].op2 , program->code[i].label);
                 append_TAC(buffer , line);
+                printf("IF %s %s %s GOTO %s \n" , program->code[i].op1 , program->code[i].opr , program->code[i].op2 , program->code[i].label);
                 break;
             
             case TAC_GOTO:
                 sprintf(line , "GOTO %s\n" , program->code[i].label);
                 append_TAC(buffer , line);
+                printf("GOTO %s\n" , program->code[i].label);
                 break;
 
             case TAC_LABEL:
                 sprintf(line , "%s:\n" , program->code[i].label);
                 append_TAC(buffer , line);
+                printf("%s:\n" , program->code[i].label);
                 break;
 
             case PARAM:
                 sprintf(line , "PARAM %s\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("PARAM %s\n" , program->code[i].op1);
                 break;
             
             case FUNC_CALL:
                 sprintf(line , "CALL %s , %s\n" , program->code[i].op1 , program->code[i].op2);
                 append_TAC(buffer , line);
+                printf("CALL %s , %s\n" , program->code[i].op1 , program->code[i].op2);
                 break;
             
             case RETURN:
                 sprintf(line , "RETURN %s\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("RETURN %s\n" , program->code[i].op1);
                 break;
 
             case TAC_PUSH:
                 sprintf(line , "PUSH %s\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("PUSH %s\n" , program->code[i].op1);
                 break;
             
             case TAC_POP:
                 sprintf(line , "POP %s\n" , program->code[i].result);
                 append_TAC(buffer , line);
+                printf("POP %s\n" , program->code[i].result);
                 break;
             
             case TAC_JMP_DYNAMIC:
                 sprintf(line , "JMP [%s]\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("JMP [%s]\n" , program->code[i].op1);
                 break;
             
             case TAC_FUNC_BEGIN:
                 sprintf(line , "%s:\n" , program->code[i].label);
                 append_TAC(buffer , line);
+                printf("%s:\n" , program->code[i].label);
                 break;
 
             case TAC_PARAM_STRING:
                 sprintf(line , "PARAM STRING : %s\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("PARAM STRING : %s\n" , program->code[i].op1);
                 break;
 
             case TAC_PARAM_ADDR:
                 sprintf(line , "PARAM ADDR : %s\n" , program->code[i].op1);
                 append_TAC(buffer , line);
+                printf("PARAM ADDR : %s\n" , program->code[i].op1);
                 break;
         }   
 

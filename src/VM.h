@@ -14,6 +14,22 @@ typedef struct{
     int is_label;
 }STACK_ENTRY;
 
+
+typedef enum{
+    INTEGER,
+    FLOAT,
+    CHARACTER
+}member_tag;
+typedef struct{
+    union{
+    int integer;
+    float float_number;
+    char character;
+    }VALUE;
+
+    member_tag active_type;
+}MEMBER;
+
 typedef struct{
     STACK_ENTRY data[MAX_STACK_SIZE];
     int top;
@@ -21,7 +37,11 @@ typedef struct{
 
 typedef struct{
     char name[MAX_NAME_LENGTH];
-    float value;
+    union{
+        int int_val;
+        float float_val;
+        char ch_val;
+    }value;
 }MEMORY_ENTRY;
 
 typedef struct{
@@ -46,6 +66,7 @@ typedef struct{
     VM_MEMORY memory;
     LABELS label_table;
     SymbolTable symbol;
+    MEMBER member;
 
     float RET_VAL;
     float  registers[4];
@@ -58,7 +79,7 @@ int find_label(char *target , VM *VM);
 
 float get_name(char *val , VM *vm);
 
-void set_name(char *name , float value , VM *vm);
+void set_name(char *name , MEMBER *member , VM *vm);
 
 void append_output(char *buffer , char *line);
 
