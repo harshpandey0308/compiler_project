@@ -20,6 +20,7 @@ typedef enum{
     FLOAT,
     CHARACTER
 }member_tag;
+
 typedef struct{
     union{
     int integer;
@@ -37,6 +38,7 @@ typedef struct{
 
 typedef struct{
     char name[MAX_NAME_LENGTH];
+    member_tag type;
     union{
         int int_val;
         float float_val;
@@ -77,7 +79,7 @@ void BUILD_LABEL_TABLE(VM *vm);
 
 int find_label(char *target , VM *VM);
 
-float get_name(char *val , VM *vm);
+MEMBER get_name(char *val , VM *vm);
 
 void set_name(char *name , MEMBER *member , VM *vm);
 
@@ -86,6 +88,8 @@ void append_output(char *buffer , char *line);
 void handling_printf(int arg_count , VM *vm , char *bufer);
 
 void handle_scanf(int arg_count , VM *vm);
+
+float member_to_float(MEMBER *member);
 
 void run_vm(VM *vm , CompilerResult *result);
 

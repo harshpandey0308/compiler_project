@@ -37,40 +37,42 @@ int find_label(char *target , VM *vm){
     return -1;
 }
 
-float get_name(char *val , VM *vm){
+MEMBER get_name(char *val , VM *vm){
+    MEMBER member = {0};
+    member.active_type = UNKNOWN_TYPE;
+
     if(val == NULL){
-        return 0.0f;
+        return member;
     }
 
-    if(isdigit((unsigned char)val[0]) || val[0] == '-'){
-        float fvalue = atof(val);
-        //printf("the value is %f\n",fvalue);
-        return fvalue;
-    }
-    
-    else if(strcmp(val , "RETVAL") == 0){
-        //printf("the return value is %f\n", vm->RET_VAL);
-        return vm->RET_VAL;
+    if(isdigit((unsigned char) val[0]) || val[0] =='-'){
+        member.active_type = FLOAT;
+        member.VALUE.float_number = atof(val);
+        return member;
     }
 
-    /*else if(strlen(val) == 1 ){
-        int ascii = val[0];
-        printf("ascii : %d\n",ascii);
-        return (float)ascii;
-    }*/
+    if(strcmp(val , "RETVAL") == 0){
+        member.active_type = FLOAT;
+        member.VALUE.float_number = vm->RET_VAL;
+        return member;
+    }
 
-    else{
-        int i = 0;
-        while(i<vm->memory.memory_count && strcmp(vm->memory.data[i].name , val) != 0){
-            i++;
+    for(int i=0 ; i<vm->memory.memory_count ; i++){
+        if(strcmp(vm->memory.data[i].name , val) == 0){
+            member.active_type = vm->memory.data[i].type;
+            if(member.active_type == INTEGER){
+                member.VALUE.integer = vm->memory.data[i].value.int_val;
+            }
+            else if(member.active_type == FLOAT){
+                member.VALUE.float_number = vm->memory.data[i].value.float_val;
+            }
+            else if(member.active_type == CHARACTER){
+                member.VALUE.character = vm->memory.data[i].value.ch_val;
+            }
+            return member;
         }
-        if(i<vm->memory.memory_count){
-            return vm->memory.data[i].value.float_val;
-        }
-        //printf("The variable is %s\n",val);
-        //printf("Variable '%s' not found in the memory.\n",val);
-        return 0.0f;
     }
+    return member;
 }
 
 void set_name(char *name , MEMBER *member , VM *vm){
@@ -78,12 +80,15 @@ void set_name(char *name , MEMBER *member , VM *vm){
         if(strcmp(vm->memory.data[i].name , name) == 0){
             //printf("Setting value of %s to %f at index %d\n", name, value, i);
             if(member->active_type == INTEGER){
+                vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.int_val = member->VALUE.integer;
             }
             else if(member->active_type == FLOAT){
+                vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.float_val = member->VALUE.float_number;
             }
             else if(member->active_type == CHARACTER){
+                vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.ch_val = member->VALUE.character;
             }
 
@@ -93,12 +98,15 @@ void set_name(char *name , MEMBER *member , VM *vm){
     }
     strcpy(vm->memory.data[vm->memory.memory_count].name , name);
     if(member->active_type == INTEGER){
+        vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.int_val = member->VALUE.integer;
     }
     else if(member->active_type == FLOAT){
+        vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.float_val = member->VALUE.float_number;
     }
     else if(member->active_type == CHARACTER){
+        vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.ch_val = member->VALUE.character;
     }
     //printf("Adding new variable %s with value %f to memory at index %d\n", name, value, vm->memory.memory_count);
@@ -107,9 +115,20 @@ void set_name(char *name , MEMBER *member , VM *vm){
 
 }
 
-void set_by_index(int addr , float value , VM *vm){
+void set_by_index(int addr , MEMBER *member , VM *vm){
     if(addr >= 0 && addr < vm->memory.memory_count){
-        vm->memory.data[addr].value.float_val = value;
+        if(member->active_type == INTEGER){
+            vm->memory.data[addr].type = member->active_type;
+            vm->memory.data[addr].value.int_val = member->VALUE.integer;
+        }
+        else if(member->active_type == FLOAT){
+            vm->memory.data[addr].type = member->active_type;
+            vm->memory.data[addr].value.float_val = member->VALUE.float_number;
+        }
+        else if(member->active_type == CHARACTER){
+            vm->memory.data[addr].type = member->active_type;
+            vm->memory.data[addr].value.ch_val = member->VALUE.character;
+        }
     }
     else{
         printf("Invalid memory address: %d\n", addr);
@@ -118,6 +137,16 @@ void set_by_index(int addr , float value , VM *vm){
 
 void append_output(char *buffer , char *line){
     strcat(buffer , line);
+}
+
+float member_to_float(MEMBER *member){
+    if(member->active_type == INTEGER){
+        return member->VALUE.integer;
+    }
+    else if(member->active_type == FLOAT){
+        return member->VALUE.float_number;
+    }
+    return 0.0f;
 }
 
 void handle_printf(int arg_count , VM *vm , char *buffer){
@@ -271,11 +300,11 @@ void run_vm(VM *vm , CompilerResult *result){
                 
                 if(instr.is_deref_write == 1){
                     //printf("dereference write operation detected for %s = %s %s \n",instr.result , instr.op1 , instr.opr);
-                    int addr1 = (int)get_name(instr.result , vm);
-                    //printf("addr1 = %d\n",addr1);
-                    float val1 = get_name(instr.op1 , vm);
+                    vm->member = get_name(instr.result , vm);
+                    int addr1 = vm->member.VALUE.integer;
+                    vm->member = get_name(instr.op1 , vm);
                     //printf("the right side value = %f\n",val1);
-                    set_by_index(addr1 , val1 , vm);
+                    set_by_index(addr1 , &vm->member , vm);
                     break;
                 }
 
@@ -317,10 +346,7 @@ void run_vm(VM *vm , CompilerResult *result){
                         float val;
                         //int n = strlen(instr.op1);
                     
-                        val = get_name(instr.op1 , vm);
-                        vm->member.VALUE.float_number = val;
-                        vm->member.active_type = FLOAT;
-                        
+                        vm->member = get_name(instr.op1 , vm);
                         
                         set_name(instr.result , &vm->member , vm);
                         //printf("TAC_ASSIGN: %f\n",val);
@@ -339,42 +365,41 @@ void run_vm(VM *vm , CompilerResult *result){
                 }
 
                 else{
-                    float op1_val = get_name(instr.op1 , vm);
-                    float op2_val = get_name(instr.op2 , vm);
-                    float result = 0;
-                    int result1 = 0;
-                    int result2 = 0;
-                    if(strcmp(instr.opr , "+") == 0){ 
-                        result = op1_val + op2_val;
-                        vm->member.VALUE.float_number = result;
-                        printf("result = %d.\n",result);
+                    MEMBER m1 = get_name(instr.op1 , vm);
+                    MEMBER m2 = get_name(instr.op2 , vm);
+
+                    float op1_val = member_to_float(&m1);
+                    float op2_val = member_to_float(&m2);
+                    
+                    if(strcmp(instr.opr , "+") == 0){
+                        vm->member.VALUE.float_number = op1_val + op2_val;
                         vm->member.active_type = FLOAT;
                         set_name(instr.result , &vm->member , vm);
                     }
                     else if(strcmp(instr.opr , "-") == 0){
-                        result = op1_val - op2_val;
-                        vm->member.VALUE.float_number = result;
+                        vm->member.VALUE.float_number = op1_val - op2_val;
                         vm->member.active_type = FLOAT;
                         set_name(instr.result , &vm->member , vm);
                     }
                     else if(strcmp(instr.opr , "*") == 0){
-                        result = op1_val*op2_val;
-                        vm->member.VALUE.float_number = result;
-                        printf("multiplication result = %d.\n",result);
-                        vm->member.active_type = FLOAT;
+                        vm->member.VALUE.integer = op1_val*op2_val;
+                        
+                        vm->member.active_type = INTEGER;
                         set_name(instr.result , &vm->member , vm);
                     } 
                     else if(strcmp(instr.opr , "%") == 0){
+                        int result1 = 0;
                         result1 = (int)(op1_val)%(int)(op2_val);
                         vm->member.VALUE.integer = result1;
-                        printf("result1 = %d.\n",result1);
+                        
                         vm->member.active_type = INTEGER;
                         set_name(instr.result , &vm->member , vm);
                     } 
                     else if(strcmp(instr.opr , "/") == 0){
+                        int result2 = 0;
                         result2 = op1_val/op2_val;
                         vm->member.VALUE.integer = result2;
-                        printf("result2 = %d.\n",result2);
+                        
                         vm->member.active_type = INTEGER;
                         set_name(instr.result , &vm->member , vm);
                     }
@@ -397,9 +422,11 @@ void run_vm(VM *vm , CompilerResult *result){
                 if(instr.op1[0] == '*' && isalpha(instr.op1[1]) && isdigit(instr.op2[0])){
                     char ptr_name[50];
                     strcpy(ptr_name , instr.op1 + 1);
-                    int p_index = (int)get_name(ptr_name , vm);
+                    vm->member = get_name(ptr_name , vm);
+                    int p_index = member_to_float(&vm->member);
                     ptr_val1 = vm->memory.data[p_index].value.float_val;
-                    ptr_val2 = get_name(instr.op2 , vm);
+                    vm->member = get_name(instr.op2 , vm);
+                    int ptr_val2 = member_to_float(&vm->member);
                     //printf("ptr_val1 = %s , ptr_val2 = %f.\n",ptr_val1 , ptr_val2);
                     if(strcmp(instr.opr , "<") == 0) cond = (ptr_val1 < ptr_val2);
                     else if(strcmp(instr.opr , ">") == 0) cond = (ptr_val1 > ptr_val2);
@@ -409,8 +436,10 @@ void run_vm(VM *vm , CompilerResult *result){
                     else if(strcmp(instr.opr , "!=") == 0) cond = (ptr_val1 != ptr_val2);
                 }
                 else{
-                    val1 = get_name(instr.op1 , vm);
-                    val2 = get_name(instr.op2 , vm);
+                    vm->member = get_name(instr.op1 , vm);
+                    float val1 = member_to_float(&vm->member);
+                    vm->member = get_name(instr.op2 , vm);
+                    float val2 = member_to_float(&vm->member);
                     if(strcmp(instr.opr , "<") == 0) cond = (val1 < val2);
                     else if(strcmp(instr.opr , ">") == 0) cond = (val1 > val2);
                     else if(strcmp(instr.opr , "<=") == 0) cond = (val1 <= val2);
@@ -438,8 +467,8 @@ void run_vm(VM *vm , CompilerResult *result){
             }
 
             case PARAM:{
-                
-                float op1_value = get_name(instr.op1 , vm);
+                MEMBER m1 = get_name(instr.op1 , vm);
+                float op1_value = member_to_float(&m1);
                 //printf("vm_stack->top AT PARAM : %d\n", vm_stack->top);
                 sprintf(vm->vm_stack.data[vm->vm_stack.top].data , "%f" , op1_value);
                 vm->vm_stack.data[vm->vm_stack.top].is_label = 0;
@@ -552,8 +581,8 @@ void run_vm(VM *vm , CompilerResult *result){
 
             case RETURN:{
                 
-                float value1 = get_name(instr.op1 , vm);
-                
+                MEMBER m1 = get_name(instr.op1 , vm);
+                float value1 = member_to_float(&m1);
                 vm->RET_VAL = value1;
 
                 vm->vm_stack.top--;
@@ -594,7 +623,8 @@ void run_vm(VM *vm , CompilerResult *result){
             case TAC_POP:{
                 
                 vm->vm_stack.top--;
-                float pop_val = get_name(vm->vm_stack.data[vm->vm_stack.top].data , vm);
+                MEMBER m1 = get_name(vm->vm_stack.data[vm->vm_stack.top].data , vm);
+                float pop_val = member_to_float(&m1);
                 vm->member.VALUE.float_number = pop_val;
                 vm->member.active_type = FLOAT;
                 set_name(instr.result , &vm->member , vm);
