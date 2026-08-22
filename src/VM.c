@@ -46,13 +46,13 @@ MEMBER get_name(char *val , VM *vm){
     }
 
     if(isdigit((unsigned char) val[0]) || val[0] =='-'){
-        member.active_type = FLOAT;
+        member.active_type = TYPE_FLOAT;
         member.VALUE.float_number = atof(val);
         return member;
     }
 
     if(strcmp(val , "RETVAL") == 0){
-        member.active_type = FLOAT;
+        member.active_type = TYPE_FLOAT;
         member.VALUE.float_number = vm->RET_VAL;
         return member;
     }
@@ -60,13 +60,13 @@ MEMBER get_name(char *val , VM *vm){
     for(int i=0 ; i<vm->memory.memory_count ; i++){
         if(strcmp(vm->memory.data[i].name , val) == 0){
             member.active_type = vm->memory.data[i].type;
-            if(member.active_type == INTEGER){
+            if(member.active_type == TYPE_INT){
                 member.VALUE.integer = vm->memory.data[i].value.int_val;
             }
-            else if(member.active_type == FLOAT){
+            else if(member.active_type == TYPE_FLOAT){
                 member.VALUE.float_number = vm->memory.data[i].value.float_val;
             }
-            else if(member.active_type == CHARACTER){
+            else if(member.active_type == TYPE_CHAR){
                 member.VALUE.character = vm->memory.data[i].value.ch_val;
             }
             return member;
@@ -79,15 +79,15 @@ void set_name(char *name , MEMBER *member , VM *vm){
     for(int i=0 ; i<vm->memory.memory_count ; i++){
         if(strcmp(vm->memory.data[i].name , name) == 0){
             //printf("Setting value of %s to %f at index %d\n", name, value, i);
-            if(member->active_type == INTEGER){
+            if(member->active_type == TYPE_INT){
                 vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.int_val = member->VALUE.integer;
             }
-            else if(member->active_type == FLOAT){
+            else if(member->active_type == TYPE_FLOAT){
                 vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.float_val = member->VALUE.float_number;
             }
-            else if(member->active_type == CHARACTER){
+            else if(member->active_type == TYPE_CHAR){
                 vm->memory.data[i].type = member->active_type;
                 vm->memory.data[i].value.ch_val = member->VALUE.character;
             }
@@ -97,15 +97,15 @@ void set_name(char *name , MEMBER *member , VM *vm){
         
     }
     strcpy(vm->memory.data[vm->memory.memory_count].name , name);
-    if(member->active_type == INTEGER){
+    if(member->active_type == TYPE_INT){
         vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.int_val = member->VALUE.integer;
     }
-    else if(member->active_type == FLOAT){
+    else if(member->active_type == TYPE_FLOAT){
         vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.float_val = member->VALUE.float_number;
     }
-    else if(member->active_type == CHARACTER){
+    else if(member->active_type == TYPE_CHAR){
         vm->memory.data[vm->memory.memory_count].type = member->active_type;
         vm->memory.data[vm->memory.memory_count].value.ch_val = member->VALUE.character;
     }
@@ -117,15 +117,15 @@ void set_name(char *name , MEMBER *member , VM *vm){
 
 void set_by_index(int addr , MEMBER *member , VM *vm){
     if(addr >= 0 && addr < vm->memory.memory_count){
-        if(member->active_type == INTEGER){
+        if(member->active_type == TYPE_INT){
             vm->memory.data[addr].type = member->active_type;
             vm->memory.data[addr].value.int_val = member->VALUE.integer;
         }
-        else if(member->active_type == FLOAT){
+        else if(member->active_type == TYPE_FLOAT){
             vm->memory.data[addr].type = member->active_type;
             vm->memory.data[addr].value.float_val = member->VALUE.float_number;
         }
-        else if(member->active_type == CHARACTER){
+        else if(member->active_type == TYPE_CHAR){
             vm->memory.data[addr].type = member->active_type;
             vm->memory.data[addr].value.ch_val = member->VALUE.character;
         }
@@ -140,10 +140,10 @@ void append_output(char *buffer , char *line){
 }
 
 float member_to_float(MEMBER *member){
-    if(member->active_type == INTEGER){
+    if(member->active_type == TYPE_INT){
         return member->VALUE.integer;
     }
-    else if(member->active_type == FLOAT){
+    else if(member->active_type == TYPE_FLOAT){
         return member->VALUE.float_number;
     }
     return 0.0f;
@@ -292,11 +292,11 @@ void run_vm(VM *vm , CompilerResult *result){
         //printf("instr.type = %d\n",instr.type);
         switch (instr.type){
             case TAC_ASSIGN:{
-                printf("[VM] %s = %s %s %s\n",instr.result,instr.op1,instr.opr,instr.op2);
+                //printf("[VM] %s = %s %s %s\n",instr.result,instr.op1,instr.opr,instr.op2);
 
-                printf("[VM] sum = %f\n",get_name("sum", vm));
+                //printf("[VM] sum = %f\n",get_name("sum", vm));
 
-                printf("[ASSIGN] %s = %f\n",instr.result,get_name(instr.op1, vm));
+                //printf("[ASSIGN] %s = %f\n",instr.result,get_name(instr.op1, vm));
                 
                 if(instr.is_deref_write == 1){
                     //printf("dereference write operation detected for %s = %s %s \n",instr.result , instr.op1 , instr.opr);
@@ -318,7 +318,7 @@ void run_vm(VM *vm , CompilerResult *result){
                                 //printf("found the address of %s at index %d\n",instr.op1 , i);
                                 addr = i;
                                 vm->member.VALUE.integer = addr;
-                                vm->member.active_type = INTEGER;
+                                vm->member.active_type = TYPE_INT;
                                 //printf("addr of %s is %d\n",instr.op1 , addr);
                                 break;
                             }
@@ -335,7 +335,7 @@ void run_vm(VM *vm , CompilerResult *result){
                                 
                                 ptr_val = vm->memory.data[val].value.int_val;
                                 vm->member.VALUE.integer = ptr_val;
-                                vm->member.active_type = INTEGER;
+                                vm->member.active_type = TYPE_INT;
                                 //printf("value at addr %d is %f\n",val , ptr_val);
                                 break;
                             }
@@ -358,7 +358,7 @@ void run_vm(VM *vm , CompilerResult *result){
                         char arr_slot[50];
                         sprintf(arr_slot , "%s%d" , vm->symbol.table[i].sym , i);
                         vm->member.VALUE.float_number = 0.0;
-                        vm->member.active_type = FLOAT;
+                        vm->member.active_type = TYPE_FLOAT;
                         set_name(arr_slot , &vm->member , vm);
                     }
 
@@ -368,44 +368,118 @@ void run_vm(VM *vm , CompilerResult *result){
                     MEMBER m1 = get_name(instr.op1 , vm);
                     MEMBER m2 = get_name(instr.op2 , vm);
 
-                    float op1_val = member_to_float(&m1);
-                    float op2_val = member_to_float(&m2);
-                    
-                    if(strcmp(instr.opr , "+") == 0){
-                        vm->member.VALUE.float_number = op1_val + op2_val;
-                        vm->member.active_type = FLOAT;
-                        set_name(instr.result , &vm->member , vm);
+                    if(m1.active_type == TYPE_INT && m2.active_type == TYPE_INT){
+                        int result = 0;
+                        if(strcmp(instr.opr , "+") == 0){
+                            vm->member.VALUE.integer = m1.VALUE.integer + m2.VALUE.integer;
+                            vm->member.active_type = TYPE_INT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "-") == 0){
+                            vm->member.VALUE.integer = m1.VALUE.integer - m2.VALUE.integer;
+                            vm->member.active_type = TYPE_INT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "*") == 0){
+                            vm->member.VALUE.integer = m1.VALUE.integer*m2.VALUE.integer;
+                            
+                            vm->member.active_type = TYPE_INT;
+                            set_name(instr.result , &vm->member , vm);
+                        } 
+                        else if(strcmp(instr.opr , "%") == 0){
+                            vm->member.VALUE.integer = m1.VALUE.integer%m2.VALUE.integer;
+                            
+                            vm->member.active_type = TYPE_INT;
+                            set_name(instr.result , &vm->member , vm);
+                        } 
+                        else if(strcmp(instr.opr , "/") == 0){
+                            vm->member.VALUE.integer = m1.VALUE.integer/m2.VALUE.integer;
+                            
+                            vm->member.active_type = TYPE_INT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
                     }
-                    else if(strcmp(instr.opr , "-") == 0){
-                        vm->member.VALUE.float_number = op1_val - op2_val;
-                        vm->member.active_type = FLOAT;
-                        set_name(instr.result , &vm->member , vm);
+                    else if(m1.active_type == TYPE_INT && m2.active_type == TYPE_FLOAT){
+                        if(strcmp(instr.opr , "+") == 0){
+                            vm->member.VALUE.float_number = (float)m1.VALUE.integer + m2.VALUE.float_number;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "-") == 0){
+                            vm->member.VALUE.float_number = (float)m1.VALUE.integer - m2.VALUE.float_number;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "*") == 0){
+                            vm->member.VALUE.float_number = ((float)m1.VALUE.integer)*(m2.VALUE.float_number);
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        } 
+                        else if(strcmp(instr.opr , "%") == 0){
+                            sprintf(result->output_buffer , "ERROR -> m2.VALUE.float_number cannot perform '%' , datatype restriction.\n");
+                        } 
+                        else if(strcmp(instr.opr , "/") == 0){
+                            vm->member.VALUE.float_number = (float)m1.VALUE.integer/m2.VALUE.float_number;
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
                     }
-                    else if(strcmp(instr.opr , "*") == 0){
-                        vm->member.VALUE.integer = op1_val*op2_val;
-                        
-                        vm->member.active_type = INTEGER;
-                        set_name(instr.result , &vm->member , vm);
-                    } 
-                    else if(strcmp(instr.opr , "%") == 0){
-                        int result1 = 0;
-                        result1 = (int)(op1_val)%(int)(op2_val);
-                        vm->member.VALUE.integer = result1;
-                        
-                        vm->member.active_type = INTEGER;
-                        set_name(instr.result , &vm->member , vm);
-                    } 
-                    else if(strcmp(instr.opr , "/") == 0){
-                        int result2 = 0;
-                        result2 = op1_val/op2_val;
-                        vm->member.VALUE.integer = result2;
-                        
-                        vm->member.active_type = INTEGER;
-                        set_name(instr.result , &vm->member , vm);
+                    else if(m1.active_type == TYPE_FLOAT && m2.active_type == TYPE_INT){
+                        if(strcmp(instr.opr , "+") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number + (float)m2.VALUE.integer;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "-") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number - (float)m2.VALUE.integer;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "*") == 0){
+                            vm->member.VALUE.float_number = (m1.VALUE.float_number)*((float)m2.VALUE.integer);
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        } 
+                        else if(strcmp(instr.opr , "%") == 0){
+                            sprintf(result->output_buffer , "ERROR -> m1.VALUE.float_number cannot perform '%' , datatype restriction.\n");
+                        } 
+                        else if(strcmp(instr.opr , "/") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number/(int)m2.VALUE.integer;
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
                     }
-                    
-                    //printf("[ARITH] %s = %f %s %f => %f\n",instr.result,op1_val,instr.opr,op2_val,result1);
-                    //printf("TAC_ASSIGN: %f\n", result);
+                    else if(m1.active_type == TYPE_FLOAT && m2.active_type == TYPE_FLOAT){
+                        if(strcmp(instr.opr , "+") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number + m2.VALUE.float_number;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "-") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number - m2.VALUE.float_number;
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                        else if(strcmp(instr.opr , "*") == 0){
+                            vm->member.VALUE.float_number = (m1.VALUE.float_number)*(m2.VALUE.float_number);
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        } 
+                        else if(strcmp(instr.opr , "%") == 0){
+                            sprintf(result->output_buffer ,"error , '%', datatype restriction.\n");
+                        }
+                        else if(strcmp(instr.opr , "/") == 0){
+                            vm->member.VALUE.float_number = m1.VALUE.float_number/m2.VALUE.integer;
+                            
+                            vm->member.active_type = TYPE_FLOAT;
+                            set_name(instr.result , &vm->member , vm);
+                        }
+                    }
                 }
                 
                 break;
@@ -528,7 +602,7 @@ void run_vm(VM *vm , CompilerResult *result){
                     //printf("i = %d.\n",vm->symbol.sym_count);
                     if(vm->symbol.table[j].is_param == 1 && strcmp(vm->symbol.table[j].scope , func_name) == 0){
                         vm->member.VALUE.float_number = args[param_index];
-                        vm->member.active_type = FLOAT;
+                        vm->member.active_type = TYPE_FLOAT;
                         set_name(vm->symbol.table[j].sym , &vm->member , vm);
                         param_index++;
                     }
@@ -566,7 +640,7 @@ void run_vm(VM *vm , CompilerResult *result){
 
                 if(addr == -1){
                     vm->member.VALUE.float_number = 0.0;
-                    vm->member.active_type = FLOAT;
+                    vm->member.active_type = TYPE_FLOAT;
                     set_name(instr.op1 , &vm->member , vm);
                     addr = vm->memory.memory_count - 1;
                 }
@@ -626,7 +700,7 @@ void run_vm(VM *vm , CompilerResult *result){
                 MEMBER m1 = get_name(vm->vm_stack.data[vm->vm_stack.top].data , vm);
                 float pop_val = member_to_float(&m1);
                 vm->member.VALUE.float_number = pop_val;
-                vm->member.active_type = FLOAT;
+                vm->member.active_type = TYPE_FLOAT;
                 set_name(instr.result , &vm->member , vm);
                 break;
             }
@@ -655,16 +729,6 @@ void run_vm(VM *vm , CompilerResult *result){
     }
 }
 
-DataType find_type(char *name , VM *vm){
-    for(int i=0 ; i<vm->symbol.sym_count ; i++){
-        
-        if(strcmp(vm->symbol.table[i].sym , name) == 0){
-            return vm->symbol.table[i].type;
-        }
-    }
-    return UNKNOWN_TYPE;
-}
-
 void append_vm(char *buffer , char *line){
     strcat(buffer , line);
 }
@@ -684,24 +748,22 @@ void BUILD_VM_TEXT(VM *vm , char *buffer){
             continue;
         }
 
-        DataType type = find_type(vm->memory.data[i].name , vm);
-
-        if(type == TYPE_INT){
-            printf("%3s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value.float_val);
-            sprintf(line , "%3s = %d\n",vm->memory.data[i].name , (int)vm->memory.data[i].value.float_val);
+        if(vm->memory.data[i].type == TYPE_INT){
+            printf("%3s = %d\n",vm->memory.data[i].name , vm->memory.data[i].value.int_val);
+            sprintf(line , "%3s = %d\n",vm->memory.data[i].name , vm->memory.data[i].value.int_val);
             append_vm(buffer , line);
         }
-        else if(type == TYPE_FLOAT){
-            printf("%3s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
-            sprintf(line , "%3s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value);
+        else if(vm->memory.data[i].type == TYPE_FLOAT){
+            printf("%3s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value.float_val);
+            sprintf(line , "%3s = %f\n",vm->memory.data[i].name , vm->memory.data[i].value.float_val);
             append_vm(buffer , line);
         }
-        else if(type == TYPE_CHAR){
-            printf("%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value.float_val);
-            sprintf(line , "%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value.float_val);
+        else if(vm->memory.data[i].type == TYPE_CHAR){
+            printf("%3s = %c\n",vm->memory.data[i].name , vm->memory.data[i].value.ch_val);
+            sprintf(line , "%3s = %c\n",vm->memory.data[i].name , vm->memory.data[i].value.ch_val);
             append_vm(buffer , line);
         }
-        else if(type == TYPE_VOID){
+        else if(vm->memory.data[i].type == TYPE_VOID){
             printf("%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value.float_val);
             sprintf(line , "%3s = %c\n",vm->memory.data[i].name , (char)vm->memory.data[i].value.float_val);
             append_vm(buffer , line);

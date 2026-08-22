@@ -93,7 +93,7 @@ NODE *parse_function(int *i , int *start , COMPILER *compiler){
     body->tail = NULL;
 
     char* func_name = compiler->token_table->tokens[*i+1].lexeme;
-    strcpy(compiler->context.current_scope , func_name);
+
     DataType ret_type;
     if(strcmp(compiler->token_table->tokens[*i].lexeme , "int") == 0){
             ret_type = TYPE_INT;
@@ -112,6 +112,7 @@ NODE *parse_function(int *i , int *start , COMPILER *compiler){
         }
 
     add_symbol(&compiler->context , func_name , ret_type , 0 , 0);
+    strcpy(compiler->context.current_scope , func_name);
 
     while(*i<compiler->token_table->token_count && strcmp(compiler->token_table->tokens[*i].lexeme , "(") != 0){
         (*i)++;
@@ -303,12 +304,12 @@ NODE *parse_statement(int *statement_i , int *start , COMPILER *compiler){
                     parse_declaration_(start , pos_assign , &name , compiler);
                 }
 
-                //printf("assign position  = %d\n", assign_pos);
+                printf("assign position  = %d\n", assign_pos);
 
-                //printf("adding %s of %d in symbol table.\n",name , type);
+                printf("adding %s of %d in symbol table.\n",name , type);
                 add_symbol(&compiler->context , name , type , 0 , size);
 
-                //printf("symbol count after add : %d\n",compiler->context.symbols.sym_count);
+                printf("symbol count after add : %d\n",compiler->context.symbols.sym_count);
 
                 NODE *declare_AST = NULL;
                 if(assign_pos != -1){

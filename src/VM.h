@@ -18,7 +18,8 @@ typedef struct{
 typedef enum{
     INTEGER,
     FLOAT,
-    CHARACTER
+    CHARACTER,
+    VOID
 }member_tag;
 
 typedef struct{
@@ -28,7 +29,7 @@ typedef struct{
     char character;
     }VALUE;
 
-    member_tag active_type;
+    DataType active_type;
 }MEMBER;
 
 typedef struct{
@@ -38,7 +39,7 @@ typedef struct{
 
 typedef struct{
     char name[MAX_NAME_LENGTH];
-    member_tag type;
+    DataType type;
     union{
         int int_val;
         float float_val;

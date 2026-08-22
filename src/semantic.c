@@ -50,6 +50,7 @@ void add_symbol(Semantic_ctxt *context, const char* name , DataType type , int i
 
     printf("STORING : name = %s and is_param = %d\n", name , context->symbols.table[context->symbols.sym_count].is_param);
     context->symbols.sym_count++;
+    
 }
 
 void Check_Undeclared(NODE* root , Semantic_ctxt *context){
