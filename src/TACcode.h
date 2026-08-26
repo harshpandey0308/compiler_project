@@ -7,6 +7,8 @@
 #include <ctype.h>
 #include"parser.h"
 #include"tokenizer.h"
+#include"semantic.h"
+
 
 #define MAX_TAC_INSTR_SIZE 1000
 #define MAX_OPERAND_SIZE 50
@@ -29,9 +31,15 @@ typedef enum{
 }TAC_type;
 typedef struct tac{
     char result[50];
+
     char op1[MAX_OPERAND_SIZE];
     char op2[MAX_OPERAND_SIZE];
     char opr[MAX_OPERATOR_LENGTH];
+
+    DataType op1_type;
+    DataType op2_type;
+    DataType result_type;
+
     char label[MAX_LENGTH];
     char scope[MAX_LENGTH];
     int is_dead;

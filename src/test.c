@@ -38,6 +38,21 @@ int main(){
 
     printf("ch = %c\n", ch);
 
+    printf("===== BASIC ARITHMETIC =====\n");
+
+    a = 10;
+    b = 3;
+    c = a + b;
+    printf("a + b = %d\n", c);
+    c = a - b;
+    printf("a - b = %d\n", c);
+    c = a * b;
+    printf("a * b = %d\n", c);
+    c = a / b;
+    printf("a / b = %d\n", c);
+    c = a % b;
+    printf("a mod b = %d\n", c);
+
     printf("===== FLOAT ARITHMETIC =====\n");
     float x;
     float y;
@@ -50,10 +65,10 @@ int main(){
     printf("===== MACRO TEST =====\n");
     int max;
     max = MAX;
-    printf("MAX = %d\n", max);
+    printf("max = %d\n", max);
     float pi;
     pi = PI;
-    printf("PI = %f\n", pi);
+    printf("pi = %f\n", pi);
 
     printf("===== IF ELSE =====\n");
     int age;

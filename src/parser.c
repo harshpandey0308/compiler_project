@@ -151,11 +151,11 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
     if(start > end){
         return NULL;
     }
-    //printf("Building AST for token_table->tokens from %d to %d.\n",start , end);
+    printf("Building AST for token_table->tokens from %d to %d.\n",start , end);
     //printf("\n");
-    //printf("the token_table->tokens are %s , %s , %s\n",token_table->tokens[start].lexeme , token_table->tokens[start+1].lexeme ,token_table->tokens[end].lexeme);
+    printf("the token_table->tokens are %s , %s , %s\n",token_table->tokens[start].lexeme , token_table->tokens[start+1].lexeme ,token_table->tokens[end].lexeme);
     if(start == end){
-        //printf("the token is %s.\n",token_table->tokens[start].lexeme);
+        printf("the token is %s.\n",token_table->tokens[start].lexeme);
         if(token_table->tokens[start].tokentype == TOKEN_CHARACTER){
             NODE* char_node = create_node(token_table->tokens[start].lexeme , AST_CHARACTER);
             return char_node;
@@ -262,15 +262,15 @@ NODE* build_AST(const TokenEntry *token_table , int start , int end){
         call_node->ARG_count = 0;
         
         int arg_pos = start+2;
-        //printf("arg_pos = %d and tokens[%d].lexeme = %s\n",arg_pos , arg_pos , token_table->tokens[arg_pos].lexeme);
+        printf("arg_pos = %d and tokens[%d].lexeme = %s\n",arg_pos , arg_pos , token_table->tokens[arg_pos].lexeme);
 
         while(strcmp(token_table->tokens[arg_pos].lexeme , ")") != 0){
             int arg_end = arg_pos;
-            //printf("token_table->tokens[%d].lexeme = %s\n",arg_end , token_table->tokens[arg_end].lexeme);
+            printf("token_table->tokens[%d].lexeme = %s\n",arg_end , token_table->tokens[arg_end].lexeme);
             if(token_table->tokens[arg_end].tokentype == TOKEN_STRING){
                 NODE *arg_node = create_node(token_table->tokens[arg_end].lexeme , AST_STRING);
                 call_node->ARG[call_node->ARG_count++] = arg_node;
-                //printf("ARG[%d] = %s\n",arg_end , arg_node->lexeme);
+                printf("ARG[%d] = %s\n",arg_end , arg_node->lexeme);
                 arg_end++;
             }
             else{

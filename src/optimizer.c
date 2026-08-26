@@ -119,6 +119,10 @@ void BUILD_TAC_TEXT(char *buffer ,const TACProgram *program){
                         if(program->code[i].is_deref_write == 1){
                             sprintf(line , "%s %s = %s\n" ,program->code[i].opr , program->code[i].result ,  program->code[i].op1);
                             append_TAC(buffer , line);
+                            printf("%s .\n",program->code[i].opr);
+                            printf("%s.\n",program->code[i].op1);
+                            printf("%s.\n",program->code[i].op2);
+                            printf("%s.\n",program->code[i].result);
                             printf("%s %s = %s\n" ,program->code[i].opr , program->code[i].result ,  program->code[i].op1);
                         }
                         else{

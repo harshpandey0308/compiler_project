@@ -107,6 +107,7 @@ void emit_FUNC_BEG(TACProgram *program , char *name){
 void emit_param_string(TACProgram *program , char *str){
     TAC t = {0};
     t.type = TAC_PARAM_STRING;
+    printf("string : %s.\n",str);
     strcpy(t.op1 , str);
     program->code[program->tac_count++] = t;
 }
@@ -279,38 +280,65 @@ int Generate_for_TAC(NODE *node , TACProgram *program){
 
 void generate_TAC_func(NODE *node , TACProgram *program){
     char *func_name = node->lexeme;
+    printf("function name = %s.\n",func_name);
     emit_FUNC_BEG(program , func_name);
 
     NODE *current = node->body->head;
 
     while(current != NULL){
+        printf("current.value = %s\n",current->lexeme);
         Generate_TAC(current , program);
         current = current->next;
     }
+    printf("the current is null now.\n");
 }
 
 char* Generate_TAC(NODE* node , TACProgram *program){
-    //printf("node = %s.\n",node->lexeme);
-    //printf("tac_count at the start = %d\n",program->tac_count);
+    
     if(node == NULL){
+        printf("generated tac is null.\n");
         return NULL;
     }
 
+    printf("node = %s.\n",node->lexeme);
+    printf("node.type  = %d.\n",node->type);
+    printf("tac_count at the start = %d\n",program->tac_count);
+
     switch(node->type){
         case AST_FOR:
+            printf("tac generation for.\n");
             Generate_for_TAC(node , program);
             return strdup("");
         
         case AST_WHILE:
+            printf("tac generation while.\n");
             Generate_while_tac(node , program);
             return strdup("");
         
         case AST_IF :
+            printf("tac generation if.\n");
             Generate_if_tac(node , program);
             return strdup("");
 
         case AST_FUNCTION:
+            printf("tac generation function.\n");
             generate_TAC_func(node , program);
+            printf("TAC GENERATION COMPLETED.\n");
+            return strdup("");
+
+        case AST_RETURN:
+            char *value = Generate_TAC(node->right , program);
+
+            TAC t = {0};
+
+            t.type = RETURN;
+
+            strcpy(t.op1 , value);
+
+            program->code[program->tac_count++] = t;
+
+            free(value);
+
             return strdup("");
         
         default:
@@ -324,8 +352,8 @@ char* Generate_TAC(NODE* node , TACProgram *program){
         t.type = TAC_ASSIGN;
         strcpy(t.result , temp);
         //printf("t.result : %s.\n",t.result);
-        strcpy(t.op1 , node->lexeme);
-        //printf("t.op1: %s.\n",t.op1);
+        strcpy(t.op1 , node->right->lexeme);
+        printf("t.op1: %s.\n",t.op1);
         strcpy(t.op2 , "");
         strcpy(t.opr , "&");
         
@@ -342,7 +370,7 @@ char* Generate_TAC(NODE* node , TACProgram *program){
 
         t.type = TAC_ASSIGN;
         strcpy(t.result , temp);
-        strcpy(t.op1 , node->lexeme);
+        strcpy(t.op1 , node->left->lexeme);
         strcpy(t.op2 , "");
         strcpy(t.opr , "*");
         t.is_deref_write = 0;
@@ -351,12 +379,10 @@ char* Generate_TAC(NODE* node , TACProgram *program){
         return temp;
     }
 
-    if(node->type == AST_FUNCTION){
-
-    }
-
     if(node->type == AST_FUNCTION_CALL){
+        printf("node.value = %s.\n",node->lexeme);
         char *ret_labels = new_label();
+        printf("call argument = %d.\n",node->ARG_count);
         for(int i=0 ; i<node->ARG_count ; i++){
             if(node->ARG[i]->type == AST_STRING){
                 emit_param_string(program , node->ARG[i]->lexeme);
@@ -377,13 +403,30 @@ char* Generate_TAC(NODE* node , TACProgram *program){
 
         emit_LABEL(program , ret_labels);
 
+        printf("\n===== RETURN DEBUG =====\n");
+
+        if(node->left)
+            printf("LEFT  = %s, type = %d\n",
+                node->left->lexeme,
+                node->left->type);
+        else
+            printf("LEFT  = NULL\n");
+
+        if(node->right)
+            printf("RIGHT = %s, type = %d\n",
+                node->right->lexeme,
+                node->right->type);
+        else
+            printf("RIGHT = NULL\n");
+
         return strdup("RETVAL");
     }
+    
 
     if(node->left == NULL && node->right == NULL){
         char* lexeme = (char*)malloc(strlen(node->lexeme)+1);
         strcpy(lexeme , node->lexeme);
-        //printf("Leaf node : %s\n",lexeme);
+        printf("Leaf node : %s\n",lexeme);
         return lexeme;
     }
 
@@ -392,8 +435,8 @@ char* Generate_TAC(NODE* node , TACProgram *program){
         if(node->left != NULL && node->left->type == AST_DEREFERENCE){
             char* right_result = Generate_TAC(node->right , program);
             TAC t = {0};
-            strcpy(t.result , node->left->lexeme);
-            //printf("the left result is %s\n",node->left->lexeme);
+            strcpy(t.result , node->left->right->lexeme);
+            //printf("the left result is %s\n",node->left->right->lexeme);
             strcpy(t.op1 , right_result);
             //printf("the right result is %s\n",right_result);
             strcpy(t.op2,"");
@@ -421,8 +464,8 @@ char* Generate_TAC(NODE* node , TACProgram *program){
             t.is_char_lit = 1;
         }
         program->code[program->tac_count++] = t;
-        //printf("statement : \n");
-        //printf("\n%s = %s\n",left_result , right_result);
+        printf("statement : \n");
+        printf("\n%s = %s\n",left_result , right_result);
 
         free(left_result);
         free(right_result);
@@ -433,8 +476,10 @@ char* Generate_TAC(NODE* node , TACProgram *program){
 
     char* left_result = Generate_TAC(node->left , program);
     char* right_result = Generate_TAC(node->right , program);
+    printf("right result = %s.\n",right_result);
 
     char* temp = new_temp();
+    printf("new temporary varibale created.\n");
 
     TAC t = {0};
     strcpy(t.result , temp);
@@ -444,9 +489,9 @@ char* Generate_TAC(NODE* node , TACProgram *program){
     t.is_deref_write = 0;
     program->code[program->tac_count++] = t;
 
-    //printf(" %s = %s %s %s\n",temp , left_result , node->lexeme , right_result);
+    printf(" %s = %s %s %s\n",temp , left_result , node->lexeme , right_result);
 
-    //printf("tac count at the end = %d\n",program->tac_count);
+    printf("tac count at the end = %d\n",program->tac_count);
 
     free(left_result);
     free(right_result);

@@ -58,6 +58,14 @@ void Check_Undeclared(NODE* root , Semantic_ctxt *context){
         return;
     }
 
+    if(root->type == AST_FUNCTION){
+        strcpy(context->current_scope , root->lexeme);
+
+        Check_Undeclared(root->body->head , context);
+
+        return;
+    }
+
     if(root->type == AST_FUNCTION_CALL){
         for(int i=0 ; i<root->ARG_count ; i++){
             if(root->ARG[i]->type == AST_STRING) continue;
@@ -65,8 +73,6 @@ void Check_Undeclared(NODE* root , Semantic_ctxt *context){
         }
         return;
     }
-
-    
 
     if(isalpha(root->lexeme[0]) || root->lexeme[0] == '_'){
 
@@ -90,14 +96,16 @@ void Check_Undeclared(NODE* root , Semantic_ctxt *context){
                 char base[50];
 
                 strcpy(base , root->lexeme);
-                //printf("BASE : %s\n",base);
+                printf("BASE : %s\n",base);
                 int len = strlen(base);
                 int j = len-1;
                 while(j>0 && isdigit(base[j-1])){
                     base[--j] = '\0';
                 }
 
-                //printf("BASE AFTER TRIMMING: %s\n",base);
+                printf("BASE AFTER TRIMMING: %s\n",base);
+
+                printf("\n");
                 for(int i=0 ; i<context->symbols.sym_count ; i++){
                     if(strcmp(context->symbols.table[i].sym , base) == 0 && strcmp(context->symbols.table[i].scope , context->current_scope) == 0){
                         found = 1;

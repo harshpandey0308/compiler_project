@@ -224,6 +224,8 @@ NODE *parse_function(int *i , int *start , COMPILER *compiler){
         }
     }
 
+    strcmp(compiler->context.current_scope , "global");
+
     root->body = body;
 
     *i = body_end;
@@ -421,16 +423,16 @@ int compile_file(const char *file_name , COMPILER *compiler){
     Check_Undeclared(program , &compiler->context);
     Type_check(program , &compiler->context);
 
-    //printf("program  = %s.\n", program->lexeme);
-    //printf("type = %d\n", program->type);
+    printf("program  = %s.\n", program->lexeme);
+    printf("type = %d\n", program->type);
     
     Generate_TAC(program , &compiler->vm.program);
-    //printf("\nBefore optimization :\n");
+    printf("\nBefore optimization :\n");
     //print_TAC(&compiler->vm.program);
 
-    //constant_fold(&compiler->vm.program);
-    //Const_propagate(&compiler->vm.program);
-    //dead_code(&compiler->vm.program);
+    constant_fold(&compiler->vm.program);
+    Const_propagate(&compiler->vm.program);
+    dead_code(&compiler->vm.program);
 
     //printf("\nAfter optimization :\n");
 
@@ -442,7 +444,7 @@ int compile_file(const char *file_name , COMPILER *compiler){
 
     Generate_code(&compiler->vm.program , &compiler->registers , compiler->result.ASM_buffer);
 
-    //printf("\n----VM EXECUTION----\n");
+    printf("\n----VM EXECUTION----\n");
 
     compiler->vm.symbol = compiler->context.symbols;
 
@@ -454,7 +456,6 @@ int compile_file(const char *file_name , COMPILER *compiler){
 
     printf("output buffer : \n");
 
-    
     printf("%s.\n",compiler->result.output_buffer);
 
     //printf("program ended\n");

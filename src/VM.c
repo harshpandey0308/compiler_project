@@ -10,7 +10,7 @@ const char  reg_name[4][5] = {"R0" , "R1" , "R2" , "R3"};
 
 void BUILD_LABEL_TABLE(VM *vm){
     vm->label_table.label_count = 0;
-    //printf("label table is building..\n");
+    printf("label table is building..\n");
     for(int i=0 ; i<vm->program.tac_count ; i++){
         //printf("CHECKING LABEL TYPE..\n");
         if(vm->program.code[i].type == TAC_LABEL || vm->program.code[i].type == TAC_FUNC_BEGIN){
@@ -23,7 +23,7 @@ void BUILD_LABEL_TABLE(VM *vm){
             //printf("ADDED : label = %s and index = %d with label type : %d\n",vm->program.code[i].label , i , vm->program.code[i].type);
         }
     }
-    //printf("the total label found : %d\n",vm->label_table.label_count);
+    printf("the total label found : %d\n",vm->label_table.label_count);
 }
 
 int find_label(char *target , VM *vm){
@@ -38,6 +38,9 @@ int find_label(char *target , VM *vm){
 }
 
 MEMBER get_name(char *val , VM *vm){
+    printf("value = %s.\n",val);
+    //char ch = *val;
+    //printf("ch = %c.\n",ch);
     MEMBER member = {0};
     member.active_type = UNKNOWN_TYPE;
 
@@ -61,12 +64,15 @@ MEMBER get_name(char *val , VM *vm){
         if(strcmp(vm->memory.data[i].name , val) == 0){
             member.active_type = vm->memory.data[i].type;
             if(member.active_type == TYPE_INT){
+                printf("%s is integer member with value = %d.\n",val , vm->memory.data[i].value.int_val);
                 member.VALUE.integer = vm->memory.data[i].value.int_val;
             }
             else if(member.active_type == TYPE_FLOAT){
+                printf("%s is float member with value = %f.\n",val , vm->memory.data[i].value.float_val);
                 member.VALUE.float_number = vm->memory.data[i].value.float_val;
             }
             else if(member.active_type == TYPE_CHAR){
+                printf("%s is char member with value = %c.\n",val , vm->memory.data[i].value.ch_val);
                 member.VALUE.character = vm->memory.data[i].value.ch_val;
             }
             return member;
@@ -286,7 +292,7 @@ void run_vm(VM *vm , CompilerResult *result){
     vm->member.VALUE.integer = 0;
 
     result->output_buffer[0] = '\0';
-    //printf("TAC_COUNT:%d\n",vm->program.tac_count);
+    printf("TAC_COUNT:%d\n",vm->program.tac_count);
     while(vm->PC < vm->program.tac_count && vm->vm_stack.top >= 0){
         TAC instr = vm->program.code[vm->PC];
         //printf("instr.type = %d\n",instr.type);
@@ -296,7 +302,7 @@ void run_vm(VM *vm , CompilerResult *result){
 
                 //printf("[VM] sum = %f\n",get_name("sum", vm));
 
-                //printf("[ASSIGN] %s = %f\n",instr.result,get_name(instr.op1, vm));
+                //printf("[ASSIGN] %s = %f\n",instr.result,get_name(instr.op1, vm).VALUE.float_number);
                 
                 if(instr.is_deref_write == 1){
                     //printf("dereference write operation detected for %s = %s %s \n",instr.result , instr.op1 , instr.opr);
@@ -347,6 +353,8 @@ void run_vm(VM *vm , CompilerResult *result){
                         //int n = strlen(instr.op1);
                     
                         vm->member = get_name(instr.op1 , vm);
+
+                        //printf("%c is of type %d.\n",vm->member.VALUE.character , vm->member.active_type);
                         
                         set_name(instr.result , &vm->member , vm);
                         //printf("TAC_ASSIGN: %f\n",val);
